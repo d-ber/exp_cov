@@ -1,7 +1,6 @@
 <launch>
 
   <arg name="scan" default="/base_scan"/>
-  <arg name="worldfile" default="/home/aislab/catkin_ws/src/stage_controllers/world/roomba-wander.world"/>
   <arg name="rviz_conf" default="$(find tirocinio)/config/rviz_gmapping.rviz"/>
 
   <node name="gmapping_slam" pkg="gmapping" type="slam_gmapping" output="screen">
