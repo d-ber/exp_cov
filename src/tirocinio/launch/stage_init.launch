@@ -1,6 +1,6 @@
 <launch>
 
-  <arg name="worldfile" default="/home/aislab/catkin_ws/src/stage_controllers/world/roomba-wander.world"/>
+  <arg name="worldfile" default="$(find tirocinio)/world/turtlebot3_maze.world"/>
 
   <node name="stage" pkg="stage_ros" type="stageros" required="true" output="screen" args="$(arg worldfile)"/>
 
