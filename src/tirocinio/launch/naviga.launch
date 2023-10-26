@@ -7,13 +7,13 @@
     <node name="gmapping_slam" pkg="gmapping" type="slam_gmapping" output="screen">
       <remap from="scan" to="$(arg scan)"/>
     </node>
-    <node name="rviz_visual" pkg="rviz" type="rviz" output="screen" args="-d $(arg rviz_conf)">
+    <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(arg rviz_conf)">
       <remap from="scan" to="$(arg scan)"/>
     </node>
-    <node name="amcl__" pkg="amcl" type="amcl" output="screen">
+    <node name="amcl" pkg="amcl" type="amcl" output="screen">
         <remap from="scan" to="$(arg scan)"/>
     </node>
-    <node name="map__server" pkg="map_server" type="map_server" output="screen" args="$(arg map_file)"/>
-    <node name="move__base" pkg="move_base" type="move_base" output="screen"/>
+    <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(arg map_file)"/>
+    <node name="move_base" pkg="move_base" type="move_base" output="screen"/>
 
   </launch>

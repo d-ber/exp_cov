@@ -2,6 +2,6 @@
 
   <arg name="worldfile" default="/home/aislab/catkin_ws/src/stage_controllers/world/roomba-wander.world"/>
 
-  <node name="stage_sim" pkg="stage_ros" type="stageros" required="true" output="screen" args="$(arg worldfile)"/>
+  <node name="stage" pkg="stage_ros" type="stageros" required="true" output="screen" args="$(arg worldfile)"/>
 
 </launch>

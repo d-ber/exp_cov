@@ -6,7 +6,7 @@
   <node name="gmapping_slam" pkg="gmapping" type="slam_gmapping" output="screen">
     <remap from="scan" to="$(arg scan)"/>
   </node>
-  <node name="rviz_visual" pkg="rviz" type="rviz" output="screen" args="-d $(arg rviz_conf)">
+  <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(arg rviz_conf)">
     <remap from="scan" to="$(arg scan)"/>
   </node>
 
