@@ -3,7 +3,8 @@ Panels:
     Help Height: 78
     Name: Displays
     Property Tree Widget:
-      Expanded: ~
+      Expanded:
+        - /Global Costmap1
       Splitter Ratio: 0.32367148995399475
     Tree Height: 719
   - Class: rviz/Selection
@@ -203,7 +204,7 @@ Visualization Manager:
       Value: true
     - Alpha: 0.699999988079071
       Class: rviz/Map
-      Color Scheme: map
+      Color Scheme: costmap
       Draw Behind: false
       Enabled: true
       Name: Local Costmap
@@ -213,7 +214,7 @@ Visualization Manager:
       Value: true
     - Alpha: 0.699999988079071
       Class: rviz/Map
-      Color Scheme: map
+      Color Scheme: costmap
       Draw Behind: true
       Enabled: true
       Name: Global Costmap
@@ -248,7 +249,7 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: -1.8057961463928223
+      Angle: -1.7957961559295654
       Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
@@ -258,10 +259,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 21.39341163635254
+      Scale: 83.34822082519531
       Target Frame: map
-      X: -2.4912056922912598
-      Y: 0.34048062562942505
+      X: -9.396120071411133
+      Y: 4.210329532623291
     Saved: ~
 Window Geometry:
   Displays:
