@@ -1,13 +1,8 @@
 <launch>
 
-  <arg name="scan" default="/base_scan"/>
   <arg name="rviz_conf" default="$(find tirocinio)/config/rviz_esplora.rviz"/>
 
-  <node name="gmapping_slam" pkg="gmapping" type="slam_gmapping" output="screen">
-    <remap from="scan" to="$(arg scan)"/>
-  </node>
-  <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(arg rviz_conf)">
-    <remap from="scan" to="$(arg scan)"/>
-  </node>
+  <node name="gmapping_slam" pkg="gmapping" type="slam_gmapping" output="screen"/>
+  <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(arg rviz_conf)"/>
 
 </launch>
