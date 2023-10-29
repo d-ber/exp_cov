@@ -1,5 +1,5 @@
 local_costmap:
-  global_frame: odom # defines what coordinate frame the costmap should run in
+  global_frame: map # defines what coordinate frame the costmap should run in
   robot_base_frame: base_footprint # defines the coordinate frame the costmap should reference for the base of the robot
 
   update_frequency: 10.0 # determines the frequency, in Hz, at which the costmap will run its update loop

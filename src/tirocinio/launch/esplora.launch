@@ -1,13 +1,23 @@
 <launch>
 
-  <arg name="scan" default="/base_scan"/>
   <arg name="rviz_conf" default="$(find tirocinio)/config/rviz_esplora.rviz"/>
 
   <node name="gmapping_slam" pkg="gmapping" type="slam_gmapping" output="screen">
-    <remap from="scan" to="$(arg scan)"/>
+    <param name="map_update_interval" value="0.1"/>
   </node>
-  <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(arg rviz_conf)">
-    <remap from="scan" to="$(arg scan)"/>
+  <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(arg rviz_conf)"/>
+  <node name="move_base" pkg="move_base" type="move_base" output="screen" args="--diagnostics">
+    <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
+    <rosparam file="$(find tirocinio)/param/costmap_common_params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find tirocinio)/param/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find tirocinio)/param/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find tirocinio)/param/global_costmap_params.yaml" command="load" />
+    <rosparam file="$(find tirocinio)/param/move_base_params.yaml" command="load" />
+    <rosparam file="$(find tirocinio)/param/base_local_planner_params.yaml" command="load" />
+    <rosparam file="$(find tirocinio)/param/dwa_local_planner_params.yaml" command="load" />
+  </node>
+  <node pkg="explore_lite" type="explore" respawn="false" name="explore" output="screen">
+    <rosparam file="$(find tirocinio)/param/explore_lite_params.yaml" command="load"/>
   </node>
 
 </launch>
