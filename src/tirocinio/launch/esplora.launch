@@ -3,7 +3,7 @@
   <arg name="rviz_conf" default="$(find tirocinio)/config/rviz_esplora.rviz"/>
 
   <node name="gmapping_slam" pkg="gmapping" type="slam_gmapping" output="screen">
-    <param name="map_update_interval" value="1"/>
+    <param name="map_update_interval" value="0.1"/>
   </node>
   <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(arg rviz_conf)"/>
   <node name="move_base" pkg="move_base" type="move_base" output="screen" args="--diagnostics">
