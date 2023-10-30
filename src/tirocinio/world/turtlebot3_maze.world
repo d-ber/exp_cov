@@ -1,8 +1,3 @@
-# World file for demonstrating wander stage controller
-# Tested on diamondback, should work on electric
-# Arkapravo Bhaumik, 24 October 2011
-# arkapravobhaumik AT gmail.com
-
 define turtlebot3 position
 (
   size [ 0.138 0.178 0.192 ] # size [ x:<float> y:<float> z:<float> ]
