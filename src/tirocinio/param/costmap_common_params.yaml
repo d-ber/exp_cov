@@ -9,5 +9,5 @@ obstacle_layer:
   LaserScan: {sensor_frame: base_laser_link, data_type: LaserScan, topic: scan, marking: true, clearing: true}
 
 inflation_layer:
-  inflation_radius: 1.0
+  inflation_radius: 0.5
   cost_scaling_factor: 3.0
