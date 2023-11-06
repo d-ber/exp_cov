@@ -225,7 +225,7 @@ Visualization Manager:
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
-      Color: 32; 74; 135
+      Color: 115; 210; 22
       Enabled: true
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
@@ -283,10 +283,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 34.062381744384766
+      Scale: 43.640411376953125
       Target Frame: map
-      X: -9.396120071411133
-      Y: 4.210329532623291
+      X: -1.881658673286438
+      Y: -0.2256772518157959
     Saved: ~
 Window Geometry:
   Displays:
