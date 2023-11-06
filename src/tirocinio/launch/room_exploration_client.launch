@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<launch>
+
+	<arg name="env_pack" default="$(find cob_default_env_config)" />
+	<arg name="robot_env" default="empty"/>
+	<arg name="robot_radius" default="0.5"/>
+	<arg name="coverage_radius" default="0.5"/>
+	<arg name="use_test_maps" default="false"/>
+	<arg name="mapfile" default="$(find tirocinio)/maps/map.yaml"/>
+
+	<node name="room_exploration_client" pkg="ipa_room_exploration" type="room_exploration_client" ns="room_exploration" output="screen">
+		<rosparam file="$(arg mapfile)" command="load" />
+		<param name="mapfile" value="$(arg mapfile)"/>
+		<param name="env_pack" value="$(arg env_pack)"/>
+		<param name="robot_env" value="$(arg robot_env)"/>
+		<param name="robot_radius" value="$(arg robot_radius)"/>
+		<param name="coverage_radius" value="$(arg coverage_radius)"/>
+		<param name="use_test_maps" value="$(arg use_test_maps)"/>
+	</node>
+
+</launch>
