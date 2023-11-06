@@ -67,6 +67,13 @@ int main(int argc, char **argv)
 	}
 	else
 	{
+		std::string name;
+		priv_nh.param<std::string>("mapfile", name, "/home/d-ber/catkin_ws/src/tirocinio/maps/map.yaml");
+		image_path = name.substr(0, name.length() - 4).append("png");
+	}
+	/*
+	else
+	{
 		std::string env_pack_path;
 		priv_nh.param<std::string>("env_pack", env_pack_path, "ipa_room_segmentation");
 		std::string file_name;
@@ -76,6 +83,7 @@ int main(int argc, char **argv)
 
 		image_path = env_pack_path + "/envs/" + map_name + "/" + file_name;
 	}
+	*/
 
 	cv::Mat map_flipped = cv::imread(image_path, 0);
 	cv::Mat map;
