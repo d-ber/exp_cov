@@ -73,7 +73,7 @@ window
 floorplan
 ( 
   name  "turtlebot3-stage"
-  size [ 20.0 15.0 1.0 ] # size [x y z]
+  size [ 30.0 33.0 1.0 ] # size [x y z]
   pose [0 0 0 0]
   bitmap "bitmaps/map_ipa_apartment.png" # bitmap: solo il nero è renderizzato
 )
@@ -81,7 +81,7 @@ floorplan
 (		  
   # can refer to the robot by this name
   name  "turtlebot3"
-  pose [ -8 6 0 0 ] 
+  pose [ -11 12 0 0 ] 
 
   sick()
  
