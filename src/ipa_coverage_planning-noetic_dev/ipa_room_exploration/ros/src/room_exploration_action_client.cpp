@@ -127,8 +127,14 @@ int main(int argc, char **argv)
 	ROS_INFO("Action server started, sending goal.");
 
 	DynamicReconfigureClient drc_exp(nh, "room_exploration_server/set_parameters", "room_exploration_server/parameter_updates");
-	drc_exp.setConfig("room_exploration_algorithm", 8);
-	drc_exp.setConfig("execute_path", true);
+
+	int algo_code;
+	priv_nh.param<std::int32_t>("algo_code", algo_code, std::stoi("8"));
+	drc_exp.setConfig("room_exploration_algorithm", algo_code);
+
+	bool execute_path;
+	priv_nh.param<bool>("execute_path", execute_path, "true");
+	drc_exp.setConfig("execute_path", execute_path);
 //	drc_exp.setConfig("path_eps", 3);
 //	drc_exp.setConfig("grid_line_length", 15);
 //	drc_exp.setConfig("path_eps", 10);
@@ -163,14 +169,14 @@ int main(int argc, char **argv)
 	starting_position.theta = start_pos[2];
 
 	std::vector<geometry_msgs::Point32> fov_points(4);
-	fov_points[0].x = 0.04035;		// this field of view represents the off-center iMop floor wiping device
-	fov_points[0].y = -0.136;
-	fov_points[1].x = 0.04035;
-	fov_points[1].y = 0.364;
-	fov_points[2].x = 0.54035;		// todo: this definition is mirrored on x (y-coordinates are inverted) to work properly --> check why, make it work the intuitive way
-	fov_points[2].y = 0.364;
-	fov_points[3].x = 0.54035;
-	fov_points[3].y = -0.136;
+	fov_points[0].x = 0.12;		// this field of view represents the off-center iMop floor wiping device
+	fov_points[0].y = -3.0;
+	fov_points[1].x = 0.12;
+	fov_points[1].y = 3.0;
+	fov_points[2].x = 3;		// todo: this definition is mirrored on x (y-coordinates are inverted) to work properly --> check why, make it work the intuitive way
+	fov_points[2].y = 1.5;
+	fov_points[3].x = 3.0;
+	fov_points[3].y = -1.5;
 	int planning_mode = 2;	// viewpoint planning
 //	fov_points[0].x = 0.15;		// this field of view fits a Asus Xtion sensor mounted at 0.63m height (camera center) pointing downwards to the ground in a respective angle
 //	fov_points[0].y = 0.35;
