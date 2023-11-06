@@ -37,7 +37,7 @@ find_package(OpenMP)
 if(OPENMP_FOUND)
 	message(STATUS "OPENMP FOUND")
 	set(OpenMP_FLAGS ${OpenMP_CXX_FLAGS})  #${OpenMP_C_FLAGS}
-	set(OpenMP_LIBS gomp)
+	set(OpenMP_LIBRARIES gomp)
 endif()
 
 ###################################
