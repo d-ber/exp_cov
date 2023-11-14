@@ -38,6 +38,7 @@ int main(int argc, char **argv)
 	{
 		//std::string image_filename = ros::package::getPath("ipa_room_segmentation") + "/common/files/test_maps/" + map_names[image_index];
 		std::string image_filename;
+		ros::NodeHandle priv_nh("~");
 		priv_nh.param<std::string>("mapfile", image_filename, ros::package::getPath("tirocinio") + "/maps/map.png");
 		cv::Mat map = cv::imread(image_filename.c_str(), 0);
 		//make non-white pixels black
