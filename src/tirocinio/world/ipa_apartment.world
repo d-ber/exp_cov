@@ -61,7 +61,7 @@ resolution 0.01
 # configure the GUI window
 window
 (
-  size [ 700.000 660.000 ] # in pixels (size [width height])
+  size [ 864.000 768.000 ] # in pixels (size [width height])
   scale 35  # pixels per meter
   center [ 0  0 ]
   rotate [ 0  0 ]
