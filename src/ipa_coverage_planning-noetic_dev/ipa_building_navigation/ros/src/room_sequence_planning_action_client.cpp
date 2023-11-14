@@ -22,20 +22,22 @@ int main(int argc, char **argv)
 	ros::NodeHandle nh;
 
 	std::vector< std::string > map_names;
-	map_names.push_back("lab_ipa.png");
+//	map_names.push_back("lab_ipa.png");
 //	map_names.push_back("freiburg_building101.png");
-	map_names.push_back("freiburg_building52.png");
-	map_names.push_back("freiburg_building79.png");
+//	map_names.push_back("freiburg_building52.png");
+//	map_names.push_back("freiburg_building79.png");
 //	map_names.push_back("intel_map.png");
 //	map_names.push_back("lab_a.png");
 //	map_names.push_back("lab_b.png");
-	map_names.push_back("lab_c.png");
-	map_names.push_back("lab_d.png");
+//	map_names.push_back("lab_c.png");
+//	map_names.push_back("lab_d.png");
 //	map_names.push_back("lab_e.png");
+	map_names.push_back("turtlebot3-stage.png");
 
 	for (size_t image_index = 0; image_index<map_names.size(); ++image_index)
 	{
-		std::string image_filename = ros::package::getPath("ipa_room_segmentation") + "/common/files/test_maps/" + map_names[image_index];
+		//std::string image_filename = ros::package::getPath("ipa_room_segmentation") + "/common/files/test_maps/" + map_names[image_index];
+		std::string image_filename = ros::package::getPath("tirocinio") + "/world/bitmaps/" + map_names[image_index];
 		cv::Mat map = cv::imread(image_filename.c_str(), 0);
 		//make non-white pixels black
 		for (int y = 0; y < map.rows; y++)
@@ -98,7 +100,7 @@ int main(int argc, char **argv)
 		ROS_INFO("Action server started, sending goal_seq.");
 		DynamicReconfigureClient drc_seq(nh, "/room_sequence_planning/room_sequence_planning_server/set_parameters", "/room_sequence_planning/room_sequence_planning_server/parameter_updates");
 		drc_seq.setConfig("planning_method", 1);
-		drc_seq.setConfig("tsp_solver", 3);
+		drc_seq.setConfig("tsp_solver", 2);
 		drc_seq.setConfig("return_sequence_map", true);
 		drc_seq.setConfig("display_map", true);
 

@@ -5,7 +5,7 @@
 #   2 = Genetic solver
 #   3 = Concorde solver
 # int
-tsp_solver: 3
+tsp_solver: 1
 
 # Problem Setting
 # ===============
@@ -50,4 +50,4 @@ return_sequence_map: false
 
 # displays the map with paths upon service call (only if return_sequence_map=true)
 # bool
-display_map: false
+display_map: true
