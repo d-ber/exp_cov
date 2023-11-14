@@ -32,12 +32,12 @@ int main(int argc, char **argv)
 //	map_names.push_back("lab_c.png");
 //	map_names.push_back("lab_d.png");
 //	map_names.push_back("lab_e.png");
-	map_names.push_back("turtlebot3-stage.png");
+	map_names.push_back("map.png");
 
 	for (size_t image_index = 0; image_index<map_names.size(); ++image_index)
 	{
 		//std::string image_filename = ros::package::getPath("ipa_room_segmentation") + "/common/files/test_maps/" + map_names[image_index];
-		std::string image_filename = ros::package::getPath("tirocinio") + "/world/bitmaps/" + map_names[image_index];
+		std::string image_filename = ros::package::getPath("tirocinio") + "/maps/" + map_names[image_index];
 		cv::Mat map = cv::imread(image_filename.c_str(), 0);
 		//make non-white pixels black
 		for (int y = 0; y < map.rows; y++)
@@ -76,8 +76,8 @@ int main(int argc, char **argv)
 		goal_seg.map_origin.position.x = 0;
 		goal_seg.map_origin.position.y = 0;
 		goal_seg.map_resolution = 0.05;
-		goal_seg.return_format_in_meter = false;
-		goal_seg.return_format_in_pixel = true;
+		goal_seg.return_format_in_meter = true;
+		goal_seg.return_format_in_pixel = false;
 		ac_seg.sendGoal(goal_seg);
 
 		//wait for the action to return
