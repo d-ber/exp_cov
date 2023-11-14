@@ -68,7 +68,7 @@ int main(int argc, char **argv)
 	else
 	{
 		std::string name;
-		priv_nh.param<std::string>("mapfile", name, "/home/d-ber/catkin_ws/src/tirocinio/maps/map.yaml");
+		priv_nh.param<std::string>("mapfile", name, "/home/aislab/catkin_ws/src/tirocinio/maps/map.yaml");
 		image_path = name.substr(0, name.length() - 4).append("png");
 	}
 	/*
