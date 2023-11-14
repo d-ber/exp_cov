@@ -21,5 +21,8 @@
 		<param name="algo_code" value="$(arg algo_code)"/>
 		<param name="execute_path" value="$(arg execute_path)"/>
 	</node>
+	<node name="gmapping_slam" pkg="gmapping" type="slam_gmapping" args="map:=newmap" output="screen">
+		<rosparam file="$(find tirocinio)/param/gmapping_params.yaml" command="load"/>
+	</node>
 
 </launch>
