@@ -89,7 +89,8 @@ int main(int argc, char **argv)
 	for (size_t image_index = 0; image_index<map_names.size(); ++image_index)
 	{
 		// import maps
-		std::string image_filename = ros::package::getPath("tirocinio") + "/world/bitmaps/" + map_names[image_index] + ".png";
+		std::string image_filename ;
+		priv_nh.param<std::string>("mapfile", image_filename, ros::package::getPath("tirocinio") + "/world/bitmaps/turtlebot3-stage.png");
 		cv::Mat map = cv::imread(image_filename.c_str(), 0);
 		//make non-white pixels black
 		for (int y = 0; y < map.rows; y++)
