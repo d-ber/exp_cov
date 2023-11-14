@@ -169,14 +169,14 @@ int main(int argc, char **argv)
 	starting_position.theta = start_pos[2];
 
 	std::vector<geometry_msgs::Point32> fov_points(4);
-	fov_points[0].x = 0.12;		// this field of view represents the off-center iMop floor wiping device
+	fov_points[0].x = -3.0;		// this field of view represents the off-center iMop floor wiping device
 	fov_points[0].y = -3.0;
-	fov_points[1].x = 0.12;
+	fov_points[1].x = 3.0;
 	fov_points[1].y = 3.0;
-	fov_points[2].x = 3;		// todo: this definition is mirrored on x (y-coordinates are inverted) to work properly --> check why, make it work the intuitive way
-	fov_points[2].y = 1.5;
+	fov_points[2].x = 3.0;		// todo: this definition is mirrored on x (y-coordinates are inverted) to work properly --> check why, make it work the intuitive way
+	fov_points[2].y = 3.0;
 	fov_points[3].x = 3.0;
-	fov_points[3].y = -1.5;
+	fov_points[3].y = -3.0;
 	int planning_mode = 2;	// viewpoint planning
 //	fov_points[0].x = 0.15;		// this field of view fits a Asus Xtion sensor mounted at 0.63m height (camera center) pointing downwards to the ground in a respective angle
 //	fov_points[0].y = 0.35;
