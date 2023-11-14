@@ -6,7 +6,7 @@
 	<arg name="robot_radius" default="0.11"/>
 	<arg name="coverage_radius" default="0.2"/>
 	<arg name="use_test_maps" default="false"/>
-	<arg name="mapfile" default="$(find tirocinio)/maps/map.yaml"/>
+	<arg name="mapfile" default="$(find tirocinio)/maps/map.yaml"/> <!-- serve un file png della mappa! -->
 	<arg name="algo_code" default="8"/>
 	<arg name="execute_path" default="true"/>
 
