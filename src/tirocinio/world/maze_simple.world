@@ -23,7 +23,7 @@ define sick ranger
     # ranger-specific properties
     range [ 0.12 3.5 ]
     fov 360.0
-    samples 720
+    samples 360
   )
 
   #samples 90 # still useful but much faster to compute
