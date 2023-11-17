@@ -212,6 +212,41 @@ Visualization Manager:
         frontiers: true
       Queue Size: 100
       Value: true
+    - Angle Tolerance: 0.10000000149011612
+      Class: rviz/Odometry
+      Covariance:
+        Orientation:
+          Alpha: 0.5
+          Color: 255; 255; 127
+          Color Style: Unique
+          Frame: Local
+          Offset: 1
+          Scale: 1
+          Value: true
+        Position:
+          Alpha: 0.30000001192092896
+          Color: 204; 51; 204
+          Scale: 1
+          Value: true
+        Value: true
+      Enabled: true
+      Keep: 10000
+      Name: Robot Path
+      Position Tolerance: 0.10000000149011612
+      Queue Size: 10
+      Shape:
+        Alpha: 0.5
+        Axes Length: 1
+        Axes Radius: 0.10000000149011612
+        Color: 255; 25; 0
+        Head Length: 0.10000000149011612
+        Head Radius: 0.10000000149011612
+        Shaft Length: 0
+        Shaft Radius: 0.05000000074505806
+        Value: Arrow
+      Topic: /base_pose_ground_truth
+      Unreliable: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -249,10 +284,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 83.34822082519531
+      Scale: 42.087486267089844
       Target Frame: map
-      X: -7.950816631317139
-      Y: 4.125693321228027
+      X: -3.7043848037719727
+      Y: -0.7406745553016663
     Saved: ~
 Window Geometry:
   Displays:
