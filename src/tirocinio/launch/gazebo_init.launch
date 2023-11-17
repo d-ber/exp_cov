@@ -16,7 +16,7 @@
         <arg name="scan_topic" value="scan_to_filter"/>
     </include>
 
-    <param name="robot_description" command="$(find xacro)/xacro --inorder $(find turtlebot3_description)/urdf/turtlebot3_burger.urdf.xacro" />
+    <param name="robot_description" command="$(find xacro)/xacro --inorder $(find tirocinio)/urdf/turtlebot3_burger.urdf.xacro" />
 
     <node pkg="gazebo_ros" type="spawn_model" name="spawn_urdf"  args="-urdf -model turtlebot3_burger -param robot_description -x $(arg x_pos) -y $(arg y_pos) -z $(arg z_pos)"/>
     <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
