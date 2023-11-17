@@ -21,12 +21,10 @@ define sick ranger
 (
   sensor(
     # ranger-specific properties
-    range [ 0.12 3.5 ]
-    fov 360.0
-    samples 360
+    range [ 0.06 4.095 ]
+    fov 240.0
+    samples 683
   )
-
-  #samples 90 # still useful but much faster to compute
 
   # generic model properties
   color "blue"
@@ -84,7 +82,5 @@ floorplan
   pose [ -8 6 0 0 ] 
 
   sick()
- 
-  # ctrl "wander"
 )
 
