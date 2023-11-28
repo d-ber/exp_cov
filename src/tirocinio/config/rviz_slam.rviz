@@ -188,30 +188,30 @@ Visualization Manager:
       Class: rviz/Map
       Color Scheme: costmap
       Draw Behind: false
-      Enabled: false
+      Enabled: true
       Name: Local Costmap
       Topic: /move_base/local_costmap/costmap
       Unreliable: false
       Use Timestamp: false
-      Value: false
+      Value: true
     - Alpha: 0.699999988079071
       Class: rviz/Map
       Color Scheme: costmap
       Draw Behind: true
-      Enabled: false
+      Enabled: true
       Name: Global Costmap
       Topic: /move_base/global_costmap/costmap
       Unreliable: false
       Use Timestamp: false
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
-      Enabled: true
+      Enabled: false
       Marker Topic: /explore/frontiers
       Name: Frontiers
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Angle Tolerance: 0.10000000149011612
       Class: rviz/Odometry
       Covariance:
@@ -244,7 +244,7 @@ Visualization Manager:
         Shaft Length: 0
         Shaft Radius: 0.05000000074505806
         Value: Arrow
-      Topic: /base_pose_ground_truth
+      Topic: /odom
       Unreliable: false
       Value: true
     - Alpha: 1
@@ -333,7 +333,7 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 90.3817138671875
+      Scale: 110.13313293457031
       Target Frame: map
       X: 0.062450192868709564
       Y: -0.7724474668502808
