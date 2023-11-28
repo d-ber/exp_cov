@@ -8,6 +8,7 @@
     <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(arg mapfile)"/>
     <node name="move_base" pkg="move_base" type="move_base" output="screen" args="--diagnostics">
       <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
+      <param name="base_global_planner" value="global_planner/GlobalPlanner" />
       <rosparam file="$(find tirocinio)/param/costmap_common_params.yaml" command="load" ns="global_costmap" />
       <rosparam file="$(find tirocinio)/param/costmap_common_params.yaml" command="load" ns="local_costmap" />
       <rosparam file="$(find tirocinio)/param/local_costmap_params.yaml" command="load" />
