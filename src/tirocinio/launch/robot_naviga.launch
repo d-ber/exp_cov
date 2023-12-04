@@ -22,6 +22,10 @@
       <rosparam file="$(find tirocinio)/param/base_local_planner_params.yaml" command="load" />
       <rosparam file="$(find tirocinio)/param/dwa_local_planner_params.yaml" command="load" />
     </node>
-    
+    <node pkg="laser_filters" type="scan_to_scan_filter_chain" name="laser_filter">
+      <rosparam command="load" file="$(find tirocinio)/config/lidar_config.yaml"/>
+      <remap from="scan" to="scan_nan_filtered"/>
+    </node>
+    <node name="lidar_nan_filter" pkg="tirocinio" type="lidar_nan_filter.py" output="screen"/>
 
   </launch>

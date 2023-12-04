@@ -12,7 +12,7 @@
     </include>
 
     <node name="gmapping_slam" pkg="gmapping" type="slam_gmapping" output="screen">
-      <rosparam file="$(find tirocinio)/param/gmapping_params_lds2.yaml" command="load"/>
+      <rosparam file="$(find tirocinio)/param/gmapping_params.yaml" command="load"/>
       <remap from="scan" to="scan_filtered"/>
     </node>
     <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(arg rviz_conf)">
@@ -32,7 +32,9 @@
       <remap from="scan" to="scan_filtered"/>
     </node>
     <node pkg="laser_filters" type="scan_to_scan_filter_chain" name="laser_filter">
-      <rosparam command="load" file="$(find tirocinio)/config/lidar_lds2_config.yaml"/>
-  </node>
+      <rosparam command="load" file="$(find tirocinio)/config/lidar_config.yaml"/>
+      <remap from="scan" to="scan_maxrange_filtered"/>
+    </node>
+    <node name="lidar_nan_filter" pkg="tirocinio" type="lidar_maxrange_filter.py" output="screen"/>
   
   </launch>
