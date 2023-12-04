@@ -1,0 +1,29 @@
+
+min_particles :             500
+max_particles :             3000
+kld_err :                   0.01
+kld_z :                     0.99
+update_min_d :              0.20
+update_min_a :              0.20
+resample_interval :         1
+transform_tolerance :       0.5
+recovery_alpha_slow :       0.00
+recovery_alpha_fast :       0.00
+gui_publish_rate :          50.0
+
+laser_max_range :           4.095
+laser_max_beams :           683
+laser_z_hit :               0.9
+laser_z_short :             0.05
+laser_z_max :               0.05
+laser_z_rand :              0.5
+laser_sigma_hit :           0.1
+laser_lambda_short :        0.1
+laser_likelihood_max_dist : 4.0
+laser_model_type :          likelihood_field
+
+odom_model_type :           diff
+odom_alpha1 :               0.01
+odom_alpha2 :               0.01
+odom_alpha3 :               0.01
+odom_alpha4 :               0.01

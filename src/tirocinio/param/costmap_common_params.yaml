@@ -13,5 +13,5 @@ obstacle_layer:
   raytrace_range: 4.0
 
 inflation_layer:
-  inflation_radius: 0.3
-  cost_scaling_factor: 5
+  inflation_radius: 0.4
+  cost_scaling_factor: 10
