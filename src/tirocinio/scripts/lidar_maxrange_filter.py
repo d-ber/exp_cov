@@ -25,8 +25,8 @@ class lidar_maxrange_filter:
     
 def main():
 
-    lf = lidar_maxrange_filter()
     rospy.init_node('lidar_maxrange_filter', anonymous=True)
+    lf = lidar_maxrange_filter()
     #rospy.loginfo("sono nel main")
 
     # spin() simply keeps python from exiting until this node is stopped
