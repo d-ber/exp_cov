@@ -19,7 +19,7 @@ class lidar_maxrange_filter:
         #        #rospy.loginfo("corretto valore")
         #        ranges[i] = 4.0
         #filtered.ranges = tuple(ranges)
-        filtered.range_max = 4.0
+        filtered.range_max = 3.0
         self.pub.publish(filtered)
 
     

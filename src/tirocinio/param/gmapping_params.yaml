@@ -1,7 +1,7 @@
 map_update_interval : 0.1
-maxUrange : 4.0
+maxUrange : 3
 maxRange : 4.1
 particles: 25
 linearUpdate: 0.2
 resampleThreshold: 0.5
-minimumScore: 600
+minimumScore: 100
