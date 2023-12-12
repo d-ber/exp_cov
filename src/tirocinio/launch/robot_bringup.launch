@@ -23,7 +23,9 @@
         <param name="angle_min" value="-2.094395"/>
     </node>-->
   
-    <node pkg="turtlebot3_bringup" type="turtlebot3_diagnostics" name="turtlebot3_diagnostics" output="screen"/>
+    <node pkg="turtlebot3_bringup" type="turtlebot3_diagnostics" name="turtlebot3_diagnostics" output="screen">
+        <remap from="scan" to="scan_hokuyo"/>
+    </node>
 
     <include file="$(find tirocinio)/launch/robot_camera.launch"/>
 
