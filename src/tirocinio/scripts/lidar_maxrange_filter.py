@@ -8,7 +8,7 @@ class lidar_maxrange_filter:
     def __init__(self):
         #rospy.loginfo("inizializzo")
         self.pub = rospy.Publisher('scan_maxrange_filtered', LaserScan, queue_size=10)
-        self.sub = rospy.Subscriber("scan", LaserScan, self.callback)
+        self.sub = rospy.Subscriber("scan_hokuyo", LaserScan, self.callback)
 
     def callback(self, scan):
         #rospy.loginfo("CALLBACK")

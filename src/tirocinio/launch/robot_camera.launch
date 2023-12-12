@@ -1,5 +1,4 @@
 <launch>
-    <arg name="rviz_conf" default="$(find tirocinio)/config/rviz_astra_camera.rviz"/>
 
     <!--Astra camera params from ros_astra_camera/launch/astra.launch-->
     <arg name="camera_name" default="camera"/>
@@ -44,7 +43,6 @@
     <arg name="soft_filter_max_diff" default="16"/>
     <arg name="soft_filter_max_speckle_size" default="480"/>
 
-    <node name="rviz" pkg="rviz" type="rviz" output="screen"/>
     <node name="camera" pkg="astra_camera" type="astra_camera_node" output="screen">
         <param name="camera_name" value="$(arg camera_name)"/>
         <param name="depth_align" value="$(arg depth_align)"/>
