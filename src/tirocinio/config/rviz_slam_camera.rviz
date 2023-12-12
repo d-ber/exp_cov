@@ -72,7 +72,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.030000001192092896
       Style: Flat Squares
-      Topic: /scan
+      Topic: /scan_filtered
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -418,7 +418,7 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 130.36373901367188
+      Scale: 183.15167236328125
       Target Frame: map
       X: 0.1103152483701706
       Y: -0.27434155344963074
