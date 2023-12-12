@@ -92,8 +92,8 @@ Visualization Manager:
       Color Scheme: costmap
       Draw Behind: false
       Enabled: true
-      Name: Hokuyo Local Costmap
-      Topic: /move_base_hokuyo/local_costmap/costmap
+      Name: Local Costmap
+      Topic: /move_base/local_costmap/costmap
       Unreliable: false
       Use Timestamp: false
       Value: true
@@ -102,8 +102,8 @@ Visualization Manager:
       Color Scheme: costmap
       Draw Behind: true
       Enabled: true
-      Name: Hokuyo Global Costmap
-      Topic: /move_base_hokuyo/global_costmap/costmap
+      Name: Global Costmap
+      Topic: /move_base/global_costmap/costmap
       Unreliable: false
       Use Timestamp: false
       Value: true
@@ -381,36 +381,6 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
-    - Alpha: 0.699999988079071
-      Class: rviz/Map
-      Color Scheme: map
-      Draw Behind: false
-      Enabled: true
-      Name: Astra Map
-      Topic: /map_astra
-      Unreliable: false
-      Use Timestamp: false
-      Value: true
-    - Alpha: 0.699999988079071
-      Class: rviz/Map
-      Color Scheme: costmap
-      Draw Behind: false
-      Enabled: true
-      Name: Astra Local Costmap
-      Topic: /move_base_astra/local_costmap/costmap
-      Unreliable: false
-      Use Timestamp: false
-      Value: true
-    - Alpha: 0.699999988079071
-      Class: rviz/Map
-      Color Scheme: costmap
-      Draw Behind: true
-      Enabled: true
-      Name: Astra Global Costmap
-      Topic: /move_base_astra/global_costmap/costmap
-      Unreliable: false
-      Use Timestamp: false
-      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -448,10 +418,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 168.3415985107422
+      Scale: 130.36373901367188
       Target Frame: map
-      X: -0.07814941555261612
-      Y: -0.3413754105567932
+      X: 0.1103152483701706
+      Y: -0.27434155344963074
     Saved: ~
 Window Geometry:
   Depth_Image:
