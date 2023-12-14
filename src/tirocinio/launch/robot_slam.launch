@@ -1,6 +1,6 @@
 <launch>
 
-    <arg name="rviz_conf" default="$(find tirocinio)/config/rviz_slam.rviz"/>
+    <arg name="rviz_conf" default="$(find tirocinio)/config/rviz_slam_camera.rviz"/>
     <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
     <arg name="scan" default="scan"/>
 
