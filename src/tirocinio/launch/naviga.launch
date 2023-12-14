@@ -10,7 +10,9 @@
     </include>
   
     <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(arg rviz_conf)"/>
-    <node name="amcl" pkg="amcl" type="amcl" output="screen"/>  
+    <node name="amcl" pkg="amcl" type="amcl" output="screen">
+      <rosparam file="$(find tirocinio)/param/amcl_params.yaml" command="load"/>
+    </node>  
     <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(arg mapfile)"/>
     <node name="move_base" pkg="move_base" type="move_base" output="screen" args="--diagnostics">
       <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
