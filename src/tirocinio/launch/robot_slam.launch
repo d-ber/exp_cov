@@ -9,7 +9,7 @@
       <!-- TurtleBot3 -->
     <include file="$(find tirocinio)/launch/robot_remote.launch"/>
 
-    <node name="gmapping_slam_hokuyo" pkg="gmapping" type="slam_gmapping" output="screen">
+    <node name="gmapping_slam" pkg="gmapping" type="slam_gmapping" output="screen">
       <rosparam file="$(find tirocinio)/param/gmapping_params.yaml" command="load"/>
       <remap from="scan" to="scan_filtered"/>
     </node>
