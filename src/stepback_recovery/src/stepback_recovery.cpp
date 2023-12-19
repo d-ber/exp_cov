@@ -38,23 +38,23 @@
 #include <pluginlib/class_list_macros.h>
 
 //register this planner as a RecoveryBehavior plugin
-PLUGINLIB_DECLARE_CLASS(stepback_recovery, StepBackRecovery, stepback_recovery::StepBackRecovery, nav_core::RecoveryBehavior)
+PLUGINLIB_EXPORT_CLASS(stepback_recovery::StepBackRecovery, nav_core::RecoveryBehavior)
 
 namespace stepback_recovery {
 
 
 StepBackRecovery::StepBackRecovery(): global_costmap_(NULL), local_costmap_(NULL),
-  tf_(NULL), initialized_(false), world_model_(NULL) {} 
+  initialized_(false), world_model_(NULL) {} 
 
 // initialize
 //------------
-void StepBackRecovery::initialize(std::string name, tf::TransformListener* tf,
-    costmap_2d::Costmap2DROS* global_costmap, costmap_2d::Costmap2DROS* local_costmap)
+void StepBackRecovery::initialize(std::string name, tf2_ros::Buffer* tf,
+costmap_2d::Costmap2DROS* global_costmap, costmap_2d::Costmap2DROS* local_costmap)
 {
   if(!initialized_)
   {
     name_ = name;
-    tf_ = tf;
+    //tf_ = tf;
     global_costmap_ = global_costmap;
     local_costmap_ = local_costmap;
 
