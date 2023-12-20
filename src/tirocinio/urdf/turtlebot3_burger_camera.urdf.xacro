@@ -108,14 +108,14 @@
         <box size="0.04 0.16 0.03"/>
       </geometry>
       <material name="black"/>
-      <origin rpy="0 0 0" xyz="0 -0.06 0.0"/>     # Displacement/Rotation of the center with respect camera_up_link
+      <origin rpy="0 0 0" xyz="-0.10 -0.06 0.15"/>     # Displacement/Rotation of the center with respect camera_up_link
     </visual>
   </link>
   
   <joint name="base_link_to_camera_link" type="fixed">
     <parent link="base_link"/>
     <child link="camera_link"/>
-    <origin rpy="0 0 0" xyz="0.05 0.06 0.15"/>
+    <origin rpy="0 0.23 0" xyz="0.05 0.06 0.30"/>
   </joint>
 
   <joint name="caster_back_joint" type="fixed">
