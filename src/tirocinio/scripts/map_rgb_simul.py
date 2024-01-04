@@ -73,6 +73,17 @@ def extract_color_pixels(image_path, color):
     # Set the pixels in the original image where the color is extracted to white
     image_objects_removed[np.where(color_mask > 0)] = [255, 255, 255]
 
+    grayscale_image_objects_removed = cv2.cvtColor(image_objects_removed, cv2.COLOR_BGR2GRAY)
+    bw_grayscale_image_objects_removed = cv2.threshold(grayscale_image_objects_removed, 127, 255, cv2.THRESH_BINARY)[1]
+    for contour in contours:
+        # Create a mask for the current contour
+        mask = np.zeros_like(color_mask)
+        cv2.drawContours(mask, [contour], 0, 255, thickness=cv2.FILLED)
+
+        # Extract the object using the mask
+        object_image = cv2.bitwise_and(color_mask, color_mask, mask=mask)
+        translate_obj(object_image, bw_grayscale_image_objects_removed, 20, 20)
+
     # Display the original image and the result
     _ = plt.subplot(231), plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)), plt.title('Original Image')
     _ = plt.subplot(234), plt.imshow(color_mask, cmap='gray'), plt.title(f'{color.title()} Pixels Mask')
@@ -81,9 +92,6 @@ def extract_color_pixels(image_path, color):
     _ = plt.subplot(232), plt.imshow(cv2.cvtColor(image_objects_removed, cv2.COLOR_BGR2RGB)), plt.title(f'Without {color.title()} Pixels')
     plt.show()
 
-    grayscale_image_objects_removed = cv2.cvtColor(image_objects_removed, cv2.COLOR_BGR2GRAY)
-    bw_grayscale_image_objects_removed = cv2.threshold(grayscale_image_objects_removed, 127, 255, cv2.THRESH_BINARY)[1]
-    translate_obj(color_mask, bw_grayscale_image_objects_removed, 20, 20)
 
 
 image_path = '/home/d-ber/catkin_ws/src/tirocinio/maps_rgb_lab/map1/map1_rgb.png'
