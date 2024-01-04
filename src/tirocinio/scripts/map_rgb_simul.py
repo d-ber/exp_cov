@@ -2,6 +2,8 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats as st
+import os
+import time
 
 # obj_img is a b&w image, in which the object is black and the background white
 # img is an image
@@ -139,3 +141,13 @@ image = cv2.imread(image_path, cv2.IMREAD_COLOR)
 image = extract_color_pixels(image, 'red')
 image = extract_color_pixels(image, 'green')
 image = extract_color_pixels(image, 'blue')
+
+to_save = input("Save image? (y/n)\n")
+if to_save.lower() == "y" or to_save.lower() == "s":
+    filename = os.path.join(os.getcwd(), "image_" + str(time.time_ns()) + ".png")
+    while os.path.exists(filename): 
+        filename = os.path.join(os.getcwd(), "image_" + (time.time_ns()) + ".png")
+    cv2.imwrite(filename, image)
+    print("Done, saved as {}".format(filename))
+else:  
+    print("OK.")
