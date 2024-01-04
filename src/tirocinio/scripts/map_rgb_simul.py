@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import scipy.stats as st
 
 # obj_img is a b&w image, in which the object is black and the background white
-# img is a b&w image, same as obj_img
+# img is an image
 def translate_obj(obj_img, img, dx, dy):
     height, width = obj_img.shape[:2]
 
@@ -29,7 +29,7 @@ def translate_obj(obj_img, img, dx, dy):
     return dst
 
 # obj_img is a b&w image, in which the object is black and the background white
-# img is a b&w image, same as obj_img
+# img is an image
 def translate_obj_show(obj_img, img, dx, dy):
     height, width = obj_img.shape[:2]
 
@@ -57,10 +57,9 @@ def translate_obj_show(obj_img, img, dx, dy):
     plt.show()
 
 
-def extract_color_pixels(image_path, color):
-    # Read the image in RGB format
-    image = cv2.imread(image_path, cv2.IMREAD_COLOR)
-    image_objects_removed = cv2.imread(image_path, cv2.IMREAD_COLOR)
+def extract_color_pixels(image, color):
+    # Copy
+    image_objects_removed = image.copy()
     
     # Convert RGB image to HSV (Hue, Saturation, Value) color space
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
@@ -133,7 +132,10 @@ def extract_color_pixels(image_path, color):
     _ = plt.subplot(233), plt.imshow(cv2.cvtColor(translated_objs_image, cv2.COLOR_BGR2RGB)), plt.title(f'{color.title()} Objects translated')
     plt.show()
 
+    return translated_objs_image
+
 image_path = '/home/d-ber/catkin_ws/src/tirocinio/maps_rgb_lab/map1/map1_rgb.png'
-extract_color_pixels(image_path, 'red')
-#extract_color_pixels(image_path, 'green')
-#extract_color_pixels(image_path, 'blue')
+image = cv2.imread(image_path, cv2.IMREAD_COLOR)
+image = extract_color_pixels(image, 'red')
+image = extract_color_pixels(image, 'green')
+image = extract_color_pixels(image, 'blue')
