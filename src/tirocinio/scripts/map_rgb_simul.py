@@ -143,7 +143,10 @@ def extract_color_pixels(image, color):
     _ = plt.subplot(233), plt.imshow(cv2.cvtColor(translated_objs_image, cv2.COLOR_BGR2RGB)), plt.title(f'{color.title()} Objects translated')
     plt.show()
 
-    return translated_objs_image
+    if color.lower() == 'green':
+        return image_objects_removed
+    else:
+        return translated_objs_image
 
 if len(sys.argv) > 1 and os.path.exists(sys.argv[1]):
     image_path = sys.argv[1]
