@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import scipy.stats as st
 import os
 import time
+import sys
 
 # obj_img is a b&w image, in which the object is black and the background white
 # img is an image
@@ -136,7 +137,11 @@ def extract_color_pixels(image, color):
 
     return translated_objs_image
 
-image_path = '/home/d-ber/catkin_ws/src/tirocinio/maps_rgb_lab/map1/map1_rgb.png'
+if len(sys.argv) > 1 and os.path.exists(sys.argv[1]):
+    image_path = sys.argv[1]
+else:
+    image_path = '/home/d-ber/catkin_ws/src/tirocinio/maps_rgb_lab/map1/map1_rgb.png'
+print(sys.argv)
 image = cv2.imread(image_path, cv2.IMREAD_COLOR)
 image = extract_color_pixels(image, 'red')
 image = extract_color_pixels(image, 'green')
