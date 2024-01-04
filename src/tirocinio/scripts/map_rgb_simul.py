@@ -104,18 +104,26 @@ def extract_color_pixels(image, color):
     # Set the pixels in the original image where the color is extracted to white
     image_objects_removed[np.where(color_mask > 0)] = [255, 255, 255]
 
-    #grayscale_image_objects_removed = cv2.cvtColor(image_objects_removed, cv2.COLOR_BGR2GRAY)
-    #bw_grayscale_image_objects_removed = cv2.threshold(grayscale_image_objects_removed, 127, 255, cv2.THRESH_BINARY)[1]
-
+    # probability for red objects
     mean = 0
     standard_deviation = 10
-    prob = st.norm(loc=mean, scale=standard_deviation)
-    traslazioni = prob.rvs(size=len(contours)*2)
+    norm = st.norm(loc=mean, scale=standard_deviation)
+    traslazioni = norm.rvs(size=len(contours)*2)
     i = 0
+
+    # probability for blue objects
+    p = 0.5
+    bernoulli = st.bernoulli(p)
+    clutter_presence = bernoulli.rvs(size=len(contours))
 
     translated_objs_image = image_objects_removed
 
     for contour in contours:
+
+        # If object is clutter and luck says to skip it
+        if color.lower() == 'blue' and clutter_presence[i]:
+            continue
+
         # Create a mask for the current contour
         mask = np.zeros_like(color_mask)
         cv2.drawContours(mask, [contour], 0, 255, thickness=cv2.FILLED)
@@ -143,9 +151,9 @@ else:
     image_path = '/home/d-ber/catkin_ws/src/tirocinio/maps_rgb_lab/map1/map1_rgb.png'
 print(sys.argv)
 image = cv2.imread(image_path, cv2.IMREAD_COLOR)
-image = extract_color_pixels(image, 'red')
-image = extract_color_pixels(image, 'green')
-image = extract_color_pixels(image, 'blue')
+image = extract_color_pixels(image, 'red') # oggetti semistatici
+image = extract_color_pixels(image, 'green') # aree di disturbo
+image = extract_color_pixels(image, 'blue') # clutter
 
 to_save = input("Save image? (y/n)\n")
 if to_save.lower() == "y" or to_save.lower() == "s":
