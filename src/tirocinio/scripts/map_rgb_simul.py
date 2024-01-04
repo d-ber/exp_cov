@@ -26,6 +26,31 @@ def translate_obj(obj_img, img, dx, dy):
     overlapping = cv2.bitwise_and(cv2.bitwise_not(img1), cv2.bitwise_not(img2)).any()
     #print(overlapping)
     dst = cv2.bitwise_and(img1,img2)
+    return dst
+
+# obj_img is a b&w image, in which the object is black and the background white
+# img is a b&w image, same as obj_img
+def translate_obj_show(obj_img, img, dx, dy):
+    height, width = obj_img.shape[:2]
+
+    # create the translation matrix using dx and dy, it is a NumPy array 
+    translation_matrix = np.array([
+        [1, 0, dx],
+        [0, 1, dy]
+    ], dtype=np.float32)
+    translated_image = cv2.warpAffine(src=obj_img, M=translation_matrix, dsize=(width, height))
+    translated_image = cv2.threshold(translated_image, 127, 255, cv2.THRESH_BINARY)[1]
+    translated_image = cv2.bitwise_not(translated_image)
+
+    #TODO: avoid writing and reading images
+    cv2.imwrite("/tmp/image1.png", translated_image)
+    cv2.imwrite("/tmp/image2.png", img)
+    img1 = cv2.imread("/tmp/image1.png")
+    img2 = cv2.imread("/tmp/image2.png")
+
+    overlapping = cv2.bitwise_and(cv2.bitwise_not(img1), cv2.bitwise_not(img2)).any()
+    #print(overlapping)
+    dst = cv2.bitwise_and(img1,img2)
     _ = plt.subplot(221), plt.imshow(img1, cmap='gray'), plt.title(f'Pixels Mask')
     _ = plt.subplot(222), plt.imshow(img2, cmap='gray'), plt.title(f'Image')
     _ = plt.subplot(223), plt.imshow(dst), plt.title(f'Merged Image')
@@ -86,6 +111,8 @@ def extract_color_pixels(image_path, color):
     traslazioni = prob.rvs(size=len(contours)*2)
     i = 0
 
+    translated_objs_image = bw_grayscale_image_objects_removed
+
     for contour in contours:
         # Create a mask for the current contour
         mask = np.zeros_like(color_mask)
@@ -94,7 +121,7 @@ def extract_color_pixels(image_path, color):
         # Extract the object using the mask
         object_image = cv2.bitwise_and(color_mask, color_mask, mask=mask)
         #print(traslazioni[i*2], traslazioni[(i*2)+1])
-        translate_obj(object_image, bw_grayscale_image_objects_removed, traslazioni[i*2], traslazioni[(i*2)+1])
+        translated_objs_image = translate_obj(object_image, translated_objs_image, traslazioni[i*2], traslazioni[(i*2)+1])
         i = i+1
 
     # Display the original image and the result
@@ -103,9 +130,8 @@ def extract_color_pixels(image_path, color):
     _ = plt.subplot(235), plt.imshow(cv2.cvtColor(result, cv2.COLOR_BGR2RGB)), plt.title(f'Extracted {color.title()} Pixels')
     _ = plt.subplot(236), plt.imshow(cv2.cvtColor(image_with_boxes, cv2.COLOR_BGR2RGB)), plt.title('Image with Bounding Boxes')
     _ = plt.subplot(232), plt.imshow(cv2.cvtColor(image_objects_removed, cv2.COLOR_BGR2RGB)), plt.title(f'Without {color.title()} Pixels')
+    _ = plt.subplot(233), plt.imshow(cv2.cvtColor(translated_objs_image, cv2.COLOR_BGR2RGB)), plt.title(f'{color.title()} Objects translated')
     plt.show()
-
-
 
 image_path = '/home/d-ber/catkin_ws/src/tirocinio/maps_rgb_lab/map1/map1_rgb.png'
 extract_color_pixels(image_path, 'red')
