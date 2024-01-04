@@ -41,20 +41,6 @@ def extract_color_pixels(image_path, color):
         # Draw the bounding box
         cv2.drawContours(image_with_boxes, [box], 0, (0, 255, 0), 2)  # Draw a green rectangle
 
-    # Move each contour to the left by 10 pixels
-    #for contour in contours:
-    #    contour[:, :, 0] -= 10
-
-    # Create an empty mask
-    #shifted_mask = np.zeros_like(color_mask)
-
-    # Draw the shifted contours on the mask
-    #cv2.drawContours(shifted_mask, contours, -1, 255, thickness=cv2.FILLED)
-    #cv2.drawContours(color_mask, contours, -1, (0,255,0), 3)
-
-    # Apply the shifted mask to the original image
-    #result = cv2.bitwise_and(image, image, mask=shifted_mask)
-
     # Apply the mask to the original image
     result = cv2.bitwise_and(image_objects_removed, image_objects_removed, mask=color_mask)
 
@@ -67,6 +53,26 @@ def extract_color_pixels(image_path, color):
     _ = plt.subplot(235), plt.imshow(cv2.cvtColor(result, cv2.COLOR_BGR2RGB)), plt.title(f'Extracted {color.title()} Pixels')
     _ = plt.subplot(236), plt.imshow(cv2.cvtColor(image_with_boxes, cv2.COLOR_BGR2RGB)), plt.title('Image with Bounding Boxes')
     _ = plt.subplot(232), plt.imshow(cv2.cvtColor(image_objects_removed, cv2.COLOR_BGR2RGB)), plt.title(f'Without {color.title()} Pixels')
+    plt.show()
+
+    height, width = color_mask.shape[:2]
+    tx, ty = 20, 20
+ 
+    # create the translation matrix using tx and ty, it is a NumPy array 
+    translation_matrix = np.array([
+        [1, 0, tx],
+        [0, 1, ty]
+    ], dtype=np.float32)
+    color_mask = cv2.bitwise_not(color_mask)
+    translated_image = cv2.warpAffine(src=color_mask, M=translation_matrix, dsize=(width, height))
+    cv2.imwrite("/tmp/image1.png", translated_image)
+    cv2.imwrite("/tmp/image2.png", image_objects_removed)
+    img1 = cv2.imread("/tmp/image1.png")
+    img2 = cv2.imread("/tmp/image2.png")
+    dst = cv2.bitwise_and(img1,img2)
+    _ = plt.subplot(221), plt.imshow(img1, cmap='gray'), plt.title(f'Pixels Mask')
+    _ = plt.subplot(222), plt.imshow(img2, cmap='gray'), plt.title(f'Image')
+    _ = plt.subplot(223), plt.imshow(dst), plt.title(f'Merged Image')
     plt.show()
 
 image_path = '/home/d-ber/catkin_ws/src/tirocinio/maps_rgb_lab/map1/map1_rgb.png'
