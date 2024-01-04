@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+import scipy.stats as st
 
 # obj_img is a b&w image, in which the object is black and the background white
 # img is a b&w image, same as obj_img
@@ -62,7 +63,7 @@ def extract_color_pixels(image_path, color):
         # Get the minimum area rectangle that bounds the contour
         rect = cv2.minAreaRect(contour)
         box = cv2.boxPoints(rect)
-        box = np.int0(box)
+        box = np.intp(box)
 
         # Draw the bounding box
         cv2.drawContours(image_with_boxes, [box], 0, (0, 255, 0), 2)  # Draw a green rectangle
@@ -75,6 +76,13 @@ def extract_color_pixels(image_path, color):
 
     grayscale_image_objects_removed = cv2.cvtColor(image_objects_removed, cv2.COLOR_BGR2GRAY)
     bw_grayscale_image_objects_removed = cv2.threshold(grayscale_image_objects_removed, 127, 255, cv2.THRESH_BINARY)[1]
+
+    mean = 0
+    standard_deviation = 10
+    prob = st.norm(loc=mean, scale=standard_deviation)
+    traslazioni = prob.rvs(size=len(contours)*2)
+    i = 0
+
     for contour in contours:
         # Create a mask for the current contour
         mask = np.zeros_like(color_mask)
@@ -82,7 +90,8 @@ def extract_color_pixels(image_path, color):
 
         # Extract the object using the mask
         object_image = cv2.bitwise_and(color_mask, color_mask, mask=mask)
-        translate_obj(object_image, bw_grayscale_image_objects_removed, 20, 20)
+        translate_obj(object_image, bw_grayscale_image_objects_removed, traslazioni[i*2], traslazioni[(i*2)+1])
+        i = i+1
 
     # Display the original image and the result
     _ = plt.subplot(231), plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)), plt.title('Original Image')
