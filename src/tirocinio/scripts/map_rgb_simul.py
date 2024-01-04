@@ -2,6 +2,32 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
+# obj_img is a b&w image, in which the object is black and the background white
+# img is a b&w image, same as obj_img
+def translate_obj(obj_img, img, dx, dy):
+    height, width = obj_img.shape[:2]
+
+    # create the translation matrix using dx and dy, it is a NumPy array 
+    translation_matrix = np.array([
+        [1, 0, dx],
+        [0, 1, dy]
+    ], dtype=np.float32)
+    obj_img = cv2.bitwise_not(obj_img)
+    translated_image = cv2.warpAffine(src=obj_img, M=translation_matrix, dsize=(width, height))
+
+    #TODO: avoid writing and reading images
+    cv2.imwrite("/tmp/image1.png", translated_image)
+    cv2.imwrite("/tmp/image2.png", img)
+    img1 = cv2.imread("/tmp/image1.png")
+    img2 = cv2.imread("/tmp/image2.png")
+
+    dst = cv2.bitwise_and(img1,img2)
+    _ = plt.subplot(221), plt.imshow(img1, cmap='gray'), plt.title(f'Pixels Mask')
+    _ = plt.subplot(222), plt.imshow(img2, cmap='gray'), plt.title(f'Image')
+    _ = plt.subplot(223), plt.imshow(dst), plt.title(f'Merged Image')
+    plt.show()
+
+
 def extract_color_pixels(image_path, color):
     # Read the image in RGB format
     image = cv2.imread(image_path, cv2.IMREAD_COLOR)
@@ -55,25 +81,10 @@ def extract_color_pixels(image_path, color):
     _ = plt.subplot(232), plt.imshow(cv2.cvtColor(image_objects_removed, cv2.COLOR_BGR2RGB)), plt.title(f'Without {color.title()} Pixels')
     plt.show()
 
-    height, width = color_mask.shape[:2]
-    tx, ty = 20, 20
- 
-    # create the translation matrix using tx and ty, it is a NumPy array 
-    translation_matrix = np.array([
-        [1, 0, tx],
-        [0, 1, ty]
-    ], dtype=np.float32)
-    color_mask = cv2.bitwise_not(color_mask)
-    translated_image = cv2.warpAffine(src=color_mask, M=translation_matrix, dsize=(width, height))
-    cv2.imwrite("/tmp/image1.png", translated_image)
-    cv2.imwrite("/tmp/image2.png", image_objects_removed)
-    img1 = cv2.imread("/tmp/image1.png")
-    img2 = cv2.imread("/tmp/image2.png")
-    dst = cv2.bitwise_and(img1,img2)
-    _ = plt.subplot(221), plt.imshow(img1, cmap='gray'), plt.title(f'Pixels Mask')
-    _ = plt.subplot(222), plt.imshow(img2, cmap='gray'), plt.title(f'Image')
-    _ = plt.subplot(223), plt.imshow(dst), plt.title(f'Merged Image')
-    plt.show()
+    grayscale_image_objects_removed = cv2.cvtColor(image_objects_removed, cv2.COLOR_BGR2GRAY)
+    bw_grayscale_image_objects_removed = cv2.threshold(grayscale_image_objects_removed, 127, 255, cv2.THRESH_BINARY)[1]
+    translate_obj(color_mask, bw_grayscale_image_objects_removed, 20, 20)
+
 
 image_path = '/home/d-ber/catkin_ws/src/tirocinio/maps_rgb_lab/map1/map1_rgb.png'
 extract_color_pixels(image_path, 'red')
