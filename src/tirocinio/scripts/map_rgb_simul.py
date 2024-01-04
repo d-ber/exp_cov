@@ -102,8 +102,8 @@ def extract_color_pixels(image_path, color):
     # Set the pixels in the original image where the color is extracted to white
     image_objects_removed[np.where(color_mask > 0)] = [255, 255, 255]
 
-    grayscale_image_objects_removed = cv2.cvtColor(image_objects_removed, cv2.COLOR_BGR2GRAY)
-    bw_grayscale_image_objects_removed = cv2.threshold(grayscale_image_objects_removed, 127, 255, cv2.THRESH_BINARY)[1]
+    #grayscale_image_objects_removed = cv2.cvtColor(image_objects_removed, cv2.COLOR_BGR2GRAY)
+    #bw_grayscale_image_objects_removed = cv2.threshold(grayscale_image_objects_removed, 127, 255, cv2.THRESH_BINARY)[1]
 
     mean = 0
     standard_deviation = 10
@@ -111,7 +111,7 @@ def extract_color_pixels(image_path, color):
     traslazioni = prob.rvs(size=len(contours)*2)
     i = 0
 
-    translated_objs_image = bw_grayscale_image_objects_removed
+    translated_objs_image = image_objects_removed
 
     for contour in contours:
         # Create a mask for the current contour
