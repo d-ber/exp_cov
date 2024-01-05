@@ -5,6 +5,36 @@ import scipy.stats as st
 import os
 import time
 import sys
+import json
+
+class Rectangle:
+    def __init__(self, min_point=None, max_point=None, center_x=None, center_y=None, width=None, height=None):
+        if min_point is not None and max_point is not None:
+            # Using the original constructor with min_point and max_point
+            self.min_point = min_point
+            self.max_point = max_point
+            self.calculate_center_dimensions()
+        elif center_x is not None and center_y is not None and width is not None and height is not None:
+            # Using the new constructor with center_x, center_y, width, and height
+            self.center_x = center_x
+            self.center_y = center_y
+            self.width = width
+            self.height = height
+            self.calculate_min_max_points()
+        else:
+            raise ValueError("Invalid parameters. Please provide either min_point and max_point or center_x, center_y, width, and height.")
+
+    def calculate_min_max_points(self):
+        half_width = self.width / 2
+        half_height = self.height / 2
+        self.min_point = (self.center_x - half_width, self.center_y - half_height)
+        self.max_point = (self.center_x + half_width, self.center_y + half_height)
+
+    def calculate_center_dimensions(self):
+        self.center_x = (self.min_point[0] + self.max_point[0]) / 2
+        self.center_y = (self.min_point[1] + self.max_point[1]) / 2
+        self.width = abs(self.max_point[0] - self.min_point[0])
+        self.height = abs(self.max_point[1] - self.min_point[1])
 
 # obj_img is a b&w image, in which the object is black and the background white
 # img is an image
@@ -118,7 +148,23 @@ def extract_color_pixels(image, color):
 
     translated_objs_image = image_objects_removed
 
+    rectangles_info = []
+
     for contour in contours:
+
+        # If object is clutter and luck says to skip it
+        if color.lower() == 'blue' and clutter_presence[i]:
+            continue
+
+        # Create a mask for the current contour
+        mask = np.zeros_like(color_mask)
+        cv2.drawContours(mask, [contour], 0, 255, thickness=cv2.FILLED)
+
+        # Extract the object using the mask
+        object_image = cv2.bitwise_and(color_mask, color_mask, mask=mask)
+        #print(traslazioni[i*2], traslazioni[(i*2)+1])
+        translated_objs_image = translate_obj(object_image, translated_objs_image, traslazioni[i*2], traslazioni[(i*2)+1])
+        i = i+1
 
         if color.lower() == "green":
             # Calculate the bounding rectangle
@@ -138,21 +184,18 @@ def extract_color_pixels(image, color):
             center_y /= unit
             w /= unit
             h /= unit
-            print(center_x, center_y, w, h)
 
-        # If object is clutter and luck says to skip it
-        if color.lower() == 'blue' and clutter_presence[i]:
-            continue
+            # Create a Rectangle instance
+            rectangle = Rectangle(center_x=center_x, center_y=center_y, width=w, height=h)
 
-        # Create a mask for the current contour
-        mask = np.zeros_like(color_mask)
-        cv2.drawContours(mask, [contour], 0, 255, thickness=cv2.FILLED)
-
-        # Extract the object using the mask
-        object_image = cv2.bitwise_and(color_mask, color_mask, mask=mask)
-        #print(traslazioni[i*2], traslazioni[(i*2)+1])
-        translated_objs_image = translate_obj(object_image, translated_objs_image, traslazioni[i*2], traslazioni[(i*2)+1])
-        i = i+1
+            # Add rectangle information to the list
+            rectangles_info.append({
+                "center": (rectangle.center_x, rectangle.center_y),
+                "width": rectangle.width,
+                "height": rectangle.height,
+                "min_point": rectangle.min_point,
+                "max_point": rectangle.max_point
+            })
 
     # Display the original image and the result
     _ = plt.subplot(231), plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)), plt.title('Original Image')
@@ -164,6 +207,13 @@ def extract_color_pixels(image, color):
     plt.show()
 
     if color.lower() == 'green':
+        # Convert the list to JSON format
+        json_data = json.dumps(rectangles_info, indent=4)
+
+        # Write JSON data to a file
+        with open('rectangles.json', 'w') as json_file:
+            json_file.write(json_data)
+
         return image_objects_removed
     else:
         return translated_objs_image
