@@ -138,7 +138,7 @@ def extract_color_pixels(image, color):
     mean = 0
     standard_deviation = 10
     norm = st.norm(loc=mean, scale=standard_deviation)
-    traslazioni = norm.rvs(size=len(contours)*2)
+    translations = norm.rvs(size=len(contours)*2)
     i = 0
 
     # probability for blue objects
@@ -151,24 +151,13 @@ def extract_color_pixels(image, color):
     rectangles_info = []
 
     for contour in contours:
-
-        # If object is clutter and luck says to skip it
-        if color.lower() == 'blue' and clutter_presence[i]:
-            continue
-
-        # Create a mask for the current contour
-        mask = np.zeros_like(color_mask)
-        cv2.drawContours(mask, [contour], 0, 255, thickness=cv2.FILLED)
-
-        # Extract the object using the mask
-        object_image = cv2.bitwise_and(color_mask, color_mask, mask=mask)
-        #print(traslazioni[i*2], traslazioni[(i*2)+1])
-        translated_objs_image = translate_obj(object_image, translated_objs_image, traslazioni[i*2], traslazioni[(i*2)+1])
-        i = i+1
-
         if color.lower() == "green":
             # Calculate the bounding rectangle
             x, y, w, h = cv2.boundingRect(contour)
+
+            # Translate it 
+            x = x + translations[0]
+            y = y + translations[1]
 
             # Step 5: Convert coordinates to a Cartesian system
             center_x = x + w // 2
@@ -179,7 +168,7 @@ def extract_color_pixels(image, color):
             center_y = image.shape[0] // 2 - center_y  # Subtract half of the image height and invert y-axis
 
             # Convert pixel units to the desired unit (n pixels per unit)
-            unit = 1/0.035888
+            unit = 1/0.035888 #TODO: fattorizza in base al numero della mappa
             center_x /= unit
             center_y /= unit
             w /= unit
@@ -196,6 +185,20 @@ def extract_color_pixels(image, color):
                 "min_point": rectangle.min_point,
                 "max_point": rectangle.max_point
             })
+        elif color.lower() == 'blue' and clutter_presence[i]:
+            # If object is clutter and luck says to skip it
+            continue
+        
+        # Create a mask for the current contour
+        mask = np.zeros_like(color_mask)
+        cv2.drawContours(mask, [contour], 0, 255, thickness=cv2.FILLED)
+
+        # Extract the object using the mask
+        object_image = cv2.bitwise_and(color_mask, color_mask, mask=mask)
+        #print(translations[i*2], translations[(i*2)+1])
+        translated_objs_image = translate_obj(object_image, translated_objs_image, translations[i*2], translations[(i*2)+1])
+        i = i+1
+
 
     # Display the original image and the result
     _ = plt.subplot(231), plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)), plt.title('Original Image')
@@ -211,7 +214,7 @@ def extract_color_pixels(image, color):
         json_data = json.dumps(rectangles_info, indent=4)
 
         # Write JSON data to a file
-        with open('rectangles.json', 'w') as json_file:
+        with open('rectangles_' + str(time.time_ns()) + '.json', 'w') as json_file:
             json_file.write(json_data)
 
         return image_objects_removed
