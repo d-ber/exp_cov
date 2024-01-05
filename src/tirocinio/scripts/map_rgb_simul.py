@@ -232,7 +232,7 @@ to_save = input("Save image? (y/n)\n")
 if to_save.lower() == "y" or to_save.lower() == "s":
     filename = os.path.join(os.getcwd(), "image_" + str(time.time_ns()) + ".png")
     while os.path.exists(filename): 
-        filename = os.path.join(os.getcwd(), "image_" + (time.time_ns()) + ".png")
+        filename = os.path.join(os.getcwd(), "image_" + str(time.time_ns()) + ".png")
     cv2.imwrite(filename, image)
     print("Done, saved as {}".format(filename))
 else:  
