@@ -1,5 +1,6 @@
 import pyautogui
 import time
+import sys
 
 # Function to center the mouse in a specified region
 def center_mouse(x, y, width, height):
@@ -23,45 +24,62 @@ def press_f_key():
 def scroll_forward(scroll_amount):
     pyautogui.scroll(scroll_amount)
 
-# Window coordinates and size
-window_x = 904
-window_y = 421
-window_width = 700
-window_height = 660
-
-# Set the duration for the drag action (adjust as needed)
-drag_duration = 2  # in seconds
-
-x = 963
-y = 510
-duration = 0.3
-
-scroll_amount = 40
-
-try:
-    click_point(x,y, duration)
+def select(x, y, click_duration):
+    click_point(x, y, click_duration)
     time.sleep(1)
-    click_point(x,y, duration)
+    click_point(x, y, click_duration)
     press_f_key()
 
-    time.sleep(1)
-
+def disturb(duration):
     # Drag the mouse pointer left
-    scroll_forward(scroll_amount)
+    drag_left(200, duration, "left")
+    drag_left(200, duration, "right")
 
-    # Center the mouse pointer in the specified window
-    center_mouse(window_x, window_y, window_width, window_height)
+def main():
 
-    # Pause for a moment (optional)
-    time.sleep(1)
+    modes = ("select", "disturb", "full")
+    maps_rgb = ("1", "2", "3")
+    mode = "full"
+    map_rgb = 1
 
-    # Drag the mouse pointer left
-    drag_left(200, drag_duration, "left")
-    drag_left(200, drag_duration, "right")
+    if len(sys.argv) > 2 and sys.argv[1] in modes and sys.argv[2] in maps_rgb:
+        mode = sys.argv[1]
+        map_rgb = sys.argv[2]
 
-except Exception as e:
-    print(f"An error occurred: {e}")
+    # Window coordinates and size
+    window_x = 904
+    window_y = 421
+    window_width = 700
+    window_height = 660
 
-finally:
-    # Move the mouse pointer to a safe location (optional)
-    pyautogui.moveTo(0, 0)
+    # Set the duration for the drag action (seconds)
+    drag_duration = 2
+
+    xs = (1105, 0, 0)
+    ys = (610, 0, 0)
+    click_duration = 0.3
+
+    scroll_amount = 40
+
+    try:
+        if mode in ("select", "full"):
+            select(xs[map_rgb], ys[map_rgb], click_duration)
+
+            time.sleep(1)
+
+        # Zoom in
+        scroll_forward(scroll_amount)
+
+        # Center the mouse pointer in the specified window
+        center_mouse(window_x, window_y, window_width, window_height)
+
+        # Pause for a moment (optional)
+        time.sleep(1)
+
+        if mode in ("disturb", "full"):
+            disturb(drag_duration)
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+if __name__ == '__main__':
+    main()
