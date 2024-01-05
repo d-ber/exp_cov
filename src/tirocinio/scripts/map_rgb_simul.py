@@ -120,6 +120,26 @@ def extract_color_pixels(image, color):
 
     for contour in contours:
 
+        if color.lower() == "green":
+            # Calculate the bounding rectangle
+            x, y, w, h = cv2.boundingRect(contour)
+
+            # Step 5: Convert coordinates to a Cartesian system
+            center_x = x + w // 2
+            center_y = y + h // 2
+
+            # Convert to a Cartesian system with the origin in the center
+            center_x -= image.shape[1] // 2  # Subtract half of the image width
+            center_y = image.shape[0] // 2 - center_y  # Subtract half of the image height and invert y-axis
+
+            # Convert pixel units to the desired unit (n pixels per unit)
+            unit = 1/0.035888
+            center_x /= unit
+            center_y /= unit
+            w /= unit
+            h /= unit
+            print(center_x, center_y, w, h)
+
         # If object is clutter and luck says to skip it
         if color.lower() == 'blue' and clutter_presence[i]:
             continue
@@ -152,7 +172,7 @@ if len(sys.argv) > 1 and os.path.exists(sys.argv[1]):
     image_path = sys.argv[1]
 else:
     image_path = '/home/d-ber/catkin_ws/src/tirocinio/maps_rgb_lab/map1/map1_rgb.png'
-print(sys.argv)
+    
 image = cv2.imread(image_path, cv2.IMREAD_COLOR)
 image = extract_color_pixels(image, 'red') # oggetti semistatici
 image = extract_color_pixels(image, 'green') # aree di disturbo
