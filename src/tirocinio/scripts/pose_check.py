@@ -59,27 +59,29 @@ def read_rectangles(json_file_path):
     try:
         with open(json_file_path, 'r') as json_file:
             json_data = json.load(json_file)
+            # Create Rectangle objects from JSON data
+            for rect in json_data:
+                rectangle = Rectangle(
+                    center_x=rect["center"][0],
+                    center_y=rect["center"][1],
+                    width=rect["width"],
+                    height=rect["height"]
+                )
+                rectangles.append(rectangle)
     except json.JSONDecodeError as e:
         print(f"Error decoding JSON at '{json_file_path}': {e}")
+    except Exception as e:
+        print(f"Error reading JSON at '{json_file_path}': {e}")
+    finally:
         return rectangles
-
-    # Create Rectangle objects from JSON data
-    for rect in json_data:
-        rectangle = Rectangle(
-            center_x=info["center"][0],
-            center_y=info["center"][1],
-            width=info["width"],
-            height=info["height"]
-        )
-        rectangles.append(rectangle)
-
-    return rectangles
 
 
 def main():
 
     # Read rectangles from json file
     json_file_path = os.path.join(os.getcwd(), "rectangles.json")
+    if len(sys.argv) > 1:
+        json_file_path = sys.argv[1]
     rectangles = read_rectangles(json_file_path)
     if len(rectangles) == 0:
         print("No Rectangles Given!")
