@@ -24,6 +24,13 @@ define sick ranger
     range [ 0.06 4.095 ]
     fov 240.0
     samples 683
+
+    # noise [range_const range_prop angular]
+    # range_const - describes constant noise. This part does not depends on range
+    # range_prop - proportional noise, it scales with reading values
+    # angular - bearing error. For the cases when reading angle is not accurate
+
+    noise [ 0.0 0.01 0.01 ]
   )
 
   # generic model properties
@@ -81,5 +88,5 @@ floorplan
   name  "turtlebot3"
   pose [ -5 4 0 0 ] 
 
-  sick(ctrl "lasernoise")
+  sick()
 )
