@@ -1,0 +1,14 @@
+<launch>
+
+  <arg name="worldfile" default="$(find tirocinio)/world/map_rgb_1.world"/>
+  <arg name="scan" default="/scan"/>
+  <arg name="map_rgb" default="1"/>
+  <arg name="rectangles" default="$(find tirocinio)/maps_rgb_lab/map1/simulated/rectangles_1704627975400279167.json"/>
+
+    <node name="stage" pkg="stage_ros" type="stageros" required="true" output="screen" args="$(arg worldfile)">
+      <remap from="base_scan" to="$(arg scan)"/>
+    </node>
+    <node name="select" pkg="tirocinio" type="disturba.py" output="screen" args="select $(arg map_rgb)"/>
+    <node name="pose_check" pkg="tirocinio" type="pose_check.py" output="screen" args="$(arg rectangles)"/>
+
+</launch>
