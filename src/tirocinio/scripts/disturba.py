@@ -82,8 +82,8 @@ def main():
 
         time.sleep(1)
 
-    # Zoom in
-    scroll_forward(scroll_amount)
+        # Zoom in
+        scroll_forward(scroll_amount)
 
     # Center the mouse pointer in the specified window
     center_mouse(window_x, window_y, window_width, window_height)
