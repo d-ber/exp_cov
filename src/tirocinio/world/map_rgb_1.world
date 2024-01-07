@@ -80,7 +80,7 @@ floorplan
   name  "turtlebot3-stage"
   size [ 20.0 20 1.0 ] # size [x y z]
   pose [0 0 0 0]
-  bitmap "bitmaps/map1_rgb.png" # bitmap: solo il nero è renderizzato
+  bitmap "bitmaps/image_1704627977990983096.png" # bitmap: solo il nero è renderizzato
 )
  turtlebot3
 (		  
