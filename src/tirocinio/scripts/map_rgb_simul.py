@@ -6,18 +6,18 @@ import os
 import time
 import sys
 import json
+import geometry_msgs.msg as geo
 
 class Rectangle:
-    def __init__(self, min_point=None, max_point=None, center_x=None, center_y=None, width=None, height=None):
+    def __init__(self, min_point=None, max_point=None, center=None, width=None, height=None):
         if min_point is not None and max_point is not None:
             # Using the original constructor with min_point and max_point
             self.min_point = min_point
             self.max_point = max_point
             self.calculate_center_dimensions()
-        elif center_x is not None and center_y is not None and width is not None and height is not None:
+        elif center is not None and width is not None and height is not None:
             # Using the new constructor with center_x, center_y, width, and height
-            self.center_x = center_x
-            self.center_y = center_y
+            self.center = center
             self.width = width
             self.height = height
             self.calculate_min_max_points()
@@ -27,14 +27,13 @@ class Rectangle:
     def calculate_min_max_points(self):
         half_width = self.width / 2
         half_height = self.height / 2
-        self.min_point = (self.center_x - half_width, self.center_y - half_height)
-        self.max_point = (self.center_x + half_width, self.center_y + half_height)
+        self.min_point = geo.Point(self.center.x - half_width, self.center.y - half_height, 0)
+        self.max_point = geo.Point(self.center.x + half_width, self.center.y + half_height, 0)
 
     def calculate_center_dimensions(self):
-        self.center_x = (self.min_point[0] + self.max_point[0]) / 2
-        self.center_y = (self.min_point[1] + self.max_point[1]) / 2
-        self.width = abs(self.max_point[0] - self.min_point[0])
-        self.height = abs(self.max_point[1] - self.min_point[1])
+        self.center = geo.Point((self.min_point[0] + self.max_point[0]) / 2, (self.min_point[1] + self.max_point[1]) / 2, 0)
+        self.width = abs(self.max_point.x - self.min_point.x)
+        self.height = abs(self.max_point.y - self.min_point.y)
 
 # obj_img is a b&w image, in which the object is black and the background white
 # img is an image
@@ -175,15 +174,16 @@ def extract_color_pixels(image, color):
             h /= unit
 
             # Create a Rectangle instance
-            rectangle = Rectangle(center_x=center_x, center_y=center_y, width=w, height=h)
+            rectangle = Rectangle(center = geo.Point(center_x, center_y, 0), width=w, height=h)
 
             # Add rectangle information to the list
             rectangles_info.append({
-                "center": (rectangle.center_x, rectangle.center_y),
+                "center": {
+                    "x":rectangle.center.x,
+                    "y":rectangle.center.y,
+                    "z":rectangle.center.z},
                 "width": rectangle.width,
-                "height": rectangle.height,
-                "min_point": rectangle.min_point,
-                "max_point": rectangle.max_point
+                "height": rectangle.height
             })
         elif color.lower() == 'blue' and clutter_presence[i]:
             # If object is clutter and luck says to skip it

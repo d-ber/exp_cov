@@ -2,20 +2,21 @@
 import rospy
 import sys
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import Point
+import geometry_msgs.msg as geo
 import os
+import subprocess as sp
 import json
 
 class Rectangle:
-
-    def __init__(self, min_point=None, max_point=None, center_x=None, center_y=None, width=None, height=None):
+    def __init__(self, min_point=None, max_point=None, center=None, width=None, height=None):
         if min_point is not None and max_point is not None:
+            # Using the original constructor with min_point and max_point
             self.min_point = min_point
             self.max_point = max_point
             self.calculate_center_dimensions()
-        elif center_x is not None and center_y is not None and width is not None and height is not None:
-            self.center_x = center_x
-            self.center_y = center_y
+        elif center is not None and width is not None and height is not None:
+            # Using the new constructor with center_x, center_y, width, and height
+            self.center = center
             self.width = width
             self.height = height
             self.calculate_min_max_points()
@@ -25,32 +26,36 @@ class Rectangle:
     def calculate_min_max_points(self):
         half_width = self.width / 2
         half_height = self.height / 2
-        self.min_point = (self.center_x - half_width, self.center_y - half_height)
-        self.max_point = (self.center_x + half_width, self.center_y + half_height)
+        self.min_point = geo.Point(self.center.x - half_width, self.center.y - half_height, 0)
+        self.max_point = geo.Point(self.center.x + half_width, self.center.y + half_height, 0)
 
     def calculate_center_dimensions(self):
-        self.center_x = (self.min_point[0] + self.max_point[0]) / 2
-        self.center_y = (self.min_point[1] + self.max_point[1]) / 2
-        self.width = abs(self.max_point[0] - self.min_point[0])
-        self.height = abs(self.max_point[1] - self.min_point[1])
+        self.center = geo.Point((self.min_point[0] + self.max_point[0]) / 2, (self.min_point[1] + self.max_point[1]) / 2, 0)
+        self.width = abs(self.max_point.x - self.min_point.x)
+        self.height = abs(self.max_point.y - self.min_point.y)
 
 class pose_check:
 
     def __init__(self, rectangles):
         self.sub = rospy.Subscriber("/base_pose_ground_truth", Odometry, self.callback)
         self.rectangles = rectangles
+        self.inside = -1
 
         rospy.loginfo("Number of Rectangles: {}".format(len(self.rectangles)))
         for idx, rectangle in enumerate(self.rectangles):
-            rospy.loginfo("Rectangle {}: Min={}, Max={}".format(idx + 1, rectangle.min_point, rectangle.max_point))
+            rospy.loginfo("Rectangle {}: \nMin =\n{}, \nMax =\n{}".format(idx + 1, rectangle.min_point, rectangle.max_point))
 
     def callback(self, msg):
         position = msg.pose.pose.position
         for i, rectangle in enumerate(self.rectangles):
             if (rectangle.min_point.x <= position.x <= rectangle.max_point.x and rectangle.min_point.y <= position.y <= rectangle.max_point.y):
                 rospy.loginfo("Position is within Rectangle {}: x={}, y={}".format(i + 1, position.x, position.y))
+                if self.inside != i:
+                    sp.run(["rosrun", "tirocinio", "disturba.py", "disturb", "1"]) # map_rgb number 1 is fine since we won't select here
+                    self.inside = i
                 return
         rospy.loginfo("Position is outside all rectangles: x={}, y={}".format(position.x, position.y))
+        self.inside = -1
 
 def read_rectangles(json_file_path):
     rectangles = []
@@ -62,8 +67,7 @@ def read_rectangles(json_file_path):
             # Create Rectangle objects from JSON data
             for rect in json_data:
                 rectangle = Rectangle(
-                    center_x=rect["center"][0],
-                    center_y=rect["center"][1],
+                    center = geo.Point(rect["center"]["x"], rect["center"]["y"], rect["center"]["z"]),
                     width=rect["width"],
                     height=rect["height"]
                 )
