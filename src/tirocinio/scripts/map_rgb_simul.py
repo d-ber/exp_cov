@@ -240,3 +240,5 @@ if to_save.lower() == "y" or to_save.lower() == "s":
     print("Done, saved as {}".format(filename))
 else:  
     print("OK.")
+
+#TODO: estrarre tutti e 3 i colori insieme per evitare sovrapposizioni durante le varie estrazioni e spostamenti
