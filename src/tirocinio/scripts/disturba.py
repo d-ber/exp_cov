@@ -1,6 +1,5 @@
 import pyautogui
 import time
-import sys
 import argparse
 import scipy.stats as st
 

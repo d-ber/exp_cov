@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import scipy.stats as st
 import os
 import time
-import sys
 import json
 import geometry_msgs.msg as geo
 import rospkg
@@ -33,7 +32,7 @@ class Rectangle:
         self.max_point = geo.Point(self.center.x + half_width, self.center.y + half_height, 0)
 
     def calculate_center_dimensions(self):
-        self.center = geo.Point((self.min_point[0] + self.max_point[0]) / 2, (self.min_point[1] + self.max_point[1]) / 2, 0)
+        self.center = geo.Point((self.min_point.x + self.max_point.x) / 2, (self.min_point.y + self.max_point.y) / 2, 0)
         self.width = abs(self.max_point.x - self.min_point.x)
         self.height = abs(self.max_point.y - self.min_point.y)
 
