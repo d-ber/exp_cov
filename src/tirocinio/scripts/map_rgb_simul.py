@@ -136,6 +136,7 @@ def extract_color_pixels(image, rectangles_path, show_steps=False, save_map=Fals
         image_objects_removed[np.where(color_masks[i] > 0)] = [255, 255, 255]
 
     # probability for red objects
+    #TODO: aggiungi rotazione
     mean = 0
     standard_deviation = 10
     norm = st.norm(loc=mean, scale=standard_deviation)
