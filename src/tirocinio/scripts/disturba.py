@@ -53,12 +53,20 @@ def main():
         map_rgb = int(sys.argv[2])
 
     # Window coordinates and size
+    #Lab:
+    #window_x = 574
+    #window_y = 196
+    #Home:
     window_x = 904
     window_y = 421
     window_width = 700
     window_height = 660
 
     # Click locations (xs[0] is for map_rgb number 1, etc...)
+    #Lab:
+    #xs = (785, 0, 0)
+    #ys = (430, 0, 0)
+    #Home:
     xs = (1105, 0, 0)
     ys = (610, 0, 0)
 
