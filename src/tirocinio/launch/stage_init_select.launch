@@ -9,6 +9,6 @@
       <remap from="base_scan" to="$(arg scan)"/>
     </node>
     <node name="select" pkg="tirocinio" type="disturba.py" output="screen" args="--mode select --map $(arg map_rgb)"/>
-    <node name="pose_check" pkg="tirocinio" type="pose_check.py" output="screen" args="$(arg rectangles)"/>
+    <node name="pose_check" pkg="tirocinio" type="pose_check.py" output="screen" args="--path $(arg rectangles)"/>
 
 </launch>
