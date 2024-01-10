@@ -7,6 +7,8 @@ import time
 import sys
 import json
 import geometry_msgs.msg as geo
+import rospkg
+import argparse
 
 class Rectangle:
     def __init__(self, min_point=None, max_point=None, center=None, width=None, height=None):
@@ -83,13 +85,14 @@ def translate_obj_show(obj_img, img, dx, dy):
     overlapping = cv2.bitwise_and(cv2.bitwise_not(img1), cv2.bitwise_not(img2)).any()
     #print(overlapping)
     dst = cv2.bitwise_and(img1,img2)
-    _ = plt.subplot(221), plt.imshow(img1, cmap='gray'), plt.title(f'Pixels Mask')
-    _ = plt.subplot(222), plt.imshow(img2, cmap='gray'), plt.title(f'Image')
-    _ = plt.subplot(223), plt.imshow(dst), plt.title(f'Merged Image')
-    plt.show()
+    if show_steps:
+        _ = plt.subplot(221), plt.imshow(img1, cmap='gray'), plt.title('Pixels Mask')
+        _ = plt.subplot(222), plt.imshow(img2, cmap='gray'), plt.title('Image')
+        _ = plt.subplot(223), plt.imshow(dst), plt.title('Merged Image')
+        plt.show()
 
 
-def extract_color_pixels(image, color):
+def extract_color_pixels(image, color, show_steps=False, save_map=False):
     # Copy
     image_objects_removed = image.copy()
     
@@ -201,44 +204,65 @@ def extract_color_pixels(image, color):
 
 
     # Display the original image and the result
-    _ = plt.subplot(231), plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)), plt.title('Original Image')
-    _ = plt.subplot(234), plt.imshow(color_mask, cmap='gray'), plt.title(f'{color.title()} Pixels Mask')
-    _ = plt.subplot(235), plt.imshow(cv2.cvtColor(result, cv2.COLOR_BGR2RGB)), plt.title(f'Extracted {color.title()} Pixels')
-    _ = plt.subplot(236), plt.imshow(cv2.cvtColor(image_with_boxes, cv2.COLOR_BGR2RGB)), plt.title('Image with Bounding Boxes')
-    _ = plt.subplot(232), plt.imshow(cv2.cvtColor(image_objects_removed, cv2.COLOR_BGR2RGB)), plt.title(f'Without {color.title()} Pixels')
-    _ = plt.subplot(233), plt.imshow(cv2.cvtColor(translated_objs_image, cv2.COLOR_BGR2RGB)), plt.title(f'{color.title()} Objects translated')
-    plt.show()
+    if show_steps:
+        _ = plt.subplot(231), plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)), plt.title('Original Image')
+        _ = plt.subplot(234), plt.imshow(color_mask, cmap='gray'), plt.title("{} Pixels Mask".format(color))
+        _ = plt.subplot(235), plt.imshow(cv2.cvtColor(result, cv2.COLOR_BGR2RGB)), plt.title('Extracted {} Pixels'.format(color))
+        _ = plt.subplot(236), plt.imshow(cv2.cvtColor(image_with_boxes, cv2.COLOR_BGR2RGB)), plt.title('Image with Bounding Boxes'.format(color))
+        _ = plt.subplot(232), plt.imshow(cv2.cvtColor(image_objects_removed, cv2.COLOR_BGR2RGB)), plt.title('Without {} Pixels'.format(color))
+        _ = plt.subplot(233), plt.imshow(cv2.cvtColor(translated_objs_image, cv2.COLOR_BGR2RGB)), plt.title('{} Objects translated'.format(color))
+        plt.show()
 
     if color.lower() == 'green':
-        # Convert the list to JSON format
-        json_data = json.dumps(rectangles_info, indent=4)
+        if save_map:
+            # Convert the list to JSON format
+            json_data = json.dumps(rectangles_info, indent=4)
 
-        # Write JSON data to a file
-        with open('rectangles_' + str(time.time_ns()) + '.json', 'w') as json_file:
-            json_file.write(json_data)
+            # Write JSON data to a file
+            path = 'rectangles_' + str(time.time_ns()) + '.json'
+            with open(path, 'w') as json_file:
+                json_file.write(json_data)
+                print("Saved rectangles info as {}".format(path))
 
         return image_objects_removed
     else:
         return translated_objs_image
 
-if len(sys.argv) > 1 and os.path.exists(sys.argv[1]):
-    image_path = sys.argv[1]
-else:
-    image_path = '/home/d-ber/catkin_ws/src/tirocinio/maps_rgb_lab/map1/map1_rgb.png'
-    
-image = cv2.imread(image_path, cv2.IMREAD_COLOR)
-image = extract_color_pixels(image, 'red') # oggetti semistatici
-image = extract_color_pixels(image, 'green') # aree di disturbo
-image = extract_color_pixels(image, 'blue') # clutter
+def parse_args():
+    # get an instance of RosPack with the default search paths
+    rospack = rospkg.RosPack()
+    # get the file path for rospy_tutorials
+    package_path = rospack.get_path('tirocinio')
 
-to_save = input("Save image? (y/n)\n")
-if to_save.lower() == "y" or to_save.lower() == "s":
-    filename = os.path.join(os.getcwd(), "image_" + str(time.time_ns()) + ".png")
-    while os.path.exists(filename): 
+    parser = argparse.ArgumentParser(description='Modify rgb maps automatically.')
+    parser.add_argument('-m', '--map', default=os.path.join(package_path, "maps_rgb_lab/map1/map1_rgb.png"),
+        help="Path to the rgb map file.", metavar="MAP_PATH")
+    parser.add_argument('--show', action='store_true',
+        help="Use this to show the processing steps.")
+    parser.add_argument('--save', action='store_true',
+        help="Use this to save the produced map and rectangles info.")
+    return parser.parse_args()
+
+def main():
+
+    args = parse_args()
+    image_path = args.map
+    show_steps = args.show
+    save_map = args.save
+        
+    image = cv2.imread(image_path, cv2.IMREAD_COLOR)
+    image = extract_color_pixels(image, 'red', show_steps=show_steps, save_map=save_map) # oggetti semistatici
+    image = extract_color_pixels(image, 'green', show_steps=show_steps, save_map=save_map) # aree di disturbo
+    image = extract_color_pixels(image, 'blue', show_steps=show_steps, save_map=save_map) # clutter
+
+    if save_map:
         filename = os.path.join(os.getcwd(), "image_" + str(time.time_ns()) + ".png")
-    cv2.imwrite(filename, image)
-    print("Done, saved as {}".format(filename))
-else:  
-    print("OK.")
+        while os.path.exists(filename): 
+            filename = os.path.join(os.getcwd(), "image_" + str(time.time_ns()) + ".png")
+        cv2.imwrite(filename, image)
+        print("Saved map as {}".format(filename))
 
-#TODO: estrarre tutti e 3 i colori insieme per evitare sovrapposizioni durante le varie estrazioni e spostamenti
+    #TODO: estrarre tutti e 3 i colori insieme per evitare sovrapposizioni durante le varie estrazioni e spostamenti
+
+if __name__ == "__main__":
+    main()
