@@ -255,6 +255,8 @@ def parse_args():
     parser.add_argument('--no-timestamp', action='store_true',
         help="""Use this save a single image without timestamp. If image.png already exists, it will create image_n.png
             in which n is the smallest number so that there is no file with that name. Same goes for the rectangles file.""")
+    parser.add_argument("-d", '--dir', default=os.getcwd(),
+        help="Base directory to save files in.")
     return parser.parse_args()
 
 def main():
@@ -265,35 +267,36 @@ def main():
     save_map = args.save
     batch = args.batch
     no_timestamp = args.no_timestamp
+    base_dir = args.dir
         
     image = cv2.imread(image_path, cv2.IMREAD_COLOR)
 
     if batch == 1:
         if no_timestamp:
-            rectangles_path = "rectangles.json"
+            rectangles_path = os.path.join(base_dir, "rectangles.json")
         else:
-            rectangles_path = 'rectangles_' + str(time.time_ns()) + '.json'
+            rectangles_path = os.path.join(base_dir, 'rectangles_' + str(time.time_ns()) + '.json')
         image_modified = extract_color_pixels(image, rectangles_path, show_steps=show_steps, save_map=save_map)
 
         if save_map:
             if no_timestamp:
-                filename = os.path.join(os.getcwd(), "image.png")    
+                filename = os.path.join(base_dir, "image.png")    
                 i = 1
                 while os.path.exists(filename): 
                     i += 1
-                    filename = os.path.join(os.getcwd(), "image_" + str(i) + ".png")
+                    filename = os.path.join(base_dir, "image_" + str(i) + ".png")
             else:
-                filename = os.path.join(os.getcwd(), "image_" + str(time.time_ns()) + ".png")
+                filename = os.path.join(base_dir, "image_" + str(time.time_ns()) + ".png")
                 while os.path.exists(filename): 
-                    filename = os.path.join(os.getcwd(), "image_" + str(time.time_ns()) + ".png")
+                    filename = os.path.join(base_dir, "image_" + str(time.time_ns()) + ".png")
             
             cv2.imwrite(filename, image_modified)
             print("Saved map as {}".format(filename))
     else:
         for i in range(batch):
-            rectangles_path = 'rectangles_' + str(i) + '.json'
+            rectangles_path = os.path.join(base_dir, 'rectangles_' + str(i) + '.json')
             image_modified = extract_color_pixels(image, rectangles_path, show_steps=show_steps, save_map=True)
-            filename = os.path.join(os.getcwd(), "image_" + str(i) + ".png")
+            filename = os.path.join(base_dir, "image_" + str(i) + ".png")
             cv2.imwrite(filename, image_modified)
             print("Saved map as {}".format(filename))
 
