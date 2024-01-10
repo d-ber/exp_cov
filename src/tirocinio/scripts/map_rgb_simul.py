@@ -252,6 +252,9 @@ def parse_args():
         help="Use this to save the produced map and rectangles info.")
     parser.add_argument("-b", "--batch", type=check_positive, default=1, metavar="N",
         help="Use this to produce N maps and save them.")    
+    parser.add_argument('--no-timestamp', action='store_true',
+        help="""Use this save a single image without timestamp. If image.png already exists, it will create image_n.png
+            in which n is the smallest number so that there is no file with that name. Same goes for the rectangles file.""")
     return parser.parse_args()
 
 def main():
@@ -261,17 +264,29 @@ def main():
     show_steps = args.show
     save_map = args.save
     batch = args.batch
+    no_timestamp = args.no_timestamp
         
     image = cv2.imread(image_path, cv2.IMREAD_COLOR)
 
     if batch == 1:
-        rectangles_path = 'rectangles_' + str(time.time_ns()) + '.json'
+        if no_timestamp:
+            rectangles_path = "rectangles.json"
+        else:
+            rectangles_path = 'rectangles_' + str(time.time_ns()) + '.json'
         image_modified = extract_color_pixels(image, rectangles_path, show_steps=show_steps, save_map=save_map)
 
         if save_map:
-            filename = os.path.join(os.getcwd(), "image_" + str(time.time_ns()) + ".png")
-            while os.path.exists(filename): 
+            if no_timestamp:
+                filename = os.path.join(os.getcwd(), "image.png")    
+                i = 1
+                while os.path.exists(filename): 
+                    i += 1
+                    filename = os.path.join(os.getcwd(), "image_" + str(i) + ".png")
+            else:
                 filename = os.path.join(os.getcwd(), "image_" + str(time.time_ns()) + ".png")
+                while os.path.exists(filename): 
+                    filename = os.path.join(os.getcwd(), "image_" + str(time.time_ns()) + ".png")
+            
             cv2.imwrite(filename, image_modified)
             print("Saved map as {}".format(filename))
     else:
