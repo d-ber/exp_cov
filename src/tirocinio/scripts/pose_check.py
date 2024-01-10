@@ -6,6 +6,7 @@ import geometry_msgs.msg as geo
 import os
 import subprocess as sp
 import json
+import argparse
 
 class Rectangle:
     def __init__(self, min_point=None, max_point=None, center=None, width=None, height=None):
@@ -79,16 +80,17 @@ def read_rectangles(json_file_path):
     finally:
         return rectangles
 
+def parse_args():
+    parser = argparse.ArgumentParser(description='Check if a robot is within some given areas, described by rectangles.')
+    parser.add_argument('--path', required=True, help="Path of the rectangles json file.")
+    return parser.parse_known_args()[0]
 
 def main():
 
-    # Read rectangles from json file
-    json_file_path = os.path.join(os.getcwd(), "rectangles.json")
-    if len(sys.argv) > 1:
-        json_file_path = sys.argv[1]
+    args = parse_args()
+    json_file_path = args.path
+
     rectangles = read_rectangles(json_file_path)
-    if len(rectangles) == 0:
-        print("No Rectangles Given!")
         
     rospy.init_node('pose_check', anonymous=True)
     _ = pose_check(rectangles)
