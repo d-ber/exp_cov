@@ -8,7 +8,7 @@
     <node name="stage" pkg="stage_ros" type="stageros" required="true" output="screen" args="$(arg worldfile)">
       <remap from="base_scan" to="$(arg scan)"/>
     </node>
-    <node name="select" pkg="tirocinio" type="disturba.py" output="screen" args="select $(arg map_rgb)"/>
+    <node name="select" pkg="tirocinio" type="disturba.py" output="screen" args="--mode select --map $(arg map_rgb)"/>
     <node name="pose_check" pkg="tirocinio" type="pose_check.py" output="screen" args="$(arg rectangles)"/>
 
 </launch>

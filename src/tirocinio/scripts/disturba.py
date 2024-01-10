@@ -47,7 +47,7 @@ def parse_args():
         help="Number of rgb map.")
     parser.add_argument('--mode', default="full", choices=["full", "disturb", "select"],
         help="Mode in which to launch the program. Select only selects the robot and zooms in. Disturb only distrubs it. Full does both.")
-    return parser.parse_args()
+    return parser.parse_known_args()[0]
 
 def main():
 
