@@ -43,7 +43,7 @@ class pose_check:
         rospy.loginfo("Number of Rectangles: {}".format(len(self.rectangles)))
         for idx, rectangle in enumerate(self.rectangles):
             rospy.loginfo("Rectangle {}: \nMin =\n{}, \nMax =\n{}".format(idx + 1, rectangle.min_point, rectangle.max_point))
-
+        #TODO: disturba con una probabilità ogni tot tempo/messaggi
     def callback(self, msg):
         position = msg.pose.pose.position
         for i, rectangle in enumerate(self.rectangles):
