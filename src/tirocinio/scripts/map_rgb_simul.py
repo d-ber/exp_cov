@@ -91,7 +91,7 @@ def translate_obj_show(obj_img, img, dx, dy):
     plt.show()
 
 
-def extract_color_pixels(image, show_steps=False, save_map=False):
+def extract_color_pixels(image, rectangles_path, show_steps=False, save_map=False):
     # Copy
     image_objects_removed = image.copy()
     
@@ -221,12 +221,21 @@ def extract_color_pixels(image, show_steps=False, save_map=False):
         json_data = json.dumps(rectangles_info, indent=4)
 
         # Write JSON data to a file
-        path = 'rectangles_' + str(time.time_ns()) + '.json'
-        with open(path, 'w') as json_file:
+        with open(rectangles_path, 'w') as json_file:
             json_file.write(json_data)
-            print("Saved rectangles info as {}".format(path))
+            print("Saved rectangles info as {}".format(rectangles_path))
 
     return translated_objs_image
+
+def check_positive(value):
+    try:
+        value = int(value)
+        if value <= 0:
+            raise argparse.ArgumentTypeError("{} is not a positive integer".format(value))
+    except ValueError:
+        raise Exception("{} is not an integer".format(value))
+    return value
+
 
 def parse_args():
     # get an instance of RosPack with the default search paths
@@ -241,6 +250,8 @@ def parse_args():
         help="Use this to show the processing steps.")
     parser.add_argument('--save', action='store_true',
         help="Use this to save the produced map and rectangles info.")
+    parser.add_argument("-b", "--batch", type=check_positive, default=1, metavar="N",
+        help="Use this to produce N maps and save them.")    
     return parser.parse_args()
 
 def main():
@@ -249,16 +260,29 @@ def main():
     image_path = args.map
     show_steps = args.show
     save_map = args.save
+    batch = args.batch
         
     image = cv2.imread(image_path, cv2.IMREAD_COLOR)
-    image = extract_color_pixels(image, show_steps=show_steps, save_map=save_map)
 
-    if save_map:
-        filename = os.path.join(os.getcwd(), "image_" + str(time.time_ns()) + ".png")
-        while os.path.exists(filename): 
+    if batch == 1:
+        rectangles_path = 'rectangles_' + str(time.time_ns()) + '.json'
+        image_modified = extract_color_pixels(image, rectangles_path, show_steps=show_steps, save_map=save_map)
+
+        if save_map:
             filename = os.path.join(os.getcwd(), "image_" + str(time.time_ns()) + ".png")
-        cv2.imwrite(filename, image)
-        print("Saved map as {}".format(filename))
+            while os.path.exists(filename): 
+                filename = os.path.join(os.getcwd(), "image_" + str(time.time_ns()) + ".png")
+            cv2.imwrite(filename, image_modified)
+            print("Saved map as {}".format(filename))
+    else:
+        for i in range(batch):
+            rectangles_path = 'rectangles_' + str(i) + '.json'
+            image_modified = extract_color_pixels(image, rectangles_path, show_steps=show_steps, save_map=True)
+            filename = os.path.join(os.getcwd(), "image_" + str(i) + ".png")
+            cv2.imwrite(filename, image_modified)
+            print("Saved map as {}".format(filename))
+
+
 
 if __name__ == "__main__":
     main()
