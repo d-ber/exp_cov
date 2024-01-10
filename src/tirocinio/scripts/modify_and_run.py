@@ -31,11 +31,14 @@ def main():
     if os.path.exists(rects_path):
         os.remove(rects_path)
 
-    sp.run(["rosrun", "tirocinio", "map_rgb_simul.py", "--save", "--no-timestamp", "--map", map_rgb_path, 
-        "--dir", os.path.join(package_path, "world/bitmaps")])
+    try:
+        sp.run(["rosrun", "tirocinio", "map_rgb_simul.py", "--save", "--no-timestamp", "--map", map_rgb_path, 
+            "--dir", os.path.join(package_path, "world/bitmaps")])
 
-    sp.run(["roslaunch", "tirocinio", "stage_init_select.launch", "rectangles:=" + rects_path, 
-       "map_rgb:=1", "worldfile:=" + world_path, "scan:=" + scan_topic])
+        sp.run(["roslaunch", "tirocinio", "stage_init_select.launch", "rectangles:=" + rects_path, 
+        "map_rgb:=1", "worldfile:=" + world_path, "scan:=" + scan_topic])
+    except KeyboardInterrupt:
+        print("Exit request received. Closed.")
 
 if __name__ == '__main__':
     main()
