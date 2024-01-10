@@ -206,13 +206,13 @@ def extract_color_pixels(image, show_steps=False, save_map=False):
     # Display the original image and the result
     if show_steps:
         _ = plt.subplot(331), plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)), plt.title('Original Image')
-        _ = plt.subplot(334), plt.imshow(color_masks[0], cmap='gray'), plt.title("{} Pixels Mask".format(colors[i]))
-        _ = plt.subplot(335), plt.imshow(color_masks[1], cmap='gray'), plt.title("{} Pixels Mask".format(colors[i]))
-        _ = plt.subplot(336), plt.imshow(color_masks[2], cmap='gray'), plt.title("{} Pixels Mask".format(colors[i]))
+        _ = plt.subplot(334), plt.imshow(color_masks[0], cmap='gray'), plt.title("{} Pixels Mask".format(colors[0]))
+        _ = plt.subplot(335), plt.imshow(color_masks[1], cmap='gray'), plt.title("{} Pixels Mask".format(colors[1]))
+        _ = plt.subplot(336), plt.imshow(color_masks[2], cmap='gray'), plt.title("{} Pixels Mask".format(colors[2]))
         #_ = plt.subplot(335), plt.imshow(cv2.cvtColor(results[i], cv2.COLOR_BGR2RGB)), plt.title('Extracted {} Pixels'.format(colors[i]))
-        _ = plt.subplot(337), plt.imshow(cv2.cvtColor(images_with_boxes[i], cv2.COLOR_BGR2RGB)), plt.title('{} Bounding Boxes'.format(colors[i]))
-        _ = plt.subplot(338), plt.imshow(cv2.cvtColor(images_with_boxes[i], cv2.COLOR_BGR2RGB)), plt.title('{} Bounding Boxes'.format(colors[i]))
-        _ = plt.subplot(339), plt.imshow(cv2.cvtColor(images_with_boxes[i], cv2.COLOR_BGR2RGB)), plt.title('{} Bounding Boxes'.format(colors[i]))
+        _ = plt.subplot(337), plt.imshow(cv2.cvtColor(images_with_boxes[0], cv2.COLOR_BGR2RGB)), plt.title('{} Bounding Boxes'.format(colors[0]))
+        _ = plt.subplot(338), plt.imshow(cv2.cvtColor(images_with_boxes[1], cv2.COLOR_BGR2RGB)), plt.title('{} Bounding Boxes'.format(colors[1]))
+        _ = plt.subplot(339), plt.imshow(cv2.cvtColor(images_with_boxes[2], cv2.COLOR_BGR2RGB)), plt.title('{} Bounding Boxes'.format(colors[2]))
         _ = plt.subplot(332), plt.imshow(cv2.cvtColor(image_objects_removed, cv2.COLOR_BGR2RGB)), plt.title('Without colored Pixels')
         _ = plt.subplot(333), plt.imshow(cv2.cvtColor(translated_objs_image, cv2.COLOR_BGR2RGB)), plt.title('Colored Objects translated')
         plt.show()
@@ -232,7 +232,7 @@ def extract_color_pixels(image, show_steps=False, save_map=False):
 def parse_args():
     # get an instance of RosPack with the default search paths
     rospack = rospkg.RosPack()
-    # get the file path for rospy_tutorials
+    # get the file path for tirocinio
     package_path = rospack.get_path('tirocinio')
 
     parser = argparse.ArgumentParser(description='Modify rgb maps automatically.')
