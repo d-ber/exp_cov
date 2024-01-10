@@ -20,13 +20,20 @@ def main():
     map_rgb = str(args.map)
     map_rgb_path = os.path.join(package_path, "maps_rgb_lab/map" + map_rgb + "/map" + map_rgb + "_rgb.png")
 
-    if os.path.exists(os.path.join(package_path, "world/bitmaps", "image.png")):
-        os.remove(os.path.join(package_path, "world/bitmaps", "image.png"))
-    if os.path.exists(os.path.join(package_path, "world/bitmaps", "rectangles.json")):
-        os.remove(os.path.join(package_path, "world/bitmaps", "rectangles.json"))
+    image_path = os.path.join(package_path, "world/bitmaps", "image.png")
+    rects_path = os.path.join(package_path, "world/bitmaps", "rectangles.json")
+    world_path = os.path.join(package_path, "world/rgb.world")
 
-    sp.run(["rosrun", "tirocinio", "map_rgb_simul.py", "--save", "--no-timestamp", "--map", map_rgb_path, "--dir", os.path.join(package_path, "world/bitmaps")])
-    print(["rosrun", "tirocinio", "map_rgb_simul.py", "--save", "--no-timestamp", "--map", map_rgb_path, "--dir", os.path.join(package_path, "world/bitmaps")])
+    if os.path.exists(image_path):
+        os.remove(image_path)
+    if os.path.exists(rects_path):
+        os.remove(rects_path)
+
+    sp.run(["rosrun", "tirocinio", "map_rgb_simul.py", "--save", "--no-timestamp", "--map", map_rgb_path, 
+        "--dir", os.path.join(package_path, "world/bitmaps")])
+
+    sp.run(["roslaunch", "tirocinio", "stage_init_select.launch", "rectangles:=" + rects_path, 
+       "map_rgb:=1", "worldfile:=" + world_path])
 
 if __name__ == '__main__':
     main()
