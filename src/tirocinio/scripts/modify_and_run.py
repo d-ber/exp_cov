@@ -7,8 +7,8 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Modify a map and run stage on it.')
     parser.add_argument('--map', default=1, choices=[1, 2, 3], type=int,
         help="Number of rgb map.")
+    parser.add_argument('--scan', default="/scan", help="Scan topic name to set for stage.")
     return parser.parse_known_args()[0]
-
 
 def main():
     # get an instance of RosPack with the default search paths
@@ -19,10 +19,12 @@ def main():
     args = parse_args()
     map_rgb = str(args.map)
     map_rgb_path = os.path.join(package_path, "maps_rgb_lab/map" + map_rgb + "/map" + map_rgb + "_rgb.png")
+    scan_topic = args.scan
 
     image_path = os.path.join(package_path, "world/bitmaps", "image.png")
     rects_path = os.path.join(package_path, "world/bitmaps", "rectangles.json")
     world_path = os.path.join(package_path, "world/rgb.world")
+
 
     if os.path.exists(image_path):
         os.remove(image_path)
@@ -33,7 +35,7 @@ def main():
         "--dir", os.path.join(package_path, "world/bitmaps")])
 
     sp.run(["roslaunch", "tirocinio", "stage_init_select.launch", "rectangles:=" + rects_path, 
-       "map_rgb:=1", "worldfile:=" + world_path])
+       "map_rgb:=1", "worldfile:=" + world_path, "scan:=" + scan_topic])
 
 if __name__ == '__main__':
     main()
