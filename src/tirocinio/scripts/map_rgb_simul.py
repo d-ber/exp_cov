@@ -85,14 +85,13 @@ def translate_obj_show(obj_img, img, dx, dy):
     overlapping = cv2.bitwise_and(cv2.bitwise_not(img1), cv2.bitwise_not(img2)).any()
     #print(overlapping)
     dst = cv2.bitwise_and(img1,img2)
-    if show_steps:
-        _ = plt.subplot(221), plt.imshow(img1, cmap='gray'), plt.title('Pixels Mask')
-        _ = plt.subplot(222), plt.imshow(img2, cmap='gray'), plt.title('Image')
-        _ = plt.subplot(223), plt.imshow(dst), plt.title('Merged Image')
-        plt.show()
+    _ = plt.subplot(221), plt.imshow(img1, cmap='gray'), plt.title('Pixels Mask')
+    _ = plt.subplot(222), plt.imshow(img2, cmap='gray'), plt.title('Image')
+    _ = plt.subplot(223), plt.imshow(dst), plt.title('Merged Image')
+    plt.show()
 
 
-def extract_color_pixels(image, color, show_steps=False, save_map=False):
+def extract_color_pixels(image, show_steps=False, save_map=False):
     # Copy
     image_objects_removed = image.copy()
     
@@ -100,133 +99,135 @@ def extract_color_pixels(image, color, show_steps=False, save_map=False):
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
     # Define the HSV range based on the specified color
-    if color.lower() == 'red':
-        lower_range = np.array([0, 100, 100])
-        upper_range = np.array([10, 255, 255])
-    elif color.lower() == 'green':
-        lower_range = np.array([40, 40, 40])
-        upper_range = np.array([80, 255, 255])
-    elif color.lower() == 'blue':
-        lower_range = np.array([100, 50, 50])
-        upper_range = np.array([140, 255, 255])
-    else:
-        raise ValueError("Invalid color. Supported colors are 'red', 'green', or 'blue'.")
+    # (red, green, blue) that is (oggetti semistatici, aree di disturbo, clutter)
+    colors = ("red", "green", "blue")
+    lower_ranges = (np.array([0, 100, 100]), np.array([40, 40, 40]), np.array([100, 50, 50]))
+    upper_ranges = (np.array([10, 255, 255]), np.array([80, 255, 255]), np.array([140, 255, 255]))
 
     # Create a binary mask for the specified color
-    color_mask = cv2.inRange(hsv, lower_range, upper_range)
+    color_masks = []
+    images_with_boxes = []
+    results = []
+    objs = []
+    contours = []
 
-    # Find contours in the mask
-    contours, _ = cv2.findContours(color_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    for i in range (0, 3):
+        color_masks.insert(i, cv2.inRange(hsv, lower_ranges[i], upper_ranges[i]))
 
-    image_with_boxes = cv2.cvtColor(color_mask, cv2.COLOR_GRAY2BGR)
+        # Find contours in the mask
+        contours.insert(i, cv2.findContours(color_masks[i], cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0])
+        objs.insert(i, len(contours[i]))
 
-    # Draw bounding boxes around each object
-    for contour in contours:
-        # Get the minimum area rectangle that bounds the contour
-        rect = cv2.minAreaRect(contour)
-        box = cv2.boxPoints(rect)
-        box = np.intp(box)
+        images_with_boxes.insert(i, cv2.cvtColor(color_masks[i], cv2.COLOR_GRAY2BGR))
 
-        # Draw the bounding box
-        cv2.drawContours(image_with_boxes, [box], 0, (0, 255, 0), 2)  # Draw a green rectangle
+        # Draw bounding boxes around each object
+        for contour in contours[i]:
+            # Get the minimum area rectangle that bounds the contour
+            rect = cv2.minAreaRect(contour)
+            box = cv2.boxPoints(rect)
+            box = np.intp(box)
 
-    # Apply the mask to the original image
-    result = cv2.bitwise_and(image_objects_removed, image_objects_removed, mask=color_mask)
+            # Draw the bounding box
+            cv2.drawContours(images_with_boxes[i], [box], 0, (0, 255, 0), 2)  # Draw a green rectangle
 
-    # Set the pixels in the original image where the color is extracted to white
-    image_objects_removed[np.where(color_mask > 0)] = [255, 255, 255]
+        # Apply the mask to the original image
+        results.insert(i, cv2.bitwise_and(image_objects_removed, image_objects_removed, mask=color_masks[i]))
+
+        # Set the pixels in the original image where the color is extracted to white
+        image_objects_removed[np.where(color_masks[i] > 0)] = [255, 255, 255]
 
     # probability for red objects
     mean = 0
     standard_deviation = 10
     norm = st.norm(loc=mean, scale=standard_deviation)
-    translations = norm.rvs(size=len(contours)*2)
-    i = 0
+    translations = norm.rvs(size=sum(objs)*2)
 
     # probability for blue objects
     p = 0.5
     bernoulli = st.bernoulli(p)
-    clutter_presence = bernoulli.rvs(size=len(contours))
+    clutter_presence = bernoulli.rvs(size=objs[colors.index("blue")])
 
     translated_objs_image = image_objects_removed
-
     rectangles_info = []
 
-    for contour in contours:
-        if color.lower() == "green":
-            # Calculate the bounding rectangle
-            x, y, w, h = cv2.boundingRect(contour)
+    for i in range (0, 3):
+        j = 0
 
-            # Translate it 
-            x = x + translations[0]
-            y = y + translations[1]
+        for contour in contours[i]:
+            if colors[i] == "green":
+                # Calculate the bounding rectangle
+                x, y, w, h = cv2.boundingRect(contour)
 
-            # Step 5: Convert coordinates to a Cartesian system
-            center_x = x + w // 2
-            center_y = y + h // 2
+                # Translate it 
+                x = x + translations[0]
+                y = y + translations[1]
 
-            # Convert to a Cartesian system with the origin in the center
-            center_x -= image.shape[1] // 2  # Subtract half of the image width
-            center_y = image.shape[0] // 2 - center_y  # Subtract half of the image height and invert y-axis
+                # Step 5: Convert coordinates to a Cartesian system
+                center_x = x + w // 2
+                center_y = y + h // 2
 
-            # Convert pixel units to the desired unit (n pixels per unit)
-            unit = 1/0.035888 #TODO: fattorizza in base al numero della mappa
-            center_x /= unit
-            center_y /= unit
-            w /= unit
-            h /= unit
+                # Convert to a Cartesian system with the origin in the center
+                center_x -= image.shape[1] // 2  # Subtract half of the image width
+                center_y = image.shape[0] // 2 - center_y  # Subtract half of the image height and invert y-axis
 
-            # Create a Rectangle instance
-            rectangle = Rectangle(center = geo.Point(center_x, center_y, 0), width=w, height=h)
+                # Convert pixel units to the desired unit (n pixels per unit)
+                unit = 1/0.035888 #TODO: fattorizza in base al numero della mappa
+                center_x /= unit
+                center_y /= unit
+                w /= unit
+                h /= unit
 
-            # Add rectangle information to the list
-            rectangles_info.append({
-                "center": {
-                    "x":rectangle.center.x,
-                    "y":rectangle.center.y,
-                    "z":rectangle.center.z},
-                "width": rectangle.width,
-                "height": rectangle.height
-            })
-        elif color.lower() == 'blue' and clutter_presence[i]:
-            # If object is clutter and luck says to skip it
-            continue
-        
-        # Create a mask for the current contour
-        mask = np.zeros_like(color_mask)
-        cv2.drawContours(mask, [contour], 0, 255, thickness=cv2.FILLED)
+                # Create a Rectangle instance
+                rectangle = Rectangle(center = geo.Point(center_x, center_y, 0), width=w, height=h)
 
-        # Extract the object using the mask
-        object_image = cv2.bitwise_and(color_mask, color_mask, mask=mask)
-        #print(translations[i*2], translations[(i*2)+1])
-        translated_objs_image = translate_obj(object_image, translated_objs_image, translations[i*2], translations[(i*2)+1])
-        i = i+1
+                # Add rectangle information to the list
+                rectangles_info.append({
+                    "center": {
+                        "x":rectangle.center.x,
+                        "y":rectangle.center.y,
+                        "z":rectangle.center.z},
+                    "width": rectangle.width,
+                    "height": rectangle.height
+                })
+            elif colors[i] == 'blue' and clutter_presence[j]:
+                # If object is clutter and luck says to skip it
+                continue
+            else:
+                # Create a mask for the current contour
+                mask = np.zeros_like(color_masks[i])
+                cv2.drawContours(mask, [contour], 0, 255, thickness=cv2.FILLED)
 
+                # Extract the object using the mask
+                object_image = cv2.bitwise_and(color_masks[i], color_masks[i], mask=mask)
+                #print(translations[j*2], translations[(j*2)+1])
+                translated_objs_image = translate_obj(object_image, translated_objs_image, translations[j*2], translations[(j*2)+1])
+                j = j+1
 
     # Display the original image and the result
     if show_steps:
-        _ = plt.subplot(231), plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)), plt.title('Original Image')
-        _ = plt.subplot(234), plt.imshow(color_mask, cmap='gray'), plt.title("{} Pixels Mask".format(color))
-        _ = plt.subplot(235), plt.imshow(cv2.cvtColor(result, cv2.COLOR_BGR2RGB)), plt.title('Extracted {} Pixels'.format(color))
-        _ = plt.subplot(236), plt.imshow(cv2.cvtColor(image_with_boxes, cv2.COLOR_BGR2RGB)), plt.title('Image with Bounding Boxes'.format(color))
-        _ = plt.subplot(232), plt.imshow(cv2.cvtColor(image_objects_removed, cv2.COLOR_BGR2RGB)), plt.title('Without {} Pixels'.format(color))
-        _ = plt.subplot(233), plt.imshow(cv2.cvtColor(translated_objs_image, cv2.COLOR_BGR2RGB)), plt.title('{} Objects translated'.format(color))
+        _ = plt.subplot(331), plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)), plt.title('Original Image')
+        _ = plt.subplot(334), plt.imshow(color_masks[0], cmap='gray'), plt.title("{} Pixels Mask".format(colors[i]))
+        _ = plt.subplot(335), plt.imshow(color_masks[1], cmap='gray'), plt.title("{} Pixels Mask".format(colors[i]))
+        _ = plt.subplot(336), plt.imshow(color_masks[2], cmap='gray'), plt.title("{} Pixels Mask".format(colors[i]))
+        #_ = plt.subplot(335), plt.imshow(cv2.cvtColor(results[i], cv2.COLOR_BGR2RGB)), plt.title('Extracted {} Pixels'.format(colors[i]))
+        _ = plt.subplot(337), plt.imshow(cv2.cvtColor(images_with_boxes[i], cv2.COLOR_BGR2RGB)), plt.title('{} Bounding Boxes'.format(colors[i]))
+        _ = plt.subplot(338), plt.imshow(cv2.cvtColor(images_with_boxes[i], cv2.COLOR_BGR2RGB)), plt.title('{} Bounding Boxes'.format(colors[i]))
+        _ = plt.subplot(339), plt.imshow(cv2.cvtColor(images_with_boxes[i], cv2.COLOR_BGR2RGB)), plt.title('{} Bounding Boxes'.format(colors[i]))
+        _ = plt.subplot(332), plt.imshow(cv2.cvtColor(image_objects_removed, cv2.COLOR_BGR2RGB)), plt.title('Without colored Pixels')
+        _ = plt.subplot(333), plt.imshow(cv2.cvtColor(translated_objs_image, cv2.COLOR_BGR2RGB)), plt.title('Colored Objects translated')
         plt.show()
 
-    if color.lower() == 'green':
-        if save_map:
-            # Convert the list to JSON format
-            json_data = json.dumps(rectangles_info, indent=4)
+    if save_map:
+        # Convert the list to JSON format
+        json_data = json.dumps(rectangles_info, indent=4)
 
-            # Write JSON data to a file
-            path = 'rectangles_' + str(time.time_ns()) + '.json'
-            with open(path, 'w') as json_file:
-                json_file.write(json_data)
-                print("Saved rectangles info as {}".format(path))
+        # Write JSON data to a file
+        path = 'rectangles_' + str(time.time_ns()) + '.json'
+        with open(path, 'w') as json_file:
+            json_file.write(json_data)
+            print("Saved rectangles info as {}".format(path))
 
-        return image_objects_removed
-    else:
-        return translated_objs_image
+    return translated_objs_image
 
 def parse_args():
     # get an instance of RosPack with the default search paths
@@ -251,9 +252,7 @@ def main():
     save_map = args.save
         
     image = cv2.imread(image_path, cv2.IMREAD_COLOR)
-    image = extract_color_pixels(image, 'red', show_steps=show_steps, save_map=save_map) # oggetti semistatici
-    image = extract_color_pixels(image, 'green', show_steps=show_steps, save_map=save_map) # aree di disturbo
-    image = extract_color_pixels(image, 'blue', show_steps=show_steps, save_map=save_map) # clutter
+    image = extract_color_pixels(image, show_steps=show_steps, save_map=save_map)
 
     if save_map:
         filename = os.path.join(os.getcwd(), "image_" + str(time.time_ns()) + ".png")
@@ -261,8 +260,6 @@ def main():
             filename = os.path.join(os.getcwd(), "image_" + str(time.time_ns()) + ".png")
         cv2.imwrite(filename, image)
         print("Saved map as {}".format(filename))
-
-    #TODO: estrarre tutti e 3 i colori insieme per evitare sovrapposizioni durante le varie estrazioni e spostamenti
 
 if __name__ == "__main__":
     main()
