@@ -51,7 +51,7 @@ class pose_check:
             if (rectangle.min_point.x <= position.x <= rectangle.max_point.x and rectangle.min_point.y <= position.y <= rectangle.max_point.y):
                 rospy.loginfo("Position is within Rectangle {}: x={}, y={}".format(i + 1, position.x, position.y))
                 if self.inside != i or st.bernoulli.rvs(self.disturb_prop): # if inside, for each message received disturb with prob 0.003
-                    sp.run(["rosrun", "tirocinio", "disturba.py", "disturb", "1"]) # map_rgb number 1 is fine since we won't select here
+                    sp.run(["rosrun", "tirocinio", "disturba.py", "--mode", "disturb"])
                     self.inside = i
                 return
         rospy.loginfo("Position is outside all rectangles: x={}, y={}".format(position.x, position.y))
