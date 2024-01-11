@@ -142,7 +142,6 @@ def extract_color_pixels(image, rectangles_path, show_steps=False, save_map=Fals
     mean_tra = 0
     std_tra = 10
     norm_tra = st.norm(loc=mean_tra, scale=std_tra)
-    translations = norm_tra.rvs(size=sum(objs)*2)
 
     # rotational probability
     mean_rot = 0
@@ -166,8 +165,8 @@ def extract_color_pixels(image, rectangles_path, show_steps=False, save_map=Fals
                 x, y, w, h = cv2.boundingRect(contour)
 
                 # Translate it 
-                x = x + translations[0] # TODO: fix traslazione verde: riduci std e usa valori diversi (basati su j)
-                y = y + translations[1]
+                x = x + norm_tra.rvs() # TODO: controlla sovrapposizione traslazione 
+                y = y + norm_tra.rvs()
 
                 # Step 5: Convert coordinates to a Cartesian system
                 center_x = x + w // 2
