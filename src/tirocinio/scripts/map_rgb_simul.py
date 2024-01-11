@@ -9,49 +9,26 @@ import geometry_msgs.msg as geo
 import rospkg
 import argparse
 
-class Rectangle:
-    def __init__(self, min_point=None, max_point=None, center=None, width=None, height=None):
-        if min_point is not None and max_point is not None:
-            # Using the original constructor with min_point and max_point
-            self.min_point = min_point
-            self.max_point = max_point
-            self.calculate_center_dimensions()
-        elif center is not None and width is not None and height is not None:
-            # Using the new constructor with center_x, center_y, width, and height
-            self.center = center
-            self.width = width
-            self.height = height
-            self.calculate_min_max_points()
-        else:
-            raise ValueError("Invalid parameters. Please provide either min_point and max_point or center_x, center_y, width, and height.")
-
-    def calculate_min_max_points(self):
-        half_width = self.width / 2
-        half_height = self.height / 2
-        self.min_point = geo.Point(self.center.x - half_width, self.center.y - half_height, 0)
-        self.max_point = geo.Point(self.center.x + half_width, self.center.y + half_height, 0)
-
-    def calculate_center_dimensions(self):
-        self.center = geo.Point((self.min_point.x + self.max_point.x) / 2, (self.min_point.y + self.max_point.y) / 2, 0)
-        self.width = abs(self.max_point.x - self.min_point.x)
-        self.height = abs(self.max_point.y - self.min_point.y)
-
 # obj_img is a b&w image, in which the object is black and the background white
 # img is an image
-def translate_obj(obj_img, img, dist_tra, dist_rot, show_steps):
+def translate_obj(obj_img, img, dist_tra, dist_rot, show_steps, disable_rotation):
     height, width = obj_img.shape[:2]
 
     to_translate = True
 
     translated_image = []
     dst = []
+    dx = 0
+    dy = 0
+    angle = 0
 
     while to_translate:
 
         # generate random values with given distributions
         dx = dist_tra.rvs()
         dy = dist_tra.rvs()
-        angle = dist_rot.rvs()
+        if not disable_rotation:
+            angle = dist_rot.rvs()
 
         # create the translation matrix using dx and dy, it is a NumPy array 
         translation_matrix = np.array([
@@ -61,11 +38,13 @@ def translate_obj(obj_img, img, dist_tra, dist_rot, show_steps):
         translated_image = cv2.warpAffine(src=obj_img, M=translation_matrix, dsize=(width, height))
         translated_image = cv2.cvtColor(translated_image, cv2.COLOR_BGR2RGB)
 
-        # create the rotational matrix
-        center = (translated_image.shape[1]//2, translated_image.shape[0]//2)
-        scale = 1
-        rot_mat = cv2.getRotationMatrix2D(center, angle, scale)
-        translated_image = cv2.warpAffine(src=translated_image, M=rot_mat, dsize=(width, height))
+        if not disable_rotation:
+            # create the rotational matrix
+            center = (translated_image.shape[1]//2, translated_image.shape[0]//2)
+            scale = 1
+            rot_mat = cv2.getRotationMatrix2D(center, angle, scale)
+            translated_image = cv2.warpAffine(src=translated_image, M=rot_mat, dsize=(width, height))
+
         translated_image = cv2.threshold(translated_image, 127, 255, cv2.THRESH_BINARY)[1]
         translated_image = cv2.bitwise_not(translated_image)
 
@@ -90,7 +69,7 @@ def translate_obj(obj_img, img, dist_tra, dist_rot, show_steps):
         _ = plt.subplot(133), plt.imshow(dst), plt.title('Merged Image')
         plt.show()
 
-    return dst
+    return (dst, dx, dy)
 
 
 def extract_color_pixels(image, rectangles_path, show_steps=False, save_map=False):
@@ -138,17 +117,22 @@ def extract_color_pixels(image, rectangles_path, show_steps=False, save_map=Fals
         # Set the pixels in the original image where the color is extracted to white
         image_objects_removed[np.where(color_masks[i] > 0)] = [255, 255, 255]
 
-    # translational probability
+    # translational probability red and blu obstacles
     mean_tra = 0
     std_tra = 10
     norm_tra = st.norm(loc=mean_tra, scale=std_tra)
+
+    # translational probability green areas
+    mean_green = 0
+    std_green = 5
+    norm_green = st.norm(loc=mean_green, scale=std_green)
 
     # rotational probability
     mean_rot = 0
     std_rot = 20
     norm_rot = st.norm(loc=mean_rot, scale=std_rot)
 
-    # probability for blue objects
+    # probability for blue objects appearance
     p = 0.5
     bernoulli = st.bernoulli(p)
     clutter_presence = bernoulli.rvs(size=objs[colors.index("blue")])
@@ -161,14 +145,21 @@ def extract_color_pixels(image, rectangles_path, show_steps=False, save_map=Fals
 
         for contour in contours[i]:
             if colors[i] == "green":
+                mask = np.zeros_like(color_masks[i])
+                cv2.drawContours(mask, [contour], 0, 255, thickness=cv2.FILLED)
+                # Extract the object using the mask
+                object_image = cv2.bitwise_and(color_masks[i], color_masks[i], mask=mask)
+                # Get dx and dy translation so that at least 80% does not overlap
+                _, dx, dy = translate_obj(object_image, translated_objs_image, dist_tra=norm_green, dist_rot=norm_rot, show_steps=False, disable_rotation=True)
+
                 # Calculate the bounding rectangle
                 x, y, w, h = cv2.boundingRect(contour)
 
                 # Translate it 
-                x = x + norm_tra.rvs() #TODO: controlla sovrapposizione traslazione 
-                y = y + norm_tra.rvs()
+                x = x + dx 
+                y = y + dy
 
-                # Step 5: Convert coordinates to a Cartesian system
+                # Convert coordinates to a Cartesian system
                 center_x = x + w // 2
                 center_y = y + h // 2
 
@@ -183,17 +174,14 @@ def extract_color_pixels(image, rectangles_path, show_steps=False, save_map=Fals
                 w /= unit
                 h /= unit
 
-                # Create a Rectangle instance
-                rectangle = Rectangle(center = geo.Point(center_x, center_y, 0), width=w, height=h)
-
                 # Add rectangle information to the list
                 rectangles_info.append({
                     "center": {
-                        "x":rectangle.center.x,
-                        "y":rectangle.center.y,
-                        "z":rectangle.center.z},
-                    "width": rectangle.width,
-                    "height": rectangle.height
+                        "x": center_x,
+                        "y": center_y,
+                        "z": 0},
+                    "width": w,
+                    "height": h
                 })
             elif colors[i] == 'blue' and clutter_presence[j]:
                 # If object is clutter and luck says to skip it
@@ -207,7 +195,7 @@ def extract_color_pixels(image, rectangles_path, show_steps=False, save_map=Fals
                 # Extract the object using the mask
                 object_image = cv2.bitwise_and(color_masks[i], color_masks[i], mask=mask)
                 #print(translations[j*2], translations[(j*2)+1])
-                translated_objs_image = translate_obj(object_image, translated_objs_image, dist_tra=norm_tra, dist_rot=norm_rot, show_steps=False)
+                translated_objs_image = translate_obj(object_image, translated_objs_image, dist_tra=norm_tra, dist_rot=norm_rot, show_steps=False, disable_rotation=False)[0]
                 j = j+1
 
     # Display the original image and the result
