@@ -38,7 +38,7 @@ class Rectangle:
 
 # obj_img is a b&w image, in which the object is black and the background white
 # img is an image
-def translate_obj(obj_img, img, dx, dy):
+def translate_obj(obj_img, img, dx, dy, angle, show_steps):
     height, width = obj_img.shape[:2]
 
     # create the translation matrix using dx and dy, it is a NumPy array 
@@ -47,6 +47,12 @@ def translate_obj(obj_img, img, dx, dy):
         [0, 1, dy]
     ], dtype=np.float32)
     translated_image = cv2.warpAffine(src=obj_img, M=translation_matrix, dsize=(width, height))
+
+    # create the rotational matrix
+    center = (translated_image.shape[1]//2, translated_image.shape[0]//2)
+    scale = 1
+    rot_mat = cv2.getRotationMatrix2D(center, angle, scale)
+    translated_image = cv2.warpAffine(src=translated_image, M=rot_mat, dsize=(width, height))
     translated_image = cv2.threshold(translated_image, 127, 255, cv2.THRESH_BINARY)[1]
     translated_image = cv2.bitwise_not(translated_image)
 
@@ -59,35 +65,14 @@ def translate_obj(obj_img, img, dx, dy):
     overlapping = cv2.bitwise_and(cv2.bitwise_not(img1), cv2.bitwise_not(img2)).any()
     #print(overlapping)
     dst = cv2.bitwise_and(img1,img2)
+
+    if show_steps:
+        _ = plt.subplot(221), plt.imshow(img1, cmap='gray'), plt.title('Pixels Mask')
+        _ = plt.subplot(222), plt.imshow(img2, cmap='gray'), plt.title('Image')
+        _ = plt.subplot(223), plt.imshow(dst), plt.title('Merged Image')
+        plt.show()
+
     return dst
-
-# obj_img is a b&w image, in which the object is black and the background white
-# img is an image
-def translate_obj_show(obj_img, img, dx, dy):
-    height, width = obj_img.shape[:2]
-
-    # create the translation matrix using dx and dy, it is a NumPy array 
-    translation_matrix = np.array([
-        [1, 0, dx],
-        [0, 1, dy]
-    ], dtype=np.float32)
-    translated_image = cv2.warpAffine(src=obj_img, M=translation_matrix, dsize=(width, height))
-    translated_image = cv2.threshold(translated_image, 127, 255, cv2.THRESH_BINARY)[1]
-    translated_image = cv2.bitwise_not(translated_image)
-
-    #TODO: avoid writing and reading images
-    cv2.imwrite("/tmp/image1.png", translated_image)
-    cv2.imwrite("/tmp/image2.png", img)
-    img1 = cv2.imread("/tmp/image1.png")
-    img2 = cv2.imread("/tmp/image2.png")
-
-    overlapping = cv2.bitwise_and(cv2.bitwise_not(img1), cv2.bitwise_not(img2)).any()
-    #print(overlapping)
-    dst = cv2.bitwise_and(img1,img2)
-    _ = plt.subplot(221), plt.imshow(img1, cmap='gray'), plt.title('Pixels Mask')
-    _ = plt.subplot(222), plt.imshow(img2, cmap='gray'), plt.title('Image')
-    _ = plt.subplot(223), plt.imshow(dst), plt.title('Merged Image')
-    plt.show()
 
 
 def extract_color_pixels(image, rectangles_path, show_steps=False, save_map=False):
@@ -135,12 +120,17 @@ def extract_color_pixels(image, rectangles_path, show_steps=False, save_map=Fals
         # Set the pixels in the original image where the color is extracted to white
         image_objects_removed[np.where(color_masks[i] > 0)] = [255, 255, 255]
 
-    # probability for red objects
-    #TODO: aggiungi rotazione
-    mean = 0
-    standard_deviation = 10
-    norm = st.norm(loc=mean, scale=standard_deviation)
-    translations = norm.rvs(size=sum(objs)*2)
+    # translational probability
+    mean_tra = 0
+    std_tra = 10
+    norm_tra = st.norm(loc=mean_tra, scale=std_tra)
+    translations = norm_tra.rvs(size=sum(objs)*2)
+
+    # rotational probability
+    mean_rot = 0
+    std_rot = 15
+    norm_rot = st.norm(loc=mean_rot, scale=std_rot)
+    rotations = norm_rot.rvs(size=sum(objs))
 
     # probability for blue objects
     p = 0.5
@@ -200,7 +190,7 @@ def extract_color_pixels(image, rectangles_path, show_steps=False, save_map=Fals
                 # Extract the object using the mask
                 object_image = cv2.bitwise_and(color_masks[i], color_masks[i], mask=mask)
                 #print(translations[j*2], translations[(j*2)+1])
-                translated_objs_image = translate_obj(object_image, translated_objs_image, translations[j*2], translations[(j*2)+1])
+                translated_objs_image = translate_obj(object_image, translated_objs_image, dx=translations[j*2], dy=translations[(j*2)+1], angle=rotations[j], show_steps=False)
                 j = j+1
 
     # Display the original image and the result
