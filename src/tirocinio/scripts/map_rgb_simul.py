@@ -165,7 +165,7 @@ def extract_color_pixels(image, rectangles_path, show_steps=False, save_map=Fals
                 x, y, w, h = cv2.boundingRect(contour)
 
                 # Translate it 
-                x = x + norm_tra.rvs() # TODO: controlla sovrapposizione traslazione 
+                x = x + norm_tra.rvs() #TODO: controlla sovrapposizione traslazione 
                 y = y + norm_tra.rvs()
 
                 # Step 5: Convert coordinates to a Cartesian system
@@ -197,6 +197,7 @@ def extract_color_pixels(image, rectangles_path, show_steps=False, save_map=Fals
                 })
             elif colors[i] == 'blue' and clutter_presence[j]:
                 # If object is clutter and luck says to skip it
+                #TODO: aggiungi log in vari punti, per esempio qui fai rospy.logdebug("Skipping blue object.")
                 continue
             else:
                 # Create a mask for the current contour
