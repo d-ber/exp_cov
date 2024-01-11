@@ -17,7 +17,7 @@ def translate_obj(obj_img, img, dist_tra, dist_rot, show_steps, disable_rotation
     to_translate = True
 
     translated_image = []
-    dst = []
+    dst = np.empty(1)
     dx = 0
     dy = 0
     angle = 0
@@ -106,7 +106,7 @@ def extract_color_pixels(image, rectangles_path, show_steps=False, save_map=Fals
             # Get the minimum area rectangle that bounds the contour
             rect = cv2.minAreaRect(contour)
             box = cv2.boxPoints(rect)
-            box = np.intp(box)
+            box = np.asarray(box, dtype=np.intp)
 
             # Draw the bounding box
             cv2.drawContours(images_with_boxes[i], [box], 0, (0, 255, 0), 2)  # Draw a green rectangle
@@ -147,7 +147,7 @@ def extract_color_pixels(image, rectangles_path, show_steps=False, save_map=Fals
         for contour in contours[i]:
             if colors[i] == "green":
                 mask = np.zeros_like(color_masks[i])
-                cv2.drawContours(mask, [contour], 0, 255, thickness=cv2.FILLED)
+                cv2.drawContours(mask, [contour], 0, (255, 255, 255), thickness=cv2.FILLED)
                 # Extract the object using the mask
                 object_image = cv2.bitwise_and(color_masks[i], color_masks[i], mask=mask)
                 # Get dx and dy translation so that at least 80% does not overlap
@@ -195,12 +195,12 @@ def extract_color_pixels(image, rectangles_path, show_steps=False, save_map=Fals
             else:
                 # Create a mask for the current contour
                 mask = np.zeros_like(color_masks[i])
-                cv2.drawContours(mask, [contour], 0, 255, thickness=cv2.FILLED)
+                cv2.drawContours(mask, [contour], 0, (255, 255, 255), thickness=cv2.FILLED)
 
                 # Extract the object using the mask
                 object_image = cv2.bitwise_and(color_masks[i], color_masks[i], mask=mask)
                 #print(translations[j*2], translations[(j*2)+1])
-                translated_objs_image = translate_obj(object_image, translated_objs_image, dist_tra=norm_tra, dist_rot=norm_rot, show_steps=False, disable_rotation=False)[0]
+                translated_objs_image, _, _ = translate_obj(object_image, translated_objs_image, dist_tra=norm_tra, dist_rot=norm_rot, show_steps=False, disable_rotation=False)
             j = j+1
 
     green_objs_translated = image_objects_removed.copy()
