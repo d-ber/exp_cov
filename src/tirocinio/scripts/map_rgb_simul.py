@@ -139,6 +139,7 @@ def extract_color_pixels(image, rectangles_path, show_steps=False, save_map=Fals
 
     translated_objs_image = image_objects_removed
     rectangles_info = []
+    contours_green_translated = list(contours[colors.index("green")])
 
     for i in range (0, 3):
         j = 0
@@ -151,6 +152,10 @@ def extract_color_pixels(image, rectangles_path, show_steps=False, save_map=Fals
                 object_image = cv2.bitwise_and(color_masks[i], color_masks[i], mask=mask)
                 # Get dx and dy translation so that at least 80% does not overlap
                 _, dx, dy = translate_obj(object_image, translated_objs_image, dist_tra=norm_green, dist_rot=norm_rot, show_steps=False, disable_rotation=True)
+
+                for r in range(4):
+                    contours_green_translated[j][r][0][0] += dx
+                    contours_green_translated[j][r][0][1] += dy
 
                 # Calculate the bounding rectangle
                 x, y, w, h = cv2.boundingRect(contour)
@@ -196,7 +201,10 @@ def extract_color_pixels(image, rectangles_path, show_steps=False, save_map=Fals
                 object_image = cv2.bitwise_and(color_masks[i], color_masks[i], mask=mask)
                 #print(translations[j*2], translations[(j*2)+1])
                 translated_objs_image = translate_obj(object_image, translated_objs_image, dist_tra=norm_tra, dist_rot=norm_rot, show_steps=False, disable_rotation=False)[0]
-                j = j+1
+            j = j+1
+
+    green_objs_translated = image_objects_removed.copy()
+    green_objs_translated = cv2.drawContours(green_objs_translated, contours[colors.index("green")], -1, (0, 255, 0), cv2.FILLED)
 
     # Display the original image and the result
     if show_steps:
@@ -205,7 +213,7 @@ def extract_color_pixels(image, rectangles_path, show_steps=False, save_map=Fals
         _ = plt.subplot(335), plt.imshow(color_masks[1], cmap='gray'), plt.title("{} Pixels Mask".format(colors[1].title()))
         _ = plt.subplot(336), plt.imshow(color_masks[2], cmap='gray'), plt.title("{} Pixels Mask".format(colors[2].title()))
         _ = plt.subplot(337), plt.imshow(cv2.cvtColor(images_with_boxes[0], cv2.COLOR_BGR2RGB)), plt.title('{} Bounding Boxes'.format(colors[0].title()))
-        _ = plt.subplot(338), plt.imshow(cv2.cvtColor(images_with_boxes[1], cv2.COLOR_BGR2RGB)), plt.title('{} Bounding Boxes'.format(colors[1].title()))
+        _ = plt.subplot(338), plt.imshow(cv2.cvtColor(green_objs_translated, cv2.COLOR_BGR2RGB)), plt.title('Green areas translated')
         _ = plt.subplot(339), plt.imshow(cv2.cvtColor(images_with_boxes[2], cv2.COLOR_BGR2RGB)), plt.title('{} Bounding Boxes'.format(colors[2].title()))
         _ = plt.subplot(332), plt.imshow(cv2.cvtColor(image_objects_removed, cv2.COLOR_BGR2RGB)), plt.title('Without colored Pixels')
         _ = plt.subplot(333), plt.imshow(cv2.cvtColor(translated_objs_image, cv2.COLOR_BGR2RGB)), plt.title('Colored Objects translated')
