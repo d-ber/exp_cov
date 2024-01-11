@@ -38,29 +38,51 @@ class Rectangle:
 
 # obj_img is a b&w image, in which the object is black and the background white
 # img is an image
-def translate_obj(obj_img, img, dx, dy, angle, show_steps):
+def translate_obj(obj_img, img, dist_tra, dist_rot, show_steps):
     height, width = obj_img.shape[:2]
 
-    # create the translation matrix using dx and dy, it is a NumPy array 
-    translation_matrix = np.array([
-        [1, 0, dx],
-        [0, 1, dy]
-    ], dtype=np.float32)
-    translated_image = cv2.warpAffine(src=obj_img, M=translation_matrix, dsize=(width, height))
-    translated_image = cv2.cvtColor(translated_image, cv2.COLOR_BGR2RGB)
+    to_translate = True
 
-    # create the rotational matrix
-    center = (translated_image.shape[1]//2, translated_image.shape[0]//2)
-    scale = 1
-    rot_mat = cv2.getRotationMatrix2D(center, angle, scale)
-    translated_image = cv2.warpAffine(src=translated_image, M=rot_mat, dsize=(width, height))
-    translated_image = cv2.threshold(translated_image, 127, 255, cv2.THRESH_BINARY)[1]
-    translated_image = cv2.bitwise_not(translated_image)
+    translated_image = []
+    dst = []
 
-    #TODO: check for complete overlap and retranslate until not completely overlapped
-    #overlapping = cv2.bitwise_and(cv2.bitwise_not(translated_image), cv2.bitwise_not(img)).any()
-    #print(overlapping)
-    dst = cv2.bitwise_and(translated_image, img)
+    while to_translate:
+
+        # generate random values with given distributions
+        dx = dist_tra.rvs()
+        dy = dist_tra.rvs()
+        angle = dist_rot.rvs()
+
+        # create the translation matrix using dx and dy, it is a NumPy array 
+        translation_matrix = np.array([
+            [1, 0, dx],
+            [0, 1, dy]
+        ], dtype=np.float32)
+        translated_image = cv2.warpAffine(src=obj_img, M=translation_matrix, dsize=(width, height))
+        translated_image = cv2.cvtColor(translated_image, cv2.COLOR_BGR2RGB)
+
+        # create the rotational matrix
+        center = (translated_image.shape[1]//2, translated_image.shape[0]//2)
+        scale = 1
+        rot_mat = cv2.getRotationMatrix2D(center, angle, scale)
+        translated_image = cv2.warpAffine(src=translated_image, M=rot_mat, dsize=(width, height))
+        translated_image = cv2.threshold(translated_image, 127, 255, cv2.THRESH_BINARY)[1]
+        translated_image = cv2.bitwise_not(translated_image)
+
+        black_pixels_obj = np.count_nonzero(cv2.bitwise_not(translated_image))
+        #print("black_pixels_obj", black_pixels_obj)
+        black_pixels_overlapped = np.count_nonzero(cv2.bitwise_and(cv2.bitwise_not(translated_image), cv2.bitwise_not(img)))
+        #print("black_pixels_overlapped", black_pixels_overlapped)
+        overlap_percentage = 100*(black_pixels_overlapped/black_pixels_obj)
+        #print("overlap_percentage", overlap_percentage)
+        #_ = plt.subplot(111), plt.imshow(cv2.bitwise_and(cv2.bitwise_not(translated_image), cv2.bitwise_not(img)), cmap='gray'), plt.title('Bitwise And')
+        #plt.show()
+
+        dst = cv2.bitwise_and(translated_image, img)
+
+        # If at least 80% of object pixels don't overlap, we accept the translation
+        if overlap_percentage < 20:
+            to_translate = False
 
     if show_steps:
         _ = plt.subplot(131), plt.imshow(translated_image, cmap='gray'), plt.title('Pixels Mask')
@@ -124,9 +146,8 @@ def extract_color_pixels(image, rectangles_path, show_steps=False, save_map=Fals
 
     # rotational probability
     mean_rot = 0
-    std_rot = 15
+    std_rot = 20
     norm_rot = st.norm(loc=mean_rot, scale=std_rot)
-    rotations = norm_rot.rvs(size=sum(objs))
 
     # probability for blue objects
     p = 0.5
@@ -145,7 +166,7 @@ def extract_color_pixels(image, rectangles_path, show_steps=False, save_map=Fals
                 x, y, w, h = cv2.boundingRect(contour)
 
                 # Translate it 
-                x = x + translations[0]
+                x = x + translations[0] # TODO: fix traslazione verde: riduci std e usa valori diversi (basati su j)
                 y = y + translations[1]
 
                 # Step 5: Convert coordinates to a Cartesian system
@@ -186,7 +207,7 @@ def extract_color_pixels(image, rectangles_path, show_steps=False, save_map=Fals
                 # Extract the object using the mask
                 object_image = cv2.bitwise_and(color_masks[i], color_masks[i], mask=mask)
                 #print(translations[j*2], translations[(j*2)+1])
-                translated_objs_image = translate_obj(object_image, translated_objs_image, dx=translations[j*2], dy=translations[(j*2)+1], angle=rotations[j], show_steps=False)
+                translated_objs_image = translate_obj(object_image, translated_objs_image, dist_tra=norm_tra, dist_rot=norm_rot, show_steps=False)
                 j = j+1
 
     # Display the original image and the result
