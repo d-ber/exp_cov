@@ -47,6 +47,7 @@ def translate_obj(obj_img, img, dx, dy, angle, show_steps):
         [0, 1, dy]
     ], dtype=np.float32)
     translated_image = cv2.warpAffine(src=obj_img, M=translation_matrix, dsize=(width, height))
+    translated_image = cv2.cvtColor(translated_image, cv2.COLOR_BGR2RGB)
 
     # create the rotational matrix
     center = (translated_image.shape[1]//2, translated_image.shape[0]//2)
@@ -56,20 +57,15 @@ def translate_obj(obj_img, img, dx, dy, angle, show_steps):
     translated_image = cv2.threshold(translated_image, 127, 255, cv2.THRESH_BINARY)[1]
     translated_image = cv2.bitwise_not(translated_image)
 
-    #TODO: avoid writing and reading images
-    cv2.imwrite("/tmp/image1.png", translated_image)
-    cv2.imwrite("/tmp/image2.png", img)
-    img1 = cv2.imread("/tmp/image1.png")
-    img2 = cv2.imread("/tmp/image2.png")
-
-    overlapping = cv2.bitwise_and(cv2.bitwise_not(img1), cv2.bitwise_not(img2)).any()
+    #TODO: check for complete overlap and retranslate until not completely overlapped
+    #overlapping = cv2.bitwise_and(cv2.bitwise_not(translated_image), cv2.bitwise_not(img)).any()
     #print(overlapping)
-    dst = cv2.bitwise_and(img1,img2)
+    dst = cv2.bitwise_and(translated_image, img)
 
     if show_steps:
-        _ = plt.subplot(221), plt.imshow(img1, cmap='gray'), plt.title('Pixels Mask')
-        _ = plt.subplot(222), plt.imshow(img2, cmap='gray'), plt.title('Image')
-        _ = plt.subplot(223), plt.imshow(dst), plt.title('Merged Image')
+        _ = plt.subplot(131), plt.imshow(translated_image, cmap='gray'), plt.title('Pixels Mask')
+        _ = plt.subplot(132), plt.imshow(img, cmap='gray'), plt.title('Image')
+        _ = plt.subplot(133), plt.imshow(dst), plt.title('Merged Image')
         plt.show()
 
     return dst
