@@ -137,6 +137,9 @@ def extract_color_pixels(image, rectangles_path, show_steps=False, save_map=Fals
     bernoulli = st.bernoulli(p)
     clutter_presence = bernoulli.rvs(size=objs[colors.index("blue")])
 
+    # Stage simulator map dimension
+    stage_dim = 20
+
     translated_objs_image = image_objects_removed
     rectangles_info = []
     contours_green_translated = list(contours[colors.index("green")])
@@ -164,20 +167,17 @@ def extract_color_pixels(image, rectangles_path, show_steps=False, save_map=Fals
                 x = x + dx 
                 y = y + dy
 
-                # Convert coordinates to a Cartesian system
-                center_x = x + w // 2
-                center_y = y + h // 2
+                # Get center coordinates
+                center_x = x + (w / 2)
+                center_y = y + (h / 2)
 
-                # Convert to a Cartesian system with the origin in the center
-                center_x -= image.shape[1] // 2  # Subtract half of the image width
-                center_y = image.shape[0] // 2 - center_y  # Subtract half of the image height and invert y-axis
+                # Convert to a Cartesian system with the origin in the center of stage simulator
+                center_x = (stage_dim*center_x)/image.shape[1] - stage_dim / 2
+                center_y = (stage_dim*-center_y)/image.shape[1] + stage_dim / 2
 
                 # Convert pixel units to the desired unit (n pixels per unit)
-                unit = 1/0.035888 #TODO: fattorizza in base al numero della mappa
-                center_x /= unit
-                center_y /= unit
-                w /= unit
-                h /= unit
+                w = stage_dim*(w/image.shape[0])
+                h = stage_dim*(w/image.shape[1])
 
                 # Add rectangle information to the list
                 rectangles_info.append({
