@@ -5,6 +5,7 @@ import geometry_msgs.msg as geo
 import subprocess as sp
 import json
 import argparse
+import scipy.stats as st
 
 class Rectangle:
     def __init__(self, min_point=None, max_point=None, center=None, width=None, height=None):
@@ -35,21 +36,21 @@ class Rectangle:
 
 class pose_check:
 
-    def __init__(self, rectangles):
+    def __init__(self, rectangles, disturb_prop):
         self.sub = rospy.Subscriber("/base_pose_ground_truth", Odometry, self.callback)
         self.rectangles = rectangles
         self.inside = -1
+        self.disturb_prop = disturb_prop
 
         rospy.loginfo("Number of Rectangles: {}".format(len(self.rectangles)))
         for idx, rectangle in enumerate(self.rectangles):
             rospy.loginfo("Rectangle {}: \nMin =\n{}, \nMax =\n{}".format(idx + 1, rectangle.min_point, rectangle.max_point))
-        #TODO: disturba con una probabilità ogni tot tempo/messaggi
     def callback(self, msg):
         position = msg.pose.pose.position
         for i, rectangle in enumerate(self.rectangles):
             if (rectangle.min_point.x <= position.x <= rectangle.max_point.x and rectangle.min_point.y <= position.y <= rectangle.max_point.y):
                 rospy.loginfo("Position is within Rectangle {}: x={}, y={}".format(i + 1, position.x, position.y))
-                if self.inside != i:
+                if self.inside != i or st.bernoulli.rvs(self.disturb_prop): # if inside, for each message received disturb with prob 0.003
                     sp.run(["rosrun", "tirocinio", "disturba.py", "disturb", "1"]) # map_rgb number 1 is fine since we won't select here
                     self.inside = i
                 return
@@ -89,9 +90,10 @@ def main():
     json_file_path = args.path
 
     rectangles = read_rectangles(json_file_path)
+    disturb_prop = 0.003
         
     rospy.init_node('pose_check', anonymous=True)
-    _ = pose_check(rectangles)
+    _ = pose_check(rectangles, disturb_prop)
 
     # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()
