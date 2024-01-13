@@ -11,7 +11,9 @@ import argparse
 
 # obj_img is a b&w image, in which the object is black and the background white
 # img is an image
-def translate_obj(obj_img, img, dist_tra, dist_rot, show_steps, disable_rotation):
+def translate_obj(obj_img, movement_area, img, dist_tra, dist_rot, show_steps, disable_rotation):
+    obj_img = cv2.bitwise_not(obj_img)
+    movement_area = cv2.cvtColor(movement_area, cv2.COLOR_BGR2RGB)
     height, width = obj_img.shape[:2]
 
     to_translate = True
@@ -49,35 +51,38 @@ def translate_obj(obj_img, img, dist_tra, dist_rot, show_steps, disable_rotation
         translated_image = cv2.bitwise_not(translated_image)
 
         black_pixels_obj = np.count_nonzero(cv2.bitwise_not(translated_image))
-        #print("black_pixels_obj", black_pixels_obj)
         black_pixels_overlapped = np.count_nonzero(cv2.bitwise_and(cv2.bitwise_not(translated_image), cv2.bitwise_not(img)))
-        #print("black_pixels_overlapped", black_pixels_overlapped)
         overlap_percentage = 100*(black_pixels_overlapped/black_pixels_obj)
-        #print("overlap_percentage", overlap_percentage)
-        #_ = plt.subplot(111), plt.imshow(cv2.bitwise_and(cv2.bitwise_not(translated_image), cv2.bitwise_not(img)), cmap='gray'), plt.title('Bitwise And')
-        #plt.show()
+        plt.show()
+
+        movement_area_overlapped = np.count_nonzero(cv2.bitwise_and(cv2.bitwise_not(translated_image), cv2.bitwise_not(movement_area)))
+        movement_area_overlap_percentage = 100*(movement_area_overlapped/black_pixels_obj)
 
         dst = cv2.bitwise_and(translated_image, img)
 
-        # If at least 80% of object pixels don't overlap, we accept the translation
-        if overlap_percentage < 20:
+        # If at least 80% of object pixels don't overlap and the object is at least 95% inside the defined movement area, we accept the translation
+        if overlap_percentage < 20 and movement_area_overlap_percentage >= 95:
             to_translate = False
 
     if show_steps:
-        _ = plt.subplot(131), plt.imshow(translated_image, cmap='gray'), plt.title('Pixels Mask')
-        _ = plt.subplot(132), plt.imshow(img, cmap='gray'), plt.title('Image')
-        _ = plt.subplot(133), plt.imshow(dst), plt.title('Merged Image')
+        _ = plt.subplot(231), plt.imshow(cv2.bitwise_not(obj_img), cmap='gray'), plt.title('Original Object')
+        _ = plt.subplot(232), plt.imshow(movement_area,cmap='gray'), plt.title('Movement Area')
+        _ = plt.subplot(233), plt.imshow(translated_image, cmap='gray'), plt.title('Translated Object')
+        _ = plt.subplot(234), plt.imshow(img, cmap='gray'), plt.title('Original Image')
+        _ = plt.subplot(235), plt.imshow(dst, cmap='gray'), plt.title('Merged Image')
         plt.show()
 
     return (dst, dx, dy)
 
 
-def extract_color_pixels(image, rectangles_path, show_steps=False, save_map=False):
+def extract_color_pixels(image, movement_mask_image, rectangles_path, show_steps=False, save_map=False):
     # Copy
     image_objects_removed = image.copy()
     
     # Convert RGB image to HSV (Hue, Saturation, Value) color space
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    # Convert RGB image to HSV (Hue, Saturation, Value) color space
+    hsv_movement = cv2.cvtColor(movement_mask_image, cv2.COLOR_BGR2HSV)
 
     # Define the HSV range based on the specified color
     # (red, green, blue) that is (oggetti semistatici, aree di disturbo, clutter)
@@ -85,14 +90,25 @@ def extract_color_pixels(image, rectangles_path, show_steps=False, save_map=Fals
     lower_ranges = (np.array([0, 100, 100]), np.array([40, 40, 40]), np.array([100, 50, 50]))
     upper_ranges = (np.array([10, 255, 255]), np.array([80, 255, 255]), np.array([140, 255, 255]))
 
-    # Create a binary mask for the specified color
+    #movement_color = ("yellow")
+    lower_ranges_movement = np.array([20, 100, 100])
+    upper_ranges_movement = np.array([40, 255, 255])
+    # Create a binary mask for the specified color for movement areas
+    color_mask_movement = cv2.inRange(hsv_movement, lower_ranges_movement, upper_ranges_movement) 
+    # Find contours in the mask
+    contours_movement = cv2.findContours(color_mask_movement, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
+
     color_masks = []
     images_with_boxes = []
     results = []
     objs = []
     contours = []
+    contour_obj_image_movement_area = []
+    j = 0
+    all_image_mask = np.zeros_like(image)
 
     for i in range (0, 3):
+        # Create a binary mask for the specified color
         color_masks.insert(i, cv2.inRange(hsv, lower_ranges[i], upper_ranges[i]))
 
         # Find contours in the mask
@@ -111,7 +127,41 @@ def extract_color_pixels(image, rectangles_path, show_steps=False, save_map=Fals
             # Draw the bounding box
             cv2.drawContours(images_with_boxes[i], [box], 0, (0, 255, 0), 2)  # Draw a green rectangle
 
-        # Apply the mask to the original image
+            found = False
+
+            for contour_movement in contours_movement:
+                # draw object on blank canvas
+                mask = np.zeros_like(color_masks[i])
+                cv2.drawContours(mask, [contour], -1, (255,255,255), cv2.FILLED)# Extract the object using the mask
+                object_image = cv2.bitwise_and(color_masks[i], color_masks[i], mask=mask)
+                object_image = cv2.bitwise_not(object_image)
+                black_pixels_obj = np.count_nonzero(cv2.bitwise_not(object_image))
+
+                # draw areas on blank canvas
+                mask = np.zeros_like(color_mask_movement)
+                cv2.drawContours(mask, [contour_movement], -1, (255,255,255), cv2.FILLED)# Extract the object using the mask
+                movement_area = cv2.bitwise_and(color_mask_movement, color_mask_movement, mask=mask)
+                movement_area = cv2.bitwise_not(movement_area)
+                black_pixels_overlapped = np.count_nonzero(cv2.bitwise_and(cv2.bitwise_not(object_image), cv2.bitwise_not(movement_area)))
+                overlap_percentage = 100*(black_pixels_overlapped/black_pixels_obj)
+                
+                if overlap_percentage == 100:
+                    contour_obj_image_movement_area.insert(j, (contour, i, object_image, movement_area))
+                    j = j+1
+                    found = True
+                    break
+            
+            if not found:
+                # draw object on blank canvas
+                mask = np.zeros_like(color_masks[i])
+                cv2.drawContours(mask, [contour], -1, (255,255,255), cv2.FILLED)# Extract the object using the mask
+                object_image = cv2.bitwise_and(color_masks[i], color_masks[i], mask=mask)
+                object_image = cv2.bitwise_not(object_image)
+
+                #If object is in no movement area, give movement area equal to full image
+                contour_obj_image_movement_area.insert(j, (contour, i, object_image, all_image_mask))
+
+            # Apply the mask to the original image
         results.insert(i, cv2.bitwise_and(image_objects_removed, image_objects_removed, mask=color_masks[i]))
 
         # Set the pixels in the original image where the color is extracted to white
@@ -134,8 +184,7 @@ def extract_color_pixels(image, rectangles_path, show_steps=False, save_map=Fals
 
     # probability for blue objects appearance
     p = 0.5
-    bernoulli = st.bernoulli(p)
-    clutter_presence = bernoulli.rvs(size=objs[colors.index("blue")])
+    bernoulli_clutter = st.bernoulli(p)
 
     # Stage simulator map dimension
     stage_dim = 20
@@ -143,68 +192,56 @@ def extract_color_pixels(image, rectangles_path, show_steps=False, save_map=Fals
     translated_objs_image = image_objects_removed
     rectangles_info = []
     contours_green_translated = list(contours[colors.index("green")])
+    green_idx = 0
 
-    for i in range (0, 3):
-        j = 0
+    for j, (contour, obj_color_idx, object_image, movement_area) in enumerate(contour_obj_image_movement_area):
+        if colors[obj_color_idx] == "green":
+            # Get dx and dy translation so that at least 80% does not overlap
+            _, dx, dy = translate_obj(object_image, movement_area, translated_objs_image, dist_tra=norm_green, dist_rot=norm_rot, show_steps=False, disable_rotation=True)
 
-        for contour in contours[i]:
-            if colors[i] == "green":
-                mask = np.zeros_like(color_masks[i])
-                cv2.drawContours(mask, [contour], 0, (255, 255, 255), thickness=cv2.FILLED)
-                # Extract the object using the mask
-                object_image = cv2.bitwise_and(color_masks[i], color_masks[i], mask=mask)
-                # Get dx and dy translation so that at least 80% does not overlap
-                _, dx, dy = translate_obj(object_image, translated_objs_image, dist_tra=norm_green, dist_rot=norm_rot, show_steps=False, disable_rotation=True)
+            for r in range(4):
+                print(contours_green_translated)
+                contours_green_translated[green_idx][r][0][0] += dx
+                contours_green_translated[green_idx][r][0][1] += dy
 
-                for r in range(4):
-                    contours_green_translated[j][r][0][0] += dx
-                    contours_green_translated[j][r][0][1] += dy
+            # Calculate the bounding rectangle
+            x, y, w, h = cv2.boundingRect(contour)
 
-                # Calculate the bounding rectangle
-                x, y, w, h = cv2.boundingRect(contour)
+            # Translate it 
+            x = x + dx 
+            y = y + dy
 
-                # Translate it 
-                x = x + dx 
-                y = y + dy
+            # Get center coordinates
+            center_x = x + (w / 2)
+            center_y = y + (h / 2)
 
-                # Get center coordinates
-                center_x = x + (w / 2)
-                center_y = y + (h / 2)
+            # Convert to a Cartesian system with the origin in the center of stage simulator
+            center_x = (stage_dim*center_x)/image.shape[1] - stage_dim / 2
+            center_y = (stage_dim*-center_y)/image.shape[1] + stage_dim / 2
 
-                # Convert to a Cartesian system with the origin in the center of stage simulator
-                center_x = (stage_dim*center_x)/image.shape[1] - stage_dim / 2
-                center_y = (stage_dim*-center_y)/image.shape[1] + stage_dim / 2
+            # Convert pixel units to the desired unit (n pixels per unit)
+            w = stage_dim*(w/image.shape[0])
+            h = stage_dim*(w/image.shape[1])
 
-                # Convert pixel units to the desired unit (n pixels per unit)
-                w = stage_dim*(w/image.shape[0])
-                h = stage_dim*(w/image.shape[1])
-
-                # Add rectangle information to the list
-                rectangles_info.append({
-                    "center": {
-                        "x": center_x,
-                        "y": center_y,
-                        "z": 0},
-                    "width": w,
-                    "height": h
-                })
-            elif colors[i] == 'blue' and clutter_presence[j]:
-                # If object is clutter and luck says to skip it
-                #TODO: aggiungi log in vari punti, per esempio qui fai rospy.logdebug("Skipping blue object.")
-                continue
-            else:
-                # Create a mask for the current contour
-                mask = np.zeros_like(color_masks[i])
-                cv2.drawContours(mask, [contour], 0, (255, 255, 255), thickness=cv2.FILLED)
-
-                # Extract the object using the mask
-                object_image = cv2.bitwise_and(color_masks[i], color_masks[i], mask=mask)
-                #print(translations[j*2], translations[(j*2)+1])
-                translated_objs_image, _, _ = translate_obj(object_image, translated_objs_image, dist_tra=norm_tra, dist_rot=norm_rot, show_steps=False, disable_rotation=False)
-            j = j+1
+            # Add rectangle information to the list
+            rectangles_info.append({
+                "center": {
+                    "x": center_x,
+                    "y": center_y,
+                    "z": 0},
+                "width": w,
+                "height": h
+            })
+            green_idx += 1
+        elif colors[obj_color_idx] == 'blue' and bernoulli_clutter.rvs():
+            # If object is clutter and luck says to skip it
+            #TODO: aggiungi log in vari punti, per esempio qui fai rospy.logdebug("Skipping blue object.")
+            continue
+        else:            
+            translated_objs_image, _, _ = translate_obj(object_image, movement_area, translated_objs_image, dist_tra=norm_tra, dist_rot=norm_rot, show_steps=False, disable_rotation=False)
 
     green_objs_translated = image_objects_removed.copy()
-    green_objs_translated = cv2.drawContours(green_objs_translated, contours[colors.index("green")], -1, (0, 255, 0), cv2.FILLED)
+    green_objs_translated = cv2.drawContours(green_objs_translated, contours_green_translated, -1, (0, 255, 0), cv2.FILLED)
 
     # Display the original image and the result
     if show_steps:
@@ -271,6 +308,10 @@ def main():
     batch = args.batch
     no_timestamp = args.no_timestamp
     base_dir = args.dir
+
+    #TODO: read filepath via cmd
+    movement_mask_image_path = "/home/d-ber/catkin_ws/src/tirocinio/maps_rgb_lab/map1/map1_movement_mask.png"
+    movement_mask_image = cv2.imread(movement_mask_image_path, cv2.IMREAD_COLOR)
         
     image = cv2.imread(image_path, cv2.IMREAD_COLOR)
 
@@ -279,7 +320,7 @@ def main():
             rectangles_path = os.path.join(base_dir, "rectangles.json")
         else:
             rectangles_path = os.path.join(base_dir, 'rectangles_' + str(time.time_ns()) + '.json')
-        image_modified = extract_color_pixels(image, rectangles_path, show_steps=show_steps, save_map=save_map)
+        image_modified = extract_color_pixels(image, movement_mask_image, rectangles_path, show_steps=show_steps, save_map=save_map)
 
         if save_map:
             if no_timestamp:
@@ -298,7 +339,7 @@ def main():
     else:
         for i in range(batch):
             rectangles_path = os.path.join(base_dir, 'rectangles_' + str(i) + '.json')
-            image_modified = extract_color_pixels(image, rectangles_path, show_steps=show_steps, save_map=True)
+            image_modified = extract_color_pixels(image, movement_mask_image, rectangles_path, show_steps=show_steps, save_map=True)
             filename = os.path.join(base_dir, "image_" + str(i) + ".png")
             cv2.imwrite(filename, image_modified)
             print("Saved map as {}".format(filename))
