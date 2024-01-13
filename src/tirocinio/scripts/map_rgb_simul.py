@@ -200,7 +200,6 @@ def extract_color_pixels(image, movement_mask_image, rectangles_path, show_steps
             _, dx, dy = translate_obj(object_image, movement_area, translated_objs_image, dist_tra=norm_green, dist_rot=norm_rot, show_steps=False, disable_rotation=True)
 
             for r in range(4):
-                print(contours_green_translated)
                 contours_green_translated[green_idx][r][0][0] += dx
                 contours_green_translated[green_idx][r][0][1] += dy
 
@@ -284,8 +283,10 @@ def parse_args():
     package_path = rospack.get_path('tirocinio')
 
     parser = argparse.ArgumentParser(description='Modify rgb maps automatically.')
-    parser.add_argument('-m', '--map', default=os.path.join(package_path, "maps_rgb_lab/map1/map1_rgb.png"),
+    parser.add_argument('--map', default=os.path.join(package_path, "maps_rgb_lab/map1/map1_rgb.png"),
         help="Path to the rgb map file.", metavar="MAP_PATH")
+    parser.add_argument('--mask', default=os.path.join(package_path, "maps_rgb_lab/map1/map1_movement_mask.png"),
+        help="Path to the rgb mask map file for movement areas. Each rgb object in the map will be moved within the yellow mask given in this file. If the object is none, then it can move freely.", metavar="MASK_PATH")
     parser.add_argument('--show', action='store_true',
         help="Use this to show the processing steps.")
     parser.add_argument('--save', action='store_true',
@@ -308,9 +309,8 @@ def main():
     batch = args.batch
     no_timestamp = args.no_timestamp
     base_dir = args.dir
+    movement_mask_image_path = args.mask
 
-    #TODO: read filepath via cmd
-    movement_mask_image_path = "/home/d-ber/catkin_ws/src/tirocinio/maps_rgb_lab/map1/map1_movement_mask.png"
     movement_mask_image = cv2.imread(movement_mask_image_path, cv2.IMREAD_COLOR)
         
     image = cv2.imread(image_path, cv2.IMREAD_COLOR)
