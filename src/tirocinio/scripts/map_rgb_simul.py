@@ -220,7 +220,7 @@ def extract_color_pixels(image, movement_mask_image, rectangles_path, show_steps
 
             # Convert pixel units to the desired unit (n pixels per unit)
             w = stage_dim*(w/image.shape[0])
-            h = stage_dim*(w/image.shape[1])
+            h = stage_dim*(h/image.shape[1])
 
             # Add rectangle information to the list
             rectangles_info.append({
