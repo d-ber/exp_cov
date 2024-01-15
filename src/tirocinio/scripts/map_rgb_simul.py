@@ -5,7 +5,6 @@ import scipy.stats as st
 import os
 import time
 import json
-import geometry_msgs.msg as geo
 import rospkg
 import argparse
 
@@ -82,7 +81,7 @@ def translate_obj(obj_img, movement_area, img, dist_tra, dist_rot, show_steps, d
     return (dst, dx, dy)
 
 
-def extract_color_pixels(image, movement_mask_image, rectangles_path, show_steps=False, save_map=False):
+def extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=False, show_steps=False, save_map=False):
     # Copy
     image_objects_removed = image.copy()
     
@@ -204,7 +203,7 @@ def extract_color_pixels(image, movement_mask_image, rectangles_path, show_steps
     for j, (contour, obj_color_idx, object_image, movement_area) in enumerate(contour_obj_image_movement_area):
         if colors[obj_color_idx] == "green":
             # Get dx and dy translation so that at least 80% does not overlap
-            _, dx, dy = translate_obj(object_image, movement_area, translated_objs_image, dist_tra=norm_green, dist_rot=norm_rot, show_steps=False, disable_rotation=True)
+            _, dx, dy = translate_obj(object_image, movement_area, translated_objs_image, dist_tra=norm_green, dist_rot=norm_rot, show_steps=show_steps, disable_rotation=True)
 
             for r in range(4):
                 contours_green_translated[green_idx][r][0][0] += dx
@@ -244,13 +243,13 @@ def extract_color_pixels(image, movement_mask_image, rectangles_path, show_steps
             #TODO: aggiungi log in vari punti, per esempio qui fai rospy.logdebug("Skipping blue object.")
             continue
         else:            
-            translated_objs_image, _, _ = translate_obj(object_image, movement_area, translated_objs_image, dist_tra=norm_tra, dist_rot=norm_rot, show_steps=False, disable_rotation=False)
+            translated_objs_image, _, _ = translate_obj(object_image, movement_area, translated_objs_image, dist_tra=norm_tra, dist_rot=norm_rot, show_steps=show_steps, disable_rotation=False)
 
     green_objs_translated = image_objects_removed.copy()
     green_objs_translated = cv2.drawContours(green_objs_translated, contours_green_translated, -1, (0, 255, 0), cv2.FILLED)
 
     # Display the original image and the result
-    if show_steps:
+    if show_recap:
         _ = plt.subplot(331), plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)), plt.title('Original Image')
         _ = plt.subplot(334), plt.imshow(color_masks[0], cmap='gray'), plt.title("{} Pixels Mask".format(colors[0].title()))
         _ = plt.subplot(335), plt.imshow(color_masks[1], cmap='gray'), plt.title("{} Pixels Mask".format(colors[1].title()))
@@ -295,7 +294,7 @@ def parse_args():
     parser.add_argument('--mask', default=os.path.join(package_path, "maps_rgb_lab/map1/map1_movement_mask.png"),
         help="Path to the rgb mask map file for movement areas. Each rgb object in the map will be moved within the yellow mask given in this file. If the object is none, then it can move freely.", metavar="MASK_PATH")
     parser.add_argument('--show', action='store_true',
-        help="Use this to show the processing steps.")
+        help="Use this to show a final recap.")
     parser.add_argument('--save', action='store_true',
         help="Use this to save the produced map and rectangles info.")
     parser.add_argument("-b", "--batch", type=check_positive, default=1, metavar="N",
@@ -305,13 +304,16 @@ def parse_args():
             in which n is the smallest number so that there is no file with that name. Same goes for the rectangles file.""")
     parser.add_argument("-d", '--dir', default=os.getcwd(),
         help="Base directory to save files in.")
+    parser.add_argument('--steps', action='store_true',
+        help="Use this to show the processing steps.")
     return parser.parse_args()
 
 def main():
 
     args = parse_args()
     image_path = args.map
-    show_steps = args.show
+    show_recap = args.show
+    show_steps = args.steps
     save_map = args.save
     batch = args.batch
     no_timestamp = args.no_timestamp
@@ -327,7 +329,7 @@ def main():
             rectangles_path = os.path.join(base_dir, "rectangles.json")
         else:
             rectangles_path = os.path.join(base_dir, 'rectangles_' + str(time.time_ns()) + '.json')
-        image_modified = extract_color_pixels(image, movement_mask_image, rectangles_path, show_steps=show_steps, save_map=save_map)
+        image_modified = extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=show_recap, show_steps=show_steps, save_map=save_map)
 
         if save_map:
             if no_timestamp:
@@ -346,7 +348,7 @@ def main():
     else:
         for i in range(batch):
             rectangles_path = os.path.join(base_dir, 'rectangles_' + str(i) + '.json')
-            image_modified = extract_color_pixels(image, movement_mask_image, rectangles_path, show_steps=show_steps, save_map=True)
+            image_modified = extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=show_recap, show_steps=show_steps, save_map=True)
             filename = os.path.join(base_dir, "image_" + str(i) + ".png")
             cv2.imwrite(filename, image_modified)
             print("Saved map as {}".format(filename))
