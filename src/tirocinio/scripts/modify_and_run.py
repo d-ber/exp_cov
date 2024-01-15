@@ -19,6 +19,7 @@ def main():
     args = parse_args()
     map_rgb = str(args.map)
     map_rgb_path = os.path.join(package_path, "maps_rgb_lab/map" + map_rgb + "/map" + map_rgb + "_rgb.png")
+    movement_mask_path = os.path.join(package_path, "maps_rgb_lab/map" + map_rgb + "/map" + map_rgb + "_movement_mask.png")
     scan_topic = args.scan
 
     image_path = os.path.join(package_path, "world/bitmaps", "image.png")
@@ -32,7 +33,7 @@ def main():
         os.remove(rects_path)
 
     try:
-        sp.run(["rosrun", "tirocinio", "map_rgb_simul.py", "--save", "--no-timestamp", "--map", map_rgb_path, 
+        sp.run(["rosrun", "tirocinio", "map_rgb_simul.py", "--save", "--no-timestamp", "--map", map_rgb_path, "--mask", movement_mask_path,
             "--dir", os.path.join(package_path, "world/bitmaps")])
 
         sp.run(["roslaunch", "tirocinio", "stage_init_select.launch", "rectangles:=" + rects_path, 
