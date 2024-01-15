@@ -23,6 +23,8 @@ def translate_obj(obj_img, movement_area, img, dist_tra, dist_rot, show_steps, d
     dx = 0
     dy = 0
     angle = 0
+    tries = 0
+    TRIES_LIMIT = 150
 
     while to_translate:
 
@@ -63,6 +65,11 @@ def translate_obj(obj_img, movement_area, img, dist_tra, dist_rot, show_steps, d
         # If at least 80% of object pixels don't overlap and the object is at least 95% inside the defined movement area, we accept the translation
         if overlap_percentage < 20 and movement_area_overlap_percentage >= 95:
             to_translate = False
+        # Elif keep obj in original position if too many translations have been tried unsuccessfully
+        elif tries > TRIES_LIMIT:
+            dst = cv2.bitwise_and(cv2.bitwise_not(cv2.cvtColor(obj_img, cv2.COLOR_BGR2RGB)), img)
+            to_translate = False
+        tries += 1
 
     if show_steps:
         _ = plt.subplot(231), plt.imshow(cv2.bitwise_not(obj_img), cmap='gray'), plt.title('Original Object')
