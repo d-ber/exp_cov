@@ -78,12 +78,15 @@ def main():
     click_duration = 0.3
 
     # Disturb random values (in pixels)
-    mean = 0
-    standard_deviation = 50
-    norm = st.norm(loc=mean, scale=standard_deviation)
-    disturb_vals = norm.rvs(size=2)
-    drag_movement = disturb_vals[0]
-    drag_rotation = disturb_vals[1]
+    mean_movement = 0
+    std_movement = 5
+    norm_movement = st.norm(loc=mean_movement, scale=std_movement)
+    mean_rotation = 0
+    std_rotation = 100
+    norm_rotation = st.norm(loc=mean_rotation, scale=std_rotation)
+
+    drag_movement = norm_movement.rvs()
+    drag_rotation = norm_rotation.rvs()
     #print(disturb_vals)
 
     # Select the robot at saved coordinates
