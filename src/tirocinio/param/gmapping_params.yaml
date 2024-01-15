@@ -5,3 +5,7 @@ particles: 25
 linearUpdate: 0.2
 resampleThreshold: 0.5
 minimumScore: 100
+xmax: 10
+xmin: -10
+ymax: 10
+ymin: -10
