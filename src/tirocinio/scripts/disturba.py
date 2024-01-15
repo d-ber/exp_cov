@@ -4,9 +4,9 @@ import argparse
 import scipy.stats as st
 
 # Function to center the mouse in a specified region
-def center_mouse(x, y, width, height):
-    center_x = x + width // 2
-    center_y = y + height // 2
+def center_on_robot(x, y, width, height):
+    center_x = ( x + width // 2 ) - 10
+    center_y =( y + height // 2 ) - 30
     pyautogui.moveTo(center_x, center_y)
 
 # Function to drag the mouse
@@ -69,17 +69,17 @@ def main():
     #xs = (785, 0, 0)
     #ys = (430, 0, 0)
     #Home:
-    xs = (1105, 0, 0)
-    ys = (610, 0, 0)
+    xs = (1105, 1105, 1105)
+    ys = (610, 610, 610)
 
     # Scroll amount to zoom in
-    scroll_amount = 40
+    scroll_amount = 10
     # Select click duration
     click_duration = 0.3
 
     # Disturb random values (in pixels)
     mean = 0
-    standard_deviation = 100
+    standard_deviation = 50
     norm = st.norm(loc=mean, scale=standard_deviation)
     disturb_vals = norm.rvs(size=2)
     drag_movement = disturb_vals[0]
@@ -96,10 +96,9 @@ def main():
         scroll_forward(scroll_amount)
 
     # Center the mouse pointer in the specified window
-    center_mouse(window_x, window_y, window_width, window_height)
-    pyautogui.click()
+    center_on_robot(window_x, window_y, window_width, window_height)
+    pyautogui.click(duration=click_duration)
 
-    # Pause for a moment
     time.sleep(1)
 
     # Randomly disturb robot
