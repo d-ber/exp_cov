@@ -8,6 +8,8 @@ def parse_args():
     parser.add_argument('--map', default=1, choices=[1, 2, 3], type=int,
         help="Number of rgb map.")
     parser.add_argument('--scan', default="/scan", help="Scan topic name to set for stage.")
+    parser.add_argument('--screen', default="home", choices=["home", "lab"],
+        help="Screen for the disturb node.")
     return parser.parse_known_args()[0]
 
 def main():
@@ -21,6 +23,7 @@ def main():
     map_rgb_path = os.path.join(package_path, "maps_rgb_lab/map" + map_rgb + "/map" + map_rgb + "_rgb.png")
     movement_mask_path = os.path.join(package_path, "maps_rgb_lab/map" + map_rgb + "/map" + map_rgb + "_movement_mask.png")
     scan_topic = args.scan
+    screen = args.screen
 
     image_path = os.path.join(package_path, "world/bitmaps", "image.png")
     rects_path = os.path.join(package_path, "world/bitmaps", "rectangles.json")
@@ -37,7 +40,7 @@ def main():
             "--dir", os.path.join(package_path, "world/bitmaps")])
 
         sp.run(["roslaunch", "tirocinio", "stage_init_select.launch", "rectangles:=" + rects_path, 
-        "map_rgb:=1", "worldfile:=" + world_path, "scan:=" + scan_topic])
+        "map_rgb:=1", "worldfile:=" + world_path, "scan:=" + scan_topic, "screen:=" + screen])
     except KeyboardInterrupt:
         print("Exit request received. Closed.")
 

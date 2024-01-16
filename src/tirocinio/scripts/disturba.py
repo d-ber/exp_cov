@@ -4,9 +4,9 @@ import argparse
 import scipy.stats as st
 
 # Function to center the mouse in a specified region
-def center_on_robot(x, y, width, height):
-    center_x = ( x + width // 2 ) - 10
-    center_y =( y + height // 2 ) - 30
+def center_on_robot(x, y, width, height, dx, dy):
+    center_x = ( x + width // 2 ) + dx
+    center_y =( y + height // 2 ) + dy
     pyautogui.moveTo(center_x, center_y)
 
 # Function to drag the mouse
@@ -46,6 +46,8 @@ def parse_args():
         help="Number of rgb map.")
     parser.add_argument('--mode', default="full", choices=["full", "disturb", "select"],
         help="Mode in which to launch the program. Select only selects the robot and zooms in. Disturb only disturbs it. Full does both.")
+    parser.add_argument('--screen', default="home", choices=["home", "lab"],
+        help="Screen to adjust click coordinates.")
     return parser.parse_known_args()[0]
 
 def main():
@@ -53,24 +55,36 @@ def main():
     args = parse_args()
     mode = args.mode
     map_rgb = args.map
+    screen = args.screen
 
-    # Window coordinates and size
-    #Lab:
-    #window_x = 574
-    #window_y = 196
-    #Home:f
+    # Window size and coordinates
+    # Home:
     window_x = 904
     window_y = 421
+    if screen == "lab":
+        # Lab:
+        window_x = 574
+        window_y = 196
+    # Both:
     window_width = 700
     window_height = 660
 
-    # Click locations (xs[0] is for map_rgb number 1, etc...)f
-    #Lab:
-    #xs = (785, 0, 0)
-    #ys = (430, 0, 0)
-    #Home:
+    # Click locations (xs[0] is for map_rgb number 1, etc...)
+    # Home:
     xs = (1105, 1105, 1105)
     ys = (610, 610, 610)
+    if screen == "lab":
+        # Lab:
+        xs = (785, 785,785)
+        ys = (430, 430, 430)
+
+    # Delta coordinates to center on robot
+    # Home:
+    dx = -10
+    dy = -30
+    if screen == "lab":
+        dx = 0
+        dy = 15
 
     # Scroll amount to zoom in
     scroll_amount = 10
@@ -99,7 +113,7 @@ def main():
         scroll_forward(scroll_amount)
 
     # Center the mouse pointer in the specified window
-    center_on_robot(window_x, window_y, window_width, window_height)
+    center_on_robot(window_x, window_y, window_width, window_height, dx, dy)
     pyautogui.click(duration=click_duration)
 
     time.sleep(1)
