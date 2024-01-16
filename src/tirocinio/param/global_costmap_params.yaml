@@ -1,0 +1,18 @@
+global_costmap:
+  global_frame: map # defines what coordinate frame the costmap should run in
+  robot_base_frame: base_link # defines the coordinate frame the costmap should reference for the base of the robot
+
+  update_frequency: 10.0 # determines the frequency, in Hz, at which the costmap will run its update loop
+  publish_frequency: 10.0 # determines the rate, in Hz, at which the costmap will publish visualization information
+  transform_tolerance: 0.5 # Specifies the delay in transform (tf) data that is tolerable in seconds
+
+  track_unknown_space: true
+  unknown_cost_value: 255
+
+  plugins:
+    - {name: static_layer, type: "costmap_2d::StaticLayer"}
+    - {name: obstacle_layer, type: "costmap_2d::ObstacleLayer"}
+    - {name: inflation_layer, type: "costmap_2d::InflationLayer"}
+
+  static_layer:
+    map_topic: true

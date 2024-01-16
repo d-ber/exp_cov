@@ -1,0 +1,20 @@
+local_costmap:
+  global_frame: map # defines what coordinate frame the costmap should run in
+  robot_base_frame: base_footprint # defines the coordinate frame the costmap should reference for the base of the robot
+
+  update_frequency: 10.0 # determines the frequency, in Hz, at which the costmap will run its update loop
+  publish_frequency: 10.0 # determines the rate, in Hz, at which the costmap will publish visualization information
+  transform_tolerance: 0.5 # Specifies the delay in transform (tf) data that is tolerable in seconds
+
+  rolling_window: true # true means that the costmap will remain centered around the robot 
+
+  # costmap resolution parameters
+  width: 4.0
+  height: 4.0
+  resolution: 0.05
+
+  plugins:
+    - {name: obstacle_layer, type: "costmap_2d::ObstacleLayer"}
+    - {name: inflation_layer, type: "costmap_2d::InflationLayer"}
+
+  
