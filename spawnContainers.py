@@ -24,7 +24,8 @@ def main(workers: int):
                 if name.endswith(".world"):
                     futures.append(pool.submit(spawn_container, name, i, bar))
             pool.shutdown(wait=True)
-    except:
+    except Exception as e:
+        print(e)
         pool.shutdown(wait=False)
         subprocess.Popen("docker kill $(docker ps -q)", shell=True)
         return
