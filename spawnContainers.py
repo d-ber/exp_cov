@@ -73,7 +73,7 @@ if __name__ == "__main__":
     speedup = args.speedup
 
     sp.run(["python3", os.path.join(os.getcwd(), "src/tirocinio/scripts/map_rgb_simul.py"), "--map", image_path, "--mask", movement_mask_image_path, "--worlds", str(worlds),
-        "--dir", os.path.join(os.getcwd(), "worlds"), "--speedup", speedup])
+        "--dir", os.path.join(os.getcwd(), "worlds"), "--speedup", str(speedup)])
 
     main(int(workers))
 
