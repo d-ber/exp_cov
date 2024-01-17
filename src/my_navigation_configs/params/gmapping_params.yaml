@@ -1,0 +1,29 @@
+#map_update_interval : 0.1
+maxUrange : 4
+maxRange : 4.1
+#particles: 25
+#linearUpdate: 0.2
+resampleThreshold: 0.5
+#minimumScore: 100
+xmax: 10
+xmin: -10
+ymax: 10
+ymin: -10
+
+ogain: 3.0 
+minimumScore: 0 
+angularUpdate: 0.35 
+linearUpdate: 1
+map_update_interval: 5.0 
+temporal_update: 2 
+odom_frame: odom 
+particles: 20 
+scan: base_scan
+srr: 0.01 
+srt: 0.02 
+str: 0.01 
+stt: 0.02 
+delta: 0.05 
+#maxUrange: 10 
+#maxRange: 15
+throttle_scans: 1
