@@ -6,10 +6,10 @@
   <arg name="rectangles" default="$(find tirocinio)/maps_rgb_lab/map1/simulated/rectangles_1704627975400279167.json"/>
   <arg name="screen" default="home"/>
 
-    <node name="stage" pkg="stage_ros" type="stageros" required="true" output="screen" args="$(arg worldfile)">
+    <node name="stage" pkg="stage_ros2" type="stageros" required="true" output="screen" args="$(arg worldfile)">
       <remap from="base_scan" to="$(arg scan)"/>
     </node>
-    <node name="select" pkg="tirocinio" type="disturba.py" output="screen" args="--mode select --map $(arg map_rgb) --screen $(arg screen)"/>
+    <node name="select" pkg="tirocinio" type="disturba.py" output="screen"/>
     <node name="pose_check" pkg="tirocinio" type="pose_check.py" output="screen" args="--path $(arg rectangles)"/>
 
 </launch>
