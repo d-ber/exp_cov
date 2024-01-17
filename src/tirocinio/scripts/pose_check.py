@@ -50,13 +50,13 @@ class pose_check:
         position = msg.pose.pose.position
         for i, rectangle in enumerate(self.rectangles):
             if (rectangle.min_point.x <= position.x <= rectangle.max_point.x and rectangle.min_point.y <= position.y <= rectangle.max_point.y):
-                rospy.loginfo("Position is within Rectangle {}: x={}, y={}".format(i + 1, position.x, position.y))
+                rospy.logdebug("Position is within Rectangle {}: x={}, y={}".format(i + 1, position.x, position.y))
                 if self.inside != i or st.bernoulli.rvs(self.disturb_prop): # if inside, for each message received disturb with prob 0.003
                     #TODO: aumenta il logging, e.g.: logga che disturba per entrata in rett o per permanenza in rett
                     self.pub.publish(msg)
                     self.inside = i
                 return
-        rospy.loginfo("Position is outside all rectangles: x={}, y={}".format(position.x, position.y))
+        rospy.logdebug("Position is outside all rectangles: x={}, y={}".format(position.x, position.y))
         self.inside = -1
 
 def read_rectangles(json_file_path):

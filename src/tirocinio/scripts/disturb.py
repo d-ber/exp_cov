@@ -15,7 +15,7 @@ class disturb:
         mean_rotation = 0
         std_rotation = 1.5
         self.norm_rotation = st.norm(loc=mean_rotation, scale=std_rotation)
-        rospy.loginfo("Started distueb node.")
+        rospy.loginfo("Started disturb node.")
     
     def callback(self, msg):
         rospy.logdebug("Disturb odometry message received, about to disturb.")
