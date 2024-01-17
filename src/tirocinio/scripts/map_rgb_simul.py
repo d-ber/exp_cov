@@ -317,9 +317,11 @@ def parse_args():
         help="Base directory to save files in.")
     parser.add_argument('--steps', action='store_true',
         help="Use this to show the processing steps.")
+    parser.add_argument("--speedup", type=check_positive, default=10, metavar="SPEEDUP",
+        help="Use this to adjust stage simulation speed. Higher is faster but heavier on the CPU.") 
     return parser.parse_args()
 
-def get_world_text(image, name):
+def get_world_text(image, name, speedup):
     return f"""
     # World {name}
     define turtlebot3 position
@@ -381,7 +383,7 @@ def get_world_text(image, name):
     )
 
     quit_time 36000 # 10 hours of simulated time
-    speedup 10
+    speedup {speedup}
 
     paused 0
 
@@ -403,11 +405,8 @@ def get_world_text(image, name):
     ( 
         name  "turtlebot3-stage"
         size [ 20.0 20 1.0 ] # size [x y z]
-        pose [0 0 0 0]""" + \
-    f"""
+        pose [0 0 0 0]
         bitmap "bitmaps/image{image}.png" # bitmap: solo il nero è renderizzato
-    """ + \
-    """
     )
     turtlebot3
     (		  
@@ -417,7 +416,6 @@ def get_world_text(image, name):
 
         sick()
     )
-
     """
 
 
@@ -433,6 +431,7 @@ def main():
     base_dir = args.dir
     movement_mask_image_path = args.mask
     worlds = args.worlds
+    speedup = args.speedup
 
 
     movement_mask_image = cv2.imread(movement_mask_image_path, cv2.IMREAD_COLOR)
@@ -478,7 +477,7 @@ def main():
             print("Saved map as {}".format(filename))
             worldfile_path = os.path.join(base_dir, "world{}.world".format(i))
             with open(worldfile_path, "w", encoding="utf-8") as worldfile:
-                worldfile.write(get_world_text(i, name))
+                worldfile.write(get_world_text(i, name, speedup))
                 print("Saved worldfile as {}".format(worldfile_path))
 
 if __name__ == "__main__":
