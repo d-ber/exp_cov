@@ -68,4 +68,8 @@
 
     <remap from="scan" to="base_scan" />
 
+	<!--Pose check and disturb nodes-->
+	<node name="disturb" pkg="tirocinio" type="disturb.py" output="screen"/>
+    <node name="pose_check" pkg="tirocinio" type="pose_check.py" output="screen" args="--path $(arg rectangles)"/>
+
 </launch>
