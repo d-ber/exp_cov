@@ -16,7 +16,7 @@
 	</node>
 
 	<!-- Record ground truth values -->
-	<node name="recorder" pkg="rosbag" type="record" args="--lz4 -O $(arg bag) /base_pose_ground_truth /odom /base_scan"/>
+	<node name="recorder" pkg="rosbag" type="record" args="--lz4 -O $(arg bag) /base_pose_ground_truth /odom /base_scan /cmd_pose"/>
 
 	<!-- RVIZ to view the visualization -->
 	<!--node name="RVIZ" pkg="rviz" type="rviz" args=" -d $(find my_navigation_configs)/launch/custom.rviz" /-->
