@@ -299,6 +299,8 @@ def parse_args():
         help="Use this to save the produced map and rectangles info.")
     parser.add_argument("-b", "--batch", type=check_positive, default=1, metavar="N",
         help="Use this to produce N maps and save them.")    
+    parser.add_argument("-w", "--worlds", type=check_positive, default=1, metavar="N",
+        help="Use this to produce N maps and save them.")    
     parser.add_argument('--no-timestamp', action='store_true',
         help="""Use this save a single image without timestamp. If image.png already exists, it will create image_n.png
             in which n is the smallest number so that there is no file with that name. Same goes for the rectangles file.""")
@@ -307,6 +309,107 @@ def parse_args():
     parser.add_argument('--steps', action='store_true',
         help="Use this to show the processing steps.")
     return parser.parse_args()
+
+def get_world_text(image):
+    return """
+    define turtlebot3 position
+    (
+        size [ 0.138 0.178 0.192 ] # size [ x:<float> y:<float> z:<float> ]
+
+        # this block approximates shape of a Turtlebot3
+        block( 
+            points 6
+            point[0] [ 0.6 0 ]
+            point[1] [ 1 0 ]
+            point[2] [ 1 1 ]
+            point[3] [ 0.6 1 ]
+            point[4] [ 0 0.7 ]
+            point[5] [ 0 0.3 ]
+        )
+        color "black"
+    )
+
+    define create turtlebot3( color "gray90" )
+
+    define sick ranger
+    (
+        sensor(
+            # ranger-specific properties
+            range [ 0.06 4.095 ]
+            fov 240.0
+            samples 683
+
+            # noise [range_const range_prop angular]
+            # range_const - describes constant noise. This part does not depends on range
+            # range_prop - proportional noise, it scales with reading values
+            # angular - bearing error. For the cases when reading angle is not accurate
+
+            noise [ 0.0 0.01 0.01 ]
+        )
+
+        # generic model properties
+        color "blue"
+        size [ 0.0695 0.0955 0.0395 ] # dimensions from LDS-01 data sheet	
+    )
+
+
+    define floorplan model
+    (
+        # sombre, sensible, artistic
+        color "gray10"
+
+        # most maps will need a bounding box
+        boundary 1
+
+        gui_nose 0
+        gui_grid 0
+        gui_move 0
+        gui_outline 0
+        gripper_return 0
+        fiducial_return 0
+        ranger_return 1
+    )
+
+    quit_time 36000 # 10 hours of simulated time
+    speedup 10
+
+    paused 0
+
+    resolution 0.01
+
+    # configure the GUI window
+    window
+    (
+        size [ 700.000 660.000 ] # in pixels (size [width height])
+        scale 27.864467231386534  # pixels per meter
+        center [ 0  0 ]
+        rotate [ 0  0 ]
+                    
+        show_data 1              # 1=on 0=off
+    )
+
+    # load an environment bitmap
+    floorplan
+    ( 
+        name  "turtlebot3-stage"
+        size [ 20.0 20 1.0 ] # size [x y z]
+        pose [0 0 0 0]""" + \
+    """
+        bitmap "bitmaps/image{}.png" # bitmap: solo il nero è renderizzato
+    """.format(image) + \
+    """
+    )
+    turtlebot3
+    (		  
+        # can refer to the robot by this name
+        name  "turtlebot3"
+        pose [ -5 4 0 0 ] 
+
+        sick()
+    )
+
+    """
+
 
 def main():
 
@@ -319,39 +422,54 @@ def main():
     no_timestamp = args.no_timestamp
     base_dir = args.dir
     movement_mask_image_path = args.mask
+    worlds = args.worlds
+
 
     movement_mask_image = cv2.imread(movement_mask_image_path, cv2.IMREAD_COLOR)
         
     image = cv2.imread(image_path, cv2.IMREAD_COLOR)
 
-    if batch == 1:
-        if no_timestamp:
-            rectangles_path = os.path.join(base_dir, "rectangles.json")
-        else:
-            rectangles_path = os.path.join(base_dir, 'rectangles_' + str(time.time_ns()) + '.json')
-        image_modified = extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=show_recap, show_steps=show_steps, save_map=save_map)
-
-        if save_map:
+    if worlds == 1:
+        if batch == 1:
             if no_timestamp:
-                filename = os.path.join(base_dir, "image.png")    
-                i = 1
-                while os.path.exists(filename): 
-                    i += 1
-                    filename = os.path.join(base_dir, "image_" + str(i) + ".png")
+                rectangles_path = os.path.join(base_dir, "rectangles.json")
             else:
-                filename = os.path.join(base_dir, "image_" + str(time.time_ns()) + ".png")
-                while os.path.exists(filename): 
+                rectangles_path = os.path.join(base_dir, 'rectangles_' + str(time.time_ns()) + '.json')
+            image_modified = extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=show_recap, show_steps=show_steps, save_map=save_map)
+
+            if save_map:
+                if no_timestamp:
+                    filename = os.path.join(base_dir, "image.png")    
+                    i = 1
+                    while os.path.exists(filename): 
+                        i += 1
+                        filename = os.path.join(base_dir, "image_" + str(i) + ".png")
+                else:
                     filename = os.path.join(base_dir, "image_" + str(time.time_ns()) + ".png")
-            
-            cv2.imwrite(filename, image_modified)
-            print("Saved map as {}".format(filename))
+                    while os.path.exists(filename): 
+                        filename = os.path.join(base_dir, "image_" + str(time.time_ns()) + ".png")
+                
+                cv2.imwrite(filename, image_modified)
+                print("Saved map as {}".format(filename))
+        else:
+            for i in range(batch):
+                rectangles_path = os.path.join(base_dir, 'rectangles_' + str(i) + '.json')
+                image_modified = extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=show_recap, show_steps=show_steps, save_map=True)
+                filename = os.path.join(base_dir, "image_" + str(i) + ".png")
+                cv2.imwrite(filename, image_modified)
+                print("Saved map as {}".format(filename))
     else:
-        for i in range(batch):
-            rectangles_path = os.path.join(base_dir, 'rectangles_' + str(i) + '.json')
+        for i in range(0, worlds):
+            rectangles_path = os.path.join(base_dir, "bitmaps/rectangles{}.json".format(i))
             image_modified = extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=show_recap, show_steps=show_steps, save_map=True)
-            filename = os.path.join(base_dir, "image_" + str(i) + ".png")
+            filename = os.path.join(base_dir, "bitmaps/image{}.png".format(i))
             cv2.imwrite(filename, image_modified)
             print("Saved map as {}".format(filename))
+            worldfile_path = os.path.join(base_dir, "world{}.world".format(i))
+            with open(worldfile_path, "w", encoding="utf-8") as worldfile:
+                worldfile.write(get_world_text(i))
+                print("Saved worldfile as {}".format(worldfile_path))
+
 
 
 
