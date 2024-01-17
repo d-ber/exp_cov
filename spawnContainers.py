@@ -6,13 +6,13 @@ import argparse
 
 
 def spawn_container(mapName: str, i, bar):
-    bar.update(i)
     launchstr = f"""docker run -it \\
         --mount type=bind,source=./worlds,target=/root/catkin_ws/src/my_navigation_configs/worlds \\
         -v ./output:/root/catkin_ws/src/my_navigation_configs/runs/outputs \\
         'rosnoetic:explore' worlds/{mapName}"""
     p = sp.Popen(launchstr, shell=True, stdout=sp.DEVNULL)
     p.wait()
+    bar.update(i)
 
 def purge_worlds():
     not_to_delete = ("rgb.world", "image.png", "rectangles.json")
@@ -24,7 +24,7 @@ def purge_worlds():
 def main(workers: int):
     pool = ThreadPoolExecutor(max_workers=workers)
     try:
-        with progressbar.ProgressBar(max_value=len(os.listdir("worlds/")) - 2) as bar:
+        with progressbar.ProgressBar(max_value=len(os.listdir("worlds/")) - 2).start() as bar:
             futures = []
             i = 1
             for name in os.listdir("worlds/"):
