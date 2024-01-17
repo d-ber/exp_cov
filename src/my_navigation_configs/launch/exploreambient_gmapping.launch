@@ -10,7 +10,7 @@
 	<param name="use_sim_time" value="true" />
 
 	<!-- Start Stage simulator with a given environment -->
-	<node name="Stage" pkg="stage_ros" type="stageros" args="$(arg worldfile)">
+	<node name="Stage" pkg="stage_ros2" type="stageros" args="$(arg worldfile)">
 		<param name="base_watchdog_timeout" value="0.1" />
 	</node>
 
