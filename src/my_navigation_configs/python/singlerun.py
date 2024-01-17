@@ -3,8 +3,8 @@ import sys
 import signal
 import time
 from os import killpg, getpgid, setsid, makedirs, listdir, remove
-from os.path import basename, join, exists
-from subprocess import Popen, PIPE
+from os.path import join, exists
+from subprocess import Popen
 from threading import Thread
 from PIL import Image
 import rospy
@@ -112,14 +112,14 @@ def launchNavigation(world, folder, rectangles_path):
     """
     Calls the launch file and starts the exploration, waits until the process is done
     """
+    p = None
     try:
-        worldfile = basename(world)
         launchString = (
             "roslaunch my_navigation_configs exploreambient_gmapping.launch worldfile:="
             + world
             + " bag:="
             + folder
-            + os.path.splitext(worldfile)[0]
+            + os.path.basename(folder)
             + ".bag "
             + " rectangles_path:=" 
             + rectangles_path
