@@ -21,12 +21,18 @@
 	<!--node name="RVIZ" pkg="rviz" type="rviz" args=" -d $(find my_navigation_configs)/launch/custom.rviz" /-->
 
 	<!-- Start Mapper to generate map from laser scans -->
-	<node name="Mapper" pkg="gmapping" type="slam_gmapping">
-      <rosparam file="$(find my_navigation_configs)/params/gmapping_params.yaml" command="load"/>
-    </node>
+	<node name="Mapper" pkg="gmapping" type="slam_gmapping" args="_xmin:=-50 _ymin:=-50 _ymax:=50
+     _xmax:=50 _ogain:=3.0 _minimumScore:=0 _angularUpdate:=0.35 _linearUpdate:=1
+     _map_update_interval:=5.0 _temporal_update:=2 _odom_frame:=odom _particles:=20 scan:=base_scan
+     _srr:=0.01 _srt:=0.02 _str:=0.01 _stt:=0.02 _delta:=0.05 _maxUrange:=10 _maxRange:=15
+	 _throttle_scans:=1" />
+
+
+	<!--/node-->
+
 
 	<!-- simulation parameters -->
-    <param name="log_path" value="$(arg log_path)" />
+        <param name="log_path" value="$(arg log_path)" />
 	<param name="robot_name" value="$(arg robot_name)" />
 
 	<!-- move_base -->
@@ -62,7 +68,9 @@
 		<param name="gain_scale"            value="0"/>
 		<param name="transform_tolerance"   value="0.4"/>
 		<param name="min_frontier_size"     value="0.6"/>
-    </node>
+    	</node>
+
+    <!--/node-->
 
     <remap from="scan" to="base_scan" />
 
