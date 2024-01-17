@@ -30,6 +30,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-noetic-tf2-sensor-msgs \
     ros-geometry-msgs \
     && rm -rf /var/lib/apt/lists/*
+
+RUN python3 -m pip install scipy
     
 RUN mkdir -p /root/catkin_ws/src
 COPY src /root/catkin_ws/src
