@@ -9,7 +9,7 @@
     <node name="stage" pkg="stage_ros2" type="stageros" required="true" output="screen" args="$(arg worldfile)">
       <remap from="base_scan" to="$(arg scan)"/>
     </node>
-    <node name="select" pkg="tirocinio" type="disturba.py" output="screen"/>
+    <node name="select" pkg="tirocinio" type="disturb.py" output="screen"/>
     <node name="pose_check" pkg="tirocinio" type="pose_check.py" output="screen" args="--path $(arg rectangles)"/>
 
 </launch>
