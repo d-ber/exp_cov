@@ -10,6 +10,8 @@ from PIL import Image
 import rospy
 from geometry_msgs.msg import PoseStamped
 import traceback
+import shutil
+import re
 
 lastUpdate = 0
 
@@ -117,7 +119,7 @@ def launchNavigation(world, folder):
             + world
             + " bag:="
             + folder
-            + worldfile[:-6]
+            + os.path.splitext(worldfile)[0]
             + ".bag "
         )
 
@@ -140,29 +142,50 @@ def launchNavigation(world, folder):
         killProcess(p)
         return
 
+def extract_number(worldname):
+    pattern = r"[a-zA-Z]+[\d]+.world"
+    present = re.match(pattern, worldname)
+    num = re.search(r"[\d]+", worldname)
+    if present and num:
+        print(num.group(0))
+        return num.group(0)
+    return None
 
-def exploreWorlds(project_path, world: str):
+def exploreWorlds(project_path, world_path):
     """
     Given a folder with world file it runs 5 times each environment exploration
     """
     out_dir = project_path + "/runs/outputs/"
-    f = world.split("/")[-1]
-    folder = join(out_dir, f[:-6])
+    worldname = "UNKOWN"
+    with open(world_path, "r", encoding="utf-8") as worldfile:
+        worldfile.readline() # consume first empty line
+        worldname = " ".join(worldfile.readline().split()[2:])
+    folder = join(out_dir, worldname)
     print(f"PATH: {folder}")
 
     maxrun = 0
 
-    if world[-6:] == ".world":
+    if os.path.splitext(world_path)[1] == ".world":
         if not exists(folder):
             print(f"Making dir: {folder}")
             makedirs(folder)
         for i in listdir(folder):
             if int(i[3:]) >= maxrun:
                 maxrun = int(i[3:])
-        if not exists(join(folder, "run" + str(maxrun + 1) + "/")):
-            makedirs(join(folder, "run" + str(maxrun + 1) + "/"))
+        run_folder = join(folder, "run" + str(maxrun + 1) + "/")
+        if not exists(run_folder):
+            makedirs(run_folder)
+
+        #Save Bitmap and Rectangles too
+        worldnum = extract_number(os.path.basename(world_path))
+        if worldnum:
+            rect_path = os.path.join(os.path.dirname(world_path), f"bitmaps/rectangles{worldnum}.json")
+            bitmap_path = os.path.join(os.path.dirname(world_path), f"bitmaps/image{worldnum}.png")
+            shutil.copy(rect_path, run_folder)
+            shutil.copy(bitmap_path, run_folder)
+
         print("START")
-        launchNavigation(world, join(folder, "run" + str(maxrun + 1) + "/"))
+        launchNavigation(world_path, run_folder)
         print("END")
         time.sleep(1)
 
@@ -170,4 +193,5 @@ def exploreWorlds(project_path, world: str):
 if __name__ == "__main__":
     # retrieve current path
     project = os.path.expanduser("~/catkin_ws/src/my_navigation_configs")
-    exploreWorlds(project, os.path.abspath(sys.argv[1]))
+    world_path = os.path.abspath(sys.argv[1])
+    exploreWorlds(project, world_path)
