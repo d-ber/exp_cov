@@ -2,7 +2,6 @@ import subprocess as sp
 import os
 from concurrent.futures import ThreadPoolExecutor
 import progressbar
-import time
 import argparse
 
 
@@ -11,7 +10,7 @@ def spawn_container(mapName: str, i, bar):
     launchstr = f"""docker run -it \\
         --mount type=bind,source=./worlds,target=/root/catkin_ws/src/my_navigation_configs/worlds \\
         -v ./output:/root/catkin_ws/src/my_navigation_configs/runs/outputs \\
-        'rosnoetic:exploretris' worlds/{mapName}"""
+        'rosnoetic:explore' worlds/{mapName}"""
     p = sp.Popen(launchstr, shell=True, stdout=sp.DEVNULL)
     p.wait()
 
