@@ -59,6 +59,8 @@ def parse_args():
         help="Use this to produce WORLDS world files.")    
     parser.add_argument("--workers", type=check_positive, default=1, metavar="WORKERS",
         help="Use this to use WORKERS workers.")    
+    parser.add_argument("--speedup", type=check_positive, default=10, metavar="SPEEDUP",
+        help="Use this to adjust stage simulation speed. Higher is faster but heavier on the CPU.") 
     return parser.parse_args()
 
 if __name__ == "__main__":
@@ -68,9 +70,10 @@ if __name__ == "__main__":
     movement_mask_image_path = args.mask
     worlds = args.worlds
     workers = args.workers
+    speedup = args.speedup
 
     sp.run(["python3", os.path.join(os.getcwd(), "src/tirocinio/scripts/map_rgb_simul.py"), "--map", image_path, "--mask", movement_mask_image_path, "--worlds", str(worlds),
-        "--dir", os.path.join(os.getcwd(), "worlds")])
+        "--dir", os.path.join(os.getcwd(), "worlds"), "--speedup", speedup])
 
     main(int(workers))
 
