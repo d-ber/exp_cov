@@ -319,8 +319,9 @@ def parse_args():
         help="Use this to show the processing steps.")
     return parser.parse_args()
 
-def get_world_text(image):
-    return """
+def get_world_text(image, name):
+    return f"""
+    # World {name}
     define turtlebot3 position
     (
         size [ 0.138 0.178 0.192 ] # size [ x:<float> y:<float> z:<float> ]
@@ -403,9 +404,9 @@ def get_world_text(image):
         name  "turtlebot3-stage"
         size [ 20.0 20 1.0 ] # size [x y z]
         pose [0 0 0 0]""" + \
-    """
-        bitmap "bitmaps/image{}.png" # bitmap: solo il nero è renderizzato
-    """.format(image) + \
+    f"""
+        bitmap "bitmaps/image{image}.png" # bitmap: solo il nero è renderizzato
+    """ + \
     """
     )
     turtlebot3
@@ -468,6 +469,7 @@ def main():
                 cv2.imwrite(filename, image_modified)
                 print("Saved map as {}".format(filename))
     else:
+        name = os.path.basename(os.path.splitext(image_path)[0])
         for i in range(0, worlds):
             rectangles_path = os.path.join(base_dir, "bitmaps/rectangles{}.json".format(i))
             image_modified = extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=show_recap, show_steps=show_steps, save_map=True)
@@ -476,7 +478,7 @@ def main():
             print("Saved map as {}".format(filename))
             worldfile_path = os.path.join(base_dir, "world{}.world".format(i))
             with open(worldfile_path, "w", encoding="utf-8") as worldfile:
-                worldfile.write(get_world_text(i))
+                worldfile.write(get_world_text(i, name))
                 print("Saved worldfile as {}".format(worldfile_path))
 
 if __name__ == "__main__":
