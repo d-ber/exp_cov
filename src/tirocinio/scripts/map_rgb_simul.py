@@ -281,6 +281,15 @@ def check_positive(value):
         raise Exception("{} is not an integer".format(value))
     return value
 
+def check_positive_or_zero(value):
+    try:
+        value = int(value)
+        if value < 0:
+            raise argparse.ArgumentTypeError("{} is not a positive integer nor zero".format(value))
+    except ValueError:
+        raise Exception("{} is not an integer".format(value))
+    return value
+
 
 def parse_args():
     # get an instance of RosPack with the default search paths
@@ -299,7 +308,7 @@ def parse_args():
         help="Use this to save the produced map and rectangles info.")
     parser.add_argument("-b", "--batch", type=check_positive, default=1, metavar="N",
         help="Use this to produce N maps and save them.")    
-    parser.add_argument("-w", "--worlds", type=check_positive, default=1, metavar="N",
+    parser.add_argument("-w", "--worlds", type=check_positive_or_zero, default=0, metavar="N",
         help="Use this to produce N maps and save them.")    
     parser.add_argument('--no-timestamp', action='store_true',
         help="""Use this save a single image without timestamp. If image.png already exists, it will create image_n.png
@@ -429,7 +438,7 @@ def main():
         
     image = cv2.imread(image_path, cv2.IMREAD_COLOR)
 
-    if worlds == 1:
+    if worlds == 0:
         if batch == 1:
             if no_timestamp:
                 rectangles_path = os.path.join(base_dir, "rectangles.json")
@@ -469,9 +478,6 @@ def main():
             with open(worldfile_path, "w", encoding="utf-8") as worldfile:
                 worldfile.write(get_world_text(i))
                 print("Saved worldfile as {}".format(worldfile_path))
-
-
-
 
 if __name__ == "__main__":
     main()
