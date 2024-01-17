@@ -108,7 +108,7 @@ def checkActiveGoal(process, folder):
             return
 
 
-def launchNavigation(world, folder):
+def launchNavigation(world, folder, rectangles_path):
     """
     Calls the launch file and starts the exploration, waits until the process is done
     """
@@ -121,6 +121,8 @@ def launchNavigation(world, folder):
             + folder
             + os.path.splitext(worldfile)[0]
             + ".bag "
+            + " rectangles_path:=" 
+            + rectangles_path
         )
 
         p = Popen(launchString, shell=True, preexec_fn=setsid)
@@ -184,10 +186,10 @@ def exploreWorlds(project_path, world_path):
             shutil.copy(rect_path, run_folder)
             shutil.copy(bitmap_path, run_folder)
 
-        print("START")
-        launchNavigation(world_path, run_folder)
-        print("END")
-        time.sleep(1)
+            print("START")
+            launchNavigation(world_path, run_folder, rect_path)
+            print("END")
+            time.sleep(1)
 
 
 if __name__ == "__main__":
