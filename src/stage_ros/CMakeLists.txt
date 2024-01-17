@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(stage_ros)
+project(stage_ros2)
 
 find_package(catkin REQUIRED
   COMPONENTS
