@@ -52,6 +52,9 @@ def translate_obj(obj_img, movement_area, img, dist_tra, dist_rot, show_steps, d
         translated_image = cv2.bitwise_not(translated_image)
 
         black_pixels_obj = np.count_nonzero(cv2.bitwise_not(translated_image))
+        # Check if object is outside the map
+        if black_pixels_obj == 0:
+            continue
         black_pixels_overlapped = np.count_nonzero(cv2.bitwise_and(cv2.bitwise_not(translated_image), cv2.bitwise_not(img)))
         overlap_percentage = 100*(black_pixels_overlapped/black_pixels_obj)
         plt.show()
