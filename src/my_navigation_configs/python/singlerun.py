@@ -119,7 +119,7 @@ def launchNavigation(world, folder, rectangles_path, no_bag):
         bag_arg = "false"
     try:
         launchString = (
-            "roslaunch my_navigation_configs exploreambient_gmapping.launch worldfile:="
+            "roslaunch my_navigation_configs exploreambient_slam_toolbox.launch worldfile:="
             + world
             + " bag:="
             + folder
