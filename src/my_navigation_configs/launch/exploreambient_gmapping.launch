@@ -8,6 +8,7 @@
 	<arg name="frontier_selection" default="5"/>
 	<arg name="use_sim_time" default="true" />
 	<arg name="rectangles_path"/>
+	<arg name="record_bag" default="true"/>
 	<param name="use_sim_time" value="true" />
 
 	<!-- Start Stage simulator with a given environment -->
@@ -16,8 +17,10 @@
 	</node>
 
 	<!-- Record ground truth values -->
-	<node name="recorder" pkg="rosbag" type="record" args="--lz4 -O $(arg bag) /base_pose_ground_truth /odom /base_scan /cmd_pose"/>
-
+	<group if="$(arg record_bag)">
+		<node name="recorder" pkg="rosbag" type="record" args="--lz4 -O $(arg bag) /base_pose_ground_truth /odom /base_scan /cmd_pose"/>
+	</group>
+	
 	<!-- RVIZ to view the visualization -->
 	<!--node name="RVIZ" pkg="rviz" type="rviz" args=" -d $(find my_navigation_configs)/launch/custom.rviz" /-->
 

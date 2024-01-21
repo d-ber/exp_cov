@@ -12,6 +12,7 @@ from geometry_msgs.msg import PoseStamped
 import traceback
 import shutil
 import re
+import argparse
 
 lastUpdate = 0
 
@@ -108,11 +109,14 @@ def checkActiveGoal(process, folder):
             return
 
 
-def launchNavigation(world, folder, rectangles_path):
+def launchNavigation(world, folder, rectangles_path, no_bag):
     """
     Calls the launch file and starts the exploration, waits until the process is done
     """
     p = None
+    bag_arg = "true"
+    if no_bag:
+        bag_arg = "false"
     try:
         launchString = (
             "roslaunch my_navigation_configs exploreambient_gmapping.launch worldfile:="
@@ -123,6 +127,8 @@ def launchNavigation(world, folder, rectangles_path):
             + ".bag "
             + " rectangles_path:=" 
             + rectangles_path
+            + " record_bag:="
+            + bag_arg
         )
 
         p = Popen(launchString, shell=True, preexec_fn=setsid)
@@ -153,7 +159,7 @@ def extract_number(worldname):
         return num.group(0)
     return None
 
-def exploreWorlds(project_path, world_path):
+def exploreWorlds(project_path, world_path, no_bag):
     """
     Given a folder with world file it runs 5 times each environment exploration
     """
@@ -187,13 +193,22 @@ def exploreWorlds(project_path, world_path):
             shutil.copy(bitmap_path, run_folder)
 
             print("START")
-            launchNavigation(world_path, run_folder, rect_path)
+            launchNavigation(world_path, run_folder, rect_path, no_bag)
             print("END")
             time.sleep(1)
 
+def parse_args():
+    parser = argparse.ArgumentParser(description='Start a single exploration run.')
+    parser.add_argument("--world", metavar="WORLD_PATH", required=True,
+        help="Path to world file.")    
+    parser.add_argument("--no-bag",  action='store_true', default=False,
+        help="Use this to disable bag recording, default behaviour is enabled.") 
+    return parser.parse_args()
 
 if __name__ == "__main__":
+    args = parse_args()
+    world_path = args.world
+    no_bag = args.no_bag
     # retrieve current path
-    project = os.path.expanduser("~/catkin_ws/src/my_navigation_configs")
-    world_path = os.path.abspath(sys.argv[1])
-    exploreWorlds(project, world_path)
+    project = os.path.expanduser("~/catkin_ws/src/my_navigation_configs")        
+    exploreWorlds(project, world_path, no_bag)

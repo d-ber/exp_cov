@@ -5,11 +5,14 @@ import progressbar
 import argparse
 
 
-def spawn_container(mapName: str, i, bar):
+def spawn_container(mapName: str, i, bar, no_bag):
+    bag_option = ""
+    if no_bag:
+        bag_option = "--no-bag"
     launchstr = f"""docker run -it \\
         --mount type=bind,source=./worlds,target=/root/catkin_ws/src/my_navigation_configs/worlds \\
         -v ./output:/root/catkin_ws/src/my_navigation_configs/runs/outputs \\
-        'rosnoetic:explore' worlds/{mapName}"""
+        'rosnoetic:explore' /root/catkin_ws/src/my_navigation_configs/worlds/{mapName} {bag_option}"""
     p = sp.Popen(launchstr, shell=True, stdout=sp.DEVNULL)
     p.wait()
     bar.update(i)
@@ -21,7 +24,7 @@ def purge_worlds():
             if file not in not_to_delete:
                 os.remove(os.path.join(root, file))
 
-def main(workers: int):
+def main(workers: int, no_bag):
     pool = ThreadPoolExecutor(max_workers=workers)
     try:
         with progressbar.ProgressBar(max_value=len(os.listdir("worlds/")) - 2).start() as bar:
@@ -29,7 +32,7 @@ def main(workers: int):
             i = 1
             for name in os.listdir("worlds/"):
                 if name.endswith(".world") and name != "rgb.world":
-                    futures.append(pool.submit(spawn_container, name, i, bar))
+                    futures.append(pool.submit(spawn_container, name, i, bar, no_bag))
                     i += 1
             pool.shutdown(wait=True)
     except Exception as e:
@@ -61,6 +64,8 @@ def parse_args():
         help="Use this to use WORKERS workers.")    
     parser.add_argument("--speedup", type=check_positive, default=10, metavar="SPEEDUP",
         help="Use this to adjust stage simulation speed. Higher is faster but heavier on the CPU.") 
+    parser.add_argument("--no-bag",  action='store_true', default=False,
+        help="Use this to disable bag recording, default behaviour is enabled.") 
     return parser.parse_args()
 
 if __name__ == "__main__":
@@ -71,6 +76,7 @@ if __name__ == "__main__":
     worlds = args.worlds
     workers = args.workers
     speedup = args.speedup
+    no_bag = args.no_bag 
 
     try:
         sp.run(["python3", os.path.join(os.getcwd(), "src/tirocinio/scripts/map_rgb_simul.py"), "--map", image_path, "--mask", movement_mask_image_path, "--worlds", str(worlds),
@@ -78,6 +84,6 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         purge_worlds()
 
-    main(int(workers))
+    main(int(workers), no_bag)
 
     print("All workers finished")
