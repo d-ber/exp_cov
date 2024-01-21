@@ -5,7 +5,7 @@ import rospkg
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Modify a map and run stage on it.')
-    parser.add_argument('--map', default=1, choices=[1, 2, 3], type=int,
+    parser.add_argument('--map', default=1, choices=[1, 2, 3, 4], type=int,
         help="Number of rgb map.")
     parser.add_argument('--scan', default="/scan", help="Scan topic name to set for stage.")
     parser.add_argument('--screen', default="home", choices=["home", "lab"],
