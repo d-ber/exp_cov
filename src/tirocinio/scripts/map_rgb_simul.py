@@ -284,6 +284,15 @@ def check_positive(value):
         raise Exception("{} is not an integer".format(value))
     return value
 
+def check_positive_float(value):
+    try:
+        value = float(value)
+        if value <= 0:
+            raise argparse.ArgumentTypeError("{} is not a positive float".format(value))
+    except ValueError:
+        raise Exception("{} is not a float".format(value))
+    return value
+
 def check_positive_or_zero(value):
     try:
         value = int(value)
@@ -333,9 +342,11 @@ def parse_args():
         help="Use this to adjust stage simulation speed. Higher is faster but heavier on the CPU.")
     parser.add_argument('--pose', type=check_pose, default=(0, 0), metavar="X Y",
         help="Robot pose X and Y coordinates.")
+    parser.add_argument('--scale', type=check_positive_float, default=0.035888, metavar="PIXELS",
+        help="Number of meters per pixel in png map.")
     return parser.parse_args()
 
-def get_world_text(image, name, speedup, pose):
+def get_world_text(image, name, speedup, pose, scale, sizex, sizey):
     return f"""
     # World {name}
     define turtlebot3 position
@@ -407,7 +418,7 @@ def get_world_text(image, name, speedup, pose):
     window
     (
         size [ 700.000 660.000 ] # in pixels (size [width height])
-        scale 27.864467231386534  # pixels per meter
+        scale {1/scale}  # pixels per meter
         center [ 0  0 ]
         rotate [ 0  0 ]
                     
@@ -418,7 +429,7 @@ def get_world_text(image, name, speedup, pose):
     floorplan
     ( 
         name  "turtlebot3-stage"
-        size [ 20.0 20 1.0 ] # size [x y z]
+        size [ {sizey} {sizex} 1.0 ] # size [x y z]
         pose [0 0 0 0]
         bitmap "bitmaps/image{image}.png" # bitmap: solo il nero è renderizzato
     )
@@ -447,6 +458,7 @@ def main():
     worlds = args.worlds
     speedup = args.speedup
     pose = args.pose
+    scale = args.scale
 
 
     movement_mask_image = cv2.imread(movement_mask_image_path, cv2.IMREAD_COLOR)
@@ -483,17 +495,24 @@ def main():
                 cv2.imwrite(filename, image_modified)
                 print("Saved map as {}".format(filename))
     else:
+        sizex = image.shape[0]
+        sizex = sizex/(1/scale)
+        sizey = image.shape[1]
+        sizey = sizey/(1/scale)
+
         name = os.path.basename(os.path.splitext(image_path)[0])
         for i in range(0, worlds):
             rectangles_path = os.path.join(base_dir, "bitmaps/rectangles{}.json".format(i))
-            #TODO: if not present, create [base_dir]/bitmaps directory to avoid failure
+            bitmaps_dir = os.path.join(base_dir, "bitmaps")
+            if not os.path.exists(bitmaps_dir) or not os.path.isdir(bitmaps_dir):
+                os.makedirs(bitmaps_dir)
             image_modified = extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=show_recap, show_steps=show_steps, save_map=True)
             filename = os.path.join(base_dir, "bitmaps/image{}.png".format(i))
             cv2.imwrite(filename, image_modified)
             print("Saved map as {}".format(filename))
             worldfile_path = os.path.join(base_dir, "world{}.world".format(i))
             with open(worldfile_path, "w", encoding="utf-8") as worldfile:
-                worldfile.write(get_world_text(i, name, speedup, pose))
+                worldfile.write(get_world_text(i, name, speedup, pose, scale, sizex, sizey))
                 print("Saved worldfile as {}".format(worldfile_path))
 
 if __name__ == "__main__":
