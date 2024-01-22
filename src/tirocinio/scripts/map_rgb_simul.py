@@ -293,6 +293,15 @@ def check_positive_or_zero(value):
         raise Exception("{} is not an integer".format(value))
     return value
 
+def check_pose(value):
+    try:
+        ret_value = value.split()
+        if len(ret_value) != 2:
+            raise argparse.ArgumentTypeError(f"Given pose value \"{value}\" is not made of 2 numbers")
+        return (float(ret_value[0]), float(ret_value[1]))
+    except ValueError:
+        raise Exception("{} is not made of 2 numbers".format(value))
+
 
 def parse_args():
     # get an instance of RosPack with the default search paths
@@ -321,10 +330,12 @@ def parse_args():
     parser.add_argument('--steps', action='store_true',
         help="Use this to show the processing steps.")
     parser.add_argument("--speedup", type=check_positive, default=10, metavar="SPEEDUP",
-        help="Use this to adjust stage simulation speed. Higher is faster but heavier on the CPU.") 
+        help="Use this to adjust stage simulation speed. Higher is faster but heavier on the CPU.")
+    parser.add_argument('--pose', type=check_pose, default=(0, 0), metavar="X Y",
+        help="Robot pose X and Y coordinates.")
     return parser.parse_args()
 
-def get_world_text(image, name, speedup):
+def get_world_text(image, name, speedup, pose):
     return f"""
     # World {name}
     define turtlebot3 position
@@ -415,7 +426,7 @@ def get_world_text(image, name, speedup):
     (		  
         # can refer to the robot by this name
         name  "turtlebot3"
-        pose [ -5 4 0 0 ] 
+        pose [ {pose[0]} {pose[1]} 0 0 ] 
 
         sick()
     )
@@ -435,6 +446,7 @@ def main():
     movement_mask_image_path = args.mask
     worlds = args.worlds
     speedup = args.speedup
+    pose = args.pose
 
 
     movement_mask_image = cv2.imread(movement_mask_image_path, cv2.IMREAD_COLOR)
@@ -474,13 +486,14 @@ def main():
         name = os.path.basename(os.path.splitext(image_path)[0])
         for i in range(0, worlds):
             rectangles_path = os.path.join(base_dir, "bitmaps/rectangles{}.json".format(i))
+            #TODO: if not present, create [base_dir]/bitmaps directory to avoid failure
             image_modified = extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=show_recap, show_steps=show_steps, save_map=True)
             filename = os.path.join(base_dir, "bitmaps/image{}.png".format(i))
             cv2.imwrite(filename, image_modified)
             print("Saved map as {}".format(filename))
             worldfile_path = os.path.join(base_dir, "world{}.world".format(i))
             with open(worldfile_path, "w", encoding="utf-8") as worldfile:
-                worldfile.write(get_world_text(i, name, speedup))
+                worldfile.write(get_world_text(i, name, speedup, pose))
                 print("Saved worldfile as {}".format(worldfile_path))
 
 if __name__ == "__main__":
