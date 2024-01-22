@@ -52,6 +52,24 @@ def check_positive(value):
         raise Exception("{} is not an integer".format(value))
     return value
 
+def check_pose(value):
+    try:
+        ret_value = value.split()
+        if len(ret_value) != 2:
+            raise argparse.ArgumentTypeError(f"Given pose value \"{value}\" is not made of 2 numbers")
+        return (float(ret_value[0]), float(ret_value[1]))
+    except ValueError:
+        raise Exception("{} is not made of 2 numbers".format(value))
+
+def check_positive_float(value):
+    try:
+        value = float(value)
+        if value <= 0:
+            raise argparse.ArgumentTypeError("{} is not a positive float".format(value))
+    except ValueError:
+        raise Exception("{} is not a float".format(value))
+    return value
+
 def parse_args():
     parser = argparse.ArgumentParser(description='Start exploration in docker containers.')
     parser.add_argument('--map', default=os.path.join(os.getcwd(), "src/tirocinio/maps_rgb_lab/map1/map1_rgb.png"),
@@ -66,6 +84,10 @@ def parse_args():
         help="Use this to adjust stage simulation speed. Higher is faster but heavier on the CPU.") 
     parser.add_argument("--no-bag",  action='store_true', default=False,
         help="Use this to disable bag recording, default behaviour is enabled.") 
+    parser.add_argument('--pose', type=check_pose, default=(0, 0), metavar="X Y",
+        help="Robot pose X and Y coordinates.")
+    parser.add_argument('--scale', type=check_positive_float, default=0.035888, metavar="PIXELS",
+        help="Number of meters per pixel in png map.")
     return parser.parse_args()
 
 if __name__ == "__main__":
@@ -77,10 +99,12 @@ if __name__ == "__main__":
     workers = args.workers
     speedup = args.speedup
     no_bag = args.no_bag 
+    pose = args.pose
+    scale = args.scale
 
     try:
         sp.run(["python3", os.path.join(os.getcwd(), "src/tirocinio/scripts/map_rgb_simul.py"), "--map", image_path, "--mask", movement_mask_image_path, "--worlds", str(worlds),
-            "--dir", os.path.join(os.getcwd(), "worlds"), "--speedup", str(speedup)])
+            "--dir", os.path.join(os.getcwd(), "worlds"), "--speedup", str(speedup), "--pose", f"{pose[0]} {pose[1]}", "--scale", str(scale)])
     except KeyboardInterrupt:
         purge_worlds()
 
