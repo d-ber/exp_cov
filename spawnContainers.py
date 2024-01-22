@@ -4,8 +4,21 @@ from concurrent.futures import ThreadPoolExecutor
 import progressbar
 import argparse
 
+def make_map(args, world_num):
+    image_path = args.map
+    movement_mask_image_path = args.mask
+    speedup = args.speedup
+    pose = args.pose
+    scale = args.scale
 
-def spawn_container(mapName: str, i, bar, no_bag):
+    sp.run(["python3", os.path.join(os.getcwd(), "src/tirocinio/scripts/map_rgb_simul.py"), "--map", image_path, "--mask", movement_mask_image_path,
+        "--dir", os.path.join(os.getcwd(), "worlds"), "--speedup", str(speedup), "--pose", f"{pose[0]} {pose[1]}", "--scale", str(scale), "--world-num", str(world_num)])
+
+    return(f"world{world_num}.world")
+
+def spawn_container(i, bar, no_bag, args):
+    mapName = make_map(args, i)
+
     bag_option = ""
     if no_bag:
         bag_option = "--no-bag"
@@ -24,16 +37,13 @@ def purge_worlds():
             if file not in not_to_delete:
                 os.remove(os.path.join(root, file))
 
-def main(workers: int, no_bag):
+def main(workers: int, no_bag, args):
     pool = ThreadPoolExecutor(max_workers=workers)
     try:
-        with progressbar.ProgressBar(max_value=len(os.listdir("worlds/")) - 2).start() as bar:
+        with progressbar.ProgressBar(max_value=args.worlds).start() as bar:
             futures = []
-            i = 1
-            for name in os.listdir("worlds/"):
-                if name.endswith(".world") and name != "rgb.world":
-                    futures.append(pool.submit(spawn_container, name, i, bar, no_bag))
-                    i += 1
+            for i in range(args.worlds):
+                futures.append(pool.submit(spawn_container, i, bar, no_bag, args))
             pool.shutdown(wait=True)
     except Exception as e:
         print(e)
@@ -93,21 +103,9 @@ def parse_args():
 if __name__ == "__main__":
 
     args = parse_args()
-    image_path = args.map
-    movement_mask_image_path = args.mask
-    worlds = args.worlds
     workers = args.workers
-    speedup = args.speedup
     no_bag = args.no_bag 
-    pose = args.pose
-    scale = args.scale
 
-    try:
-        sp.run(["python3", os.path.join(os.getcwd(), "src/tirocinio/scripts/map_rgb_simul.py"), "--map", image_path, "--mask", movement_mask_image_path, "--worlds", str(worlds),
-            "--dir", os.path.join(os.getcwd(), "worlds"), "--speedup", str(speedup), "--pose", f"{pose[0]} {pose[1]}", "--scale", str(scale)])
-    except KeyboardInterrupt:
-        purge_worlds()
-
-    main(int(workers), no_bag)
+    main(workers, no_bag, args)
 
     print("All workers finished")

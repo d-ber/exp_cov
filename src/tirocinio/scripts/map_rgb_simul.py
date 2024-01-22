@@ -329,7 +329,7 @@ def parse_args():
         help="Use this to save the produced map and rectangles info.")
     parser.add_argument("-b", "--batch", type=check_positive, default=1, metavar="N",
         help="Use this to produce N maps and save them.")    
-    parser.add_argument("-w", "--worlds", type=check_positive_or_zero, default=0, metavar="N",
+    parser.add_argument("--worlds", type=check_positive_or_zero, default=0, metavar="N",
         help="Use this to produce N maps and save them.")    
     parser.add_argument('--no-timestamp', action='store_true',
         help="""Use this save a single image without timestamp. If image.png already exists, it will create image_n.png
@@ -344,6 +344,8 @@ def parse_args():
         help="Robot pose X and Y coordinates.")
     parser.add_argument('--scale', type=check_positive_float, default=0.035888, metavar="PIXELS",
         help="Number of meters per pixel in png map.")
+    parser.add_argument("--world-num", type=check_positive_or_zero, default=None, metavar="N",
+        help="Use this to produce a maps that ends in N and save it. Setting this argument overrides --worlds.")    
     return parser.parse_args()
 
 def get_world_text(image, name, speedup, pose, scale, sizex, sizey):
@@ -459,13 +461,14 @@ def main():
     speedup = args.speedup
     pose = args.pose
     scale = args.scale
+    world_num = args.world_num
 
 
     movement_mask_image = cv2.imread(movement_mask_image_path, cv2.IMREAD_COLOR)
         
     image = cv2.imread(image_path, cv2.IMREAD_COLOR)
 
-    if worlds == 0:
+    if worlds == 0 and world_num is None:
         if batch == 1:
             if no_timestamp:
                 rectangles_path = os.path.join(base_dir, "rectangles.json")
@@ -494,6 +497,26 @@ def main():
                 filename = os.path.join(base_dir, "image_" + str(i) + ".png")
                 cv2.imwrite(filename, image_modified)
                 print("Saved map as {}".format(filename))
+    elif world_num is not None:
+        sizex = image.shape[0]
+        sizex = sizex/(1/scale)
+        sizey = image.shape[1]
+        sizey = sizey/(1/scale)
+
+        name = os.path.basename(os.path.splitext(image_path)[0])
+        i = world_num
+        rectangles_path = os.path.join(base_dir, "bitmaps/rectangles{}.json".format(i))
+        bitmaps_dir = os.path.join(base_dir, "bitmaps")
+        if not os.path.exists(bitmaps_dir) or not os.path.isdir(bitmaps_dir):
+            os.makedirs(bitmaps_dir)
+        image_modified = extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=show_recap, show_steps=show_steps, save_map=True)
+        filename = os.path.join(base_dir, "bitmaps/image{}.png".format(i))
+        cv2.imwrite(filename, image_modified)
+        print("Saved map as {}".format(filename))
+        worldfile_path = os.path.join(base_dir, "world{}.world".format(i))
+        with open(worldfile_path, "w", encoding="utf-8") as worldfile:
+            worldfile.write(get_world_text(i, name, speedup, pose, scale, sizex, sizey))
+            print("Saved worldfile as {}".format(worldfile_path))
     else:
         sizex = image.shape[0]
         sizex = sizex/(1/scale)
