@@ -25,20 +25,12 @@
 	<!--node name="RVIZ" pkg="rviz" type="rviz" args=" -d $(find my_navigation_configs)/launch/custom.rviz" /-->
 
 	<!-- Start Mapper to generate map from laser scans -->
-<<<<<<< HEAD:src/my_navigation_configs/launch/exploreambient_gmapping.launch
-	<node name="Mapper" pkg="gmapping" type="slam_gmapping" args="_xmin:=-50 _ymin:=-50 _ymax:=50
-     _xmax:=50 _ogain:=3.0 _minimumScore:=0 _angularUpdate:=0.35 _linearUpdate:=1
-     _map_update_interval:=5.0 _temporal_update:=2 _odom_frame:=odom _particles:=20 scan:=base_scan
-     _srr:=0.01 _srt:=0.02 _str:=0.01 _stt:=0.02 _delta:=0.05 _maxUrange:=4 _maxRange:=4.1
-	 _throttle_scans:=1 _resampleThreshold:=0.5" />
-=======
-  	<node pkg="slam_toolbox" type="sync_slam_toolbox_node" name="slam_toolbox" output="screen">
+	<node pkg="slam_toolbox" type="sync_slam_toolbox_node" name="slam_toolbox" output="screen">
     	<rosparam command="load" file="$(find my_navigation_configs)/params/mapper_params_online_sync.yaml" />
   	</node>
->>>>>>> d838bbe... sostituito gmapping con slam_toolbox:src/my_navigation_configs/launch/exploreambient_slam_toolbox.launch
 
 	<!-- simulation parameters -->
-        <param name="log_path" value="$(arg log_path)" />
+    <param name="log_path" value="$(arg log_path)" />
 	<param name="robot_name" value="$(arg robot_name)" />
 
 	<!-- move_base -->

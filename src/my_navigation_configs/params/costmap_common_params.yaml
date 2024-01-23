@@ -1,4 +1,4 @@
-footprint: [[-0.105, -0.105], [-0.105, 0.105], [0.041, 0.105], [0.041, -0.105]]
+footprint: [ [-0.02,-0.02], [0.02, -0.02], [0.02, 0.02], [-0.02,0.02] ]
 footprint_padding: 0.01
 
 # Current bump cloud configuration

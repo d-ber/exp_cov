@@ -353,7 +353,7 @@ def get_world_text(image, name, speedup, pose, scale, sizex, sizey):
     # World {name}
     define turtlebot3 position
     (
-        size [ 0.138 0.178 0.192 ] # size [ x:<float> y:<float> z:<float> ]
+	    size [0.02 0.02 0.04]
 
         # this block approximates shape of a Turtlebot3
         block( 
@@ -374,9 +374,9 @@ def get_world_text(image, name, speedup, pose, scale, sizex, sizey):
     (
         sensor(
             # ranger-specific properties
-            range [ 0.06 4.095 ]
-            fov 240.0
-            samples 683
+            range [ 0.0  15.0] # maximum range, actual detection up to 30m is set inside launch file via maxURange
+            fov 359.0
+            samples 800
 
             # noise [range_const range_prop angular]
             # range_const - describes constant noise. This part does not depends on range

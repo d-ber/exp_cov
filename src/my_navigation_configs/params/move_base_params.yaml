@@ -9,15 +9,9 @@ oscillation_distance: 0.3
 
 recovery_behaviors: [
   {name: conservative_reset, type: clear_costmap_recovery/ClearCostmapRecovery},
-  {name: stepback_recovery, type: stepback_recovery/StepBackRecovery},
   {name: rotate_recovery, type: rotate_recovery/RotateRecovery},
   {name: aggressive_reset, type: clear_costmap_recovery/ClearCostmapRecovery}
 ]
-
-
-stepback_recovery:
-    setpback_speed: -0.15    # m/s (shuld be negative)
-    stepback_time: 3.0      # seconds
 
 conservative_reset:
   reset_distance: 2.0     #Reset costmaps from obstacles at a distance > "reset_distance"
