@@ -28,7 +28,7 @@ def spawn_container(i, bar, no_bag, args):
         'rosnoetic:explore' /root/catkin_ws/src/my_navigation_configs/worlds/{mapName} {bag_option}"""
     p = sp.Popen(launchstr, shell=True, stdout=sp.DEVNULL)
     p.wait()
-    bar.update(i)
+    bar.increment()
 
 def purge_worlds():
     not_to_delete = ("rgb.world", "image.png", "rectangles.json")
@@ -45,6 +45,7 @@ def main(workers: int, no_bag, args):
             for i in range(args.worlds):
                 futures.append(pool.submit(spawn_container, i, bar, no_bag, args))
             pool.shutdown(wait=True)
+            bar.finish()
     except Exception as e:
         print(e)
         pool.shutdown(wait=False)
