@@ -84,7 +84,7 @@ def translate_obj(obj_img, movement_area, img, dist_tra, dist_rot, show_steps, d
     return (dst, dx, dy)
 
 
-def extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=False, show_steps=False, save_map=False):
+def extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=False, show_steps=False, save_map=False, sizex=20, sizey=20):
     # Copy
     image_objects_removed = image.copy()
     
@@ -183,7 +183,7 @@ def extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap
 
     # translational probability green areas
     mean_green = 0
-    std_green = 5
+    std_green = 0.1
     norm_green = st.norm(loc=mean_green, scale=std_green)
 
     # rotational probability
@@ -195,13 +195,14 @@ def extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap
     p = 0.5
     bernoulli_clutter = st.bernoulli(p)
 
-    # Stage simulator map dimension
-    stage_dim = 20
-
     translated_objs_image = image_objects_removed
     rectangles_info = []
     contours_green_translated = list(contours[colors.index("green")])
     green_idx = 0
+    image_width = image.shape[1]
+    image_height = image.shape[0]
+    size_width = sizey
+    size_height = sizex
 
     for j, (contour, obj_color_idx, object_image, movement_area) in enumerate(contour_obj_image_movement_area):
         if colors[obj_color_idx] == "green":
@@ -214,7 +215,7 @@ def extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap
 
             # Calculate the bounding rectangle
             x, y, w, h = cv2.boundingRect(contour)
-
+            
             # Translate it 
             x = x + dx 
             y = y + dy
@@ -223,13 +224,13 @@ def extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap
             center_x = x + (w / 2)
             center_y = y + (h / 2)
 
-            # Convert to a Cartesian system with the origin in the center of stage simulator
-            center_x = (stage_dim*center_x)/image.shape[1] - stage_dim / 2
-            center_y = (stage_dim*-center_y)/image.shape[1] + stage_dim / 2
+            # Convert to stage coordinates
+            center_x = (-size_width/2) + ((size_width/2 - (-size_width/2)) / (image_width - 0)) * (center_x - 0)
+            center_y = (-size_height/2) + ((size_height/2 - (-size_height/2)) / (image_height - 0)) * ((image_height-center_y) - 0)
 
             # Convert pixel units to the desired unit (n pixels per unit)
-            w = stage_dim*(w/image.shape[0])
-            h = stage_dim*(h/image.shape[1])
+            w = size_width*(w/image_width)
+            h = size_height*(h/image_height)
 
             # Add rectangle information to the list
             rectangles_info.append({
@@ -353,7 +354,7 @@ def get_world_text(image, name, speedup, pose, scale, sizex, sizey):
     # World {name}
     define turtlebot3 position
     (
-	    size [0.02 0.02 0.04]
+        size [ 0.138 0.178 0.192 ] # size [ x:<float> y:<float> z:<float> ]
 
         # this block approximates shape of a Turtlebot3
         block( 
@@ -374,9 +375,9 @@ def get_world_text(image, name, speedup, pose, scale, sizex, sizey):
     (
         sensor(
             # ranger-specific properties
-            range [ 0.0  15.0] # maximum range, actual detection up to 30m is set inside launch file via maxURange
-            fov 359.0
-            samples 800
+            range [ 0.06 4.095 ]
+            fov 240.0
+            samples 683
 
             # noise [range_const range_prop angular]
             # range_const - describes constant noise. This part does not depends on range
@@ -468,13 +469,18 @@ def main():
         
     image = cv2.imread(image_path, cv2.IMREAD_COLOR)
 
+    sizex = image.shape[0]
+    sizex = sizex/(1/scale)
+    sizey = image.shape[1]
+    sizey = sizey/(1/scale)
+
     if worlds == 0 and world_num is None:
         if batch == 1:
             if no_timestamp:
                 rectangles_path = os.path.join(base_dir, "rectangles.json")
             else:
                 rectangles_path = os.path.join(base_dir, 'rectangles_' + str(time.time_ns()) + '.json')
-            image_modified = extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=show_recap, show_steps=show_steps, save_map=save_map)
+            image_modified = extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=show_recap, show_steps=show_steps, save_map=save_map, sizex=sizex, sizey=sizey)
 
             if save_map:
                 if no_timestamp:
@@ -493,15 +499,11 @@ def main():
         else:
             for i in range(batch):
                 rectangles_path = os.path.join(base_dir, 'rectangles_' + str(i) + '.json')
-                image_modified = extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=show_recap, show_steps=show_steps, save_map=True)
+                image_modified = extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=show_recap, show_steps=show_steps, save_map=True, sizex=sizex, sizey=sizey)
                 filename = os.path.join(base_dir, "image_" + str(i) + ".png")
                 cv2.imwrite(filename, image_modified)
                 print("Saved map as {}".format(filename))
     elif world_num is not None:
-        sizex = image.shape[0]
-        sizex = sizex/(1/scale)
-        sizey = image.shape[1]
-        sizey = sizey/(1/scale)
 
         name = os.path.basename(os.path.splitext(image_path)[0])
         i = world_num
@@ -509,7 +511,7 @@ def main():
         bitmaps_dir = os.path.join(base_dir, "bitmaps")
         if not os.path.exists(bitmaps_dir) or not os.path.isdir(bitmaps_dir):
             os.makedirs(bitmaps_dir)
-        image_modified = extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=show_recap, show_steps=show_steps, save_map=True)
+        image_modified = extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=show_recap, show_steps=show_steps, save_map=True, sizex=sizex, sizey=sizey)
         filename = os.path.join(base_dir, "bitmaps/image{}.png".format(i))
         cv2.imwrite(filename, image_modified)
         print("Saved map as {}".format(filename))
@@ -518,10 +520,6 @@ def main():
             worldfile.write(get_world_text(i, name, speedup, pose, scale, sizex, sizey))
             print("Saved worldfile as {}".format(worldfile_path))
     else:
-        sizex = image.shape[0]
-        sizex = sizex/(1/scale)
-        sizey = image.shape[1]
-        sizey = sizey/(1/scale)
 
         name = os.path.basename(os.path.splitext(image_path)[0])
         for i in range(0, worlds):
@@ -529,7 +527,7 @@ def main():
             bitmaps_dir = os.path.join(base_dir, "bitmaps")
             if not os.path.exists(bitmaps_dir) or not os.path.isdir(bitmaps_dir):
                 os.makedirs(bitmaps_dir)
-            image_modified = extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=show_recap, show_steps=show_steps, save_map=True)
+            image_modified = extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=show_recap, show_steps=show_steps, save_map=True, sizex=sizex, sizey=sizey)
             filename = os.path.join(base_dir, "bitmaps/image{}.png".format(i))
             cv2.imwrite(filename, image_modified)
             print("Saved map as {}".format(filename))
