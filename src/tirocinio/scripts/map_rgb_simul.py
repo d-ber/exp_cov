@@ -375,9 +375,9 @@ def get_world_text(image, name, speedup, pose, scale, sizex, sizey):
     (
         sensor(
             # ranger-specific properties
-            range [ 0.06 4.095 ]
-            fov 240.0
-            samples 683
+            range [ 0.06 15 ]
+            fov 359
+            samples 1022
 
             # noise [range_const range_prop angular]
             # range_const - describes constant noise. This part does not depends on range

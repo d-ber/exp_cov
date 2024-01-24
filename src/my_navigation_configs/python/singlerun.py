@@ -123,7 +123,7 @@ def launchNavigation(world, folder, rectangles_path, no_bag):
             + world
             + " bag:="
             + folder
-            + os.path.basename(folder)
+            + "bag"
             + ".bag "
             + " rectangles_path:=" 
             + rectangles_path
@@ -184,13 +184,14 @@ def exploreWorlds(project_path, world_path, no_bag):
         if not exists(run_folder):
             makedirs(run_folder)
 
-        #Save Bitmap and Rectangles too
+        #Save Bitmap, World and Rectangles too
         worldnum = extract_number(os.path.basename(world_path))
         if worldnum:
             rect_path = os.path.join(os.path.dirname(world_path), f"bitmaps/rectangles{worldnum}.json")
             bitmap_path = os.path.join(os.path.dirname(world_path), f"bitmaps/image{worldnum}.png")
             shutil.copy(rect_path, run_folder)
             shutil.copy(bitmap_path, run_folder)
+            shutil.copy(world_path, run_folder)
 
             print("START")
             launchNavigation(world_path, run_folder, rect_path, no_bag)
