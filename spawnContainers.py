@@ -2,6 +2,7 @@ import subprocess as sp
 import os
 from concurrent.futures import ThreadPoolExecutor
 import progressbar
+import time
 import argparse
 
 def make_map(args, world_num):
@@ -17,6 +18,7 @@ def make_map(args, world_num):
     return(f"world{world_num}.world")
 
 def spawn_container(i, bar, no_bag, args):
+    time.sleep(4)
     mapName = make_map(args, i)
 
     bag_option = ""
@@ -24,7 +26,7 @@ def spawn_container(i, bar, no_bag, args):
         bag_option = "--no-bag"
     launchstr = f"""docker run -it \\
         --mount type=bind,source=./worlds,target=/root/catkin_ws/src/my_navigation_configs/worlds \\
-        -v ./output:/root/catkin_ws/src/my_navigation_configs/runs/outputs \\
+        -v /media/d-ber/B83C78593C78149A/TIROCINIO/RUN:/root/catkin_ws/src/my_navigation_configs/runs/outputs \\
         'rosnoetic:slam_toolbox' /root/catkin_ws/src/my_navigation_configs/worlds/{mapName} {bag_option}"""
     p = sp.Popen(launchstr, shell=True, stdout=sp.DEVNULL)
     p.wait()
