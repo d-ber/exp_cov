@@ -12,13 +12,13 @@
 	<param name="use_sim_time" value="true" />
 
 	<!-- Start Stage simulator with a given environment -->
-	<node name="Stage" pkg="stage_ros2" type="stageros" args="$(arg worldfile)">
+	<node name="Stage" pkg="stage_ros" type="stageros" args="$(arg worldfile)">
 		<param name="base_watchdog_timeout" value="0.1" />
 	</node>
 
 	<!-- Record ground truth values -->
 	<group if="$(arg record_bag)">
-		<node name="recorder" pkg="rosbag" type="record" args="--lz4 -O $(arg bag) /base_pose_ground_truth /odom /base_scan /cmd_vel"/>
+		<node name="recorder" pkg="rosbag" type="record" args="--lz4 -a -O $(arg bag)"/>
 	</group>
 	
 	<!-- RVIZ to view the visualization -->
@@ -71,7 +71,7 @@
     <remap from="scan" to="base_scan" />
 
 	<!--Pose check and disturb nodes-->
-	<node name="disturb" pkg="tirocinio" type="disturb.py" output="screen"/>
-    <node name="pose_check" pkg="tirocinio" type="pose_check.py" output="screen" args="--path $(arg rectangles_path)"/>
+	<!--<node name="disturb" pkg="tirocinio" type="disturb.py" output="screen"/>-->
+    <!--<node name="pose_check" pkg="tirocinio" type="pose_check.py" output="screen" args="- -path $(arg rectangles_path)"/>-->
 
 </launch>
