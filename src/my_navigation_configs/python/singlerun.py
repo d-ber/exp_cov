@@ -189,9 +189,11 @@ def exploreWorlds(project_path, world_path, no_bag):
         if worldnum:
             rect_path = os.path.join(os.path.dirname(world_path), f"bitmaps/rectangles{worldnum}.json")
             bitmap_path = os.path.join(os.path.dirname(world_path), f"bitmaps/image{worldnum}.png")
-            shutil.copy(rect_path, run_folder)
-            shutil.copy(bitmap_path, run_folder)
+            shutil.copy(rect_path, os.path.join(run_folder, "bitmaps"))
+            shutil.copy(bitmap_path, os.path.join(run_folder, "bitmaps"))
             shutil.copy(world_path, run_folder)
+
+            time.sleep(4)
 
             print("START")
             launchNavigation(world_path, run_folder, rect_path, no_bag)
@@ -207,6 +209,7 @@ def parse_args():
     return parser.parse_args()
 
 if __name__ == "__main__":
+    time.sleep(4)
     args = parse_args()
     world_path = args.world
     no_bag = args.no_bag
