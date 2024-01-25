@@ -5,7 +5,7 @@ import scipy.stats as st
 import os
 import time
 import json
-import rospkg
+#import rospkg
 import argparse
 
 # obj_img is a b&w image, in which the object is black and the background white
@@ -315,14 +315,14 @@ def check_pose(value):
 
 def parse_args():
     # get an instance of RosPack with the default search paths
-    rospack = rospkg.RosPack()
+    #rospack = rospkg.RosPack()
     # get the file path for tirocinio
-    package_path = rospack.get_path('tirocinio')
+    #package_path = rospack.get_path('tirocinio')
 
     parser = argparse.ArgumentParser(description='Modify rgb maps automatically.')
-    parser.add_argument('--map', default=os.path.join(package_path, "maps_rgb_lab/map1/map1_rgb.png"),
+    parser.add_argument('--map', default="./src/tirocinio/maps_rgb_lab/map1/map1_rgb.png",
         help="Path to the rgb map file.", metavar="MAP_PATH")
-    parser.add_argument('--mask', default=os.path.join(package_path, "maps_rgb_lab/map1/map1_movement_mask.png"),
+    parser.add_argument('--mask', default="./src/tirocinio/maps_rgb_lab/map1/map1_rgb.png",
         help="Path to the rgb mask map file for movement areas. Each rgb object in the map will be moved within the yellow mask given in this file. If the object is none, then it can move freely.", metavar="MASK_PATH")
     parser.add_argument('--show', action='store_true',
         help="Use this to show a final recap.")
