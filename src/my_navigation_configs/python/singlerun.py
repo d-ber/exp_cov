@@ -119,11 +119,11 @@ def launchNavigation(world, folder, rectangles_path, no_bag):
         bag_arg = "false"
     try:
         launchString = (
-            "roslaunch my_navigation_configs exploreambient_gmapping.launch worldfile:="
+            "roslaunch my_navigation_configs exploreambient_slam_toolbox.launch worldfile:="
             + world
             + " bag:="
             + folder
-            + os.path.basename(folder)
+            + "bag"
             + ".bag "
             + " rectangles_path:=" 
             + rectangles_path
@@ -181,16 +181,20 @@ def exploreWorlds(project_path, world_path, no_bag):
             if int(i[3:]) >= maxrun:
                 maxrun = int(i[3:])
         run_folder = join(folder, "run" + str(maxrun + 1) + "/")
-        if not exists(run_folder):
-            makedirs(run_folder)
+        run_folder_bitmaps = os.path.join(run_folder, "bitmaps")
+        if not exists(run_folder_bitmaps):
+            makedirs(run_folder_bitmaps)
 
-        #Save Bitmap and Rectangles too
+        #Save Bitmap, World and Rectangles too
         worldnum = extract_number(os.path.basename(world_path))
         if worldnum:
             rect_path = os.path.join(os.path.dirname(world_path), f"bitmaps/rectangles{worldnum}.json")
             bitmap_path = os.path.join(os.path.dirname(world_path), f"bitmaps/image{worldnum}.png")
-            shutil.copy(rect_path, run_folder)
-            shutil.copy(bitmap_path, run_folder)
+            shutil.copy(rect_path, run_folder_bitmaps)
+            shutil.copy(bitmap_path, run_folder_bitmaps)
+            shutil.copy(world_path, run_folder)
+
+            time.sleep(4)
 
             print("START")
             launchNavigation(world_path, run_folder, rect_path, no_bag)
@@ -206,6 +210,7 @@ def parse_args():
     return parser.parse_args()
 
 if __name__ == "__main__":
+    time.sleep(4)
     args = parse_args()
     world_path = args.world
     no_bag = args.no_bag
