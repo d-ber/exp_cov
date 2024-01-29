@@ -26,7 +26,7 @@ def spawn_container(i, bar, no_bag, args):
         bag_option = "--no-bag"
     launchstr = f"""docker run -it \\
         --mount type=bind,source=./worlds,target=/root/catkin_ws/src/my_navigation_configs/worlds \\
-        -v /media/d-ber/B83C78593C78149A/TIROCINIO/RUN:/root/catkin_ws/src/my_navigation_configs/runs/outputs \\
+        --mount type=bind,source=/mnt/B83C78593C78149A/TIROCINIO/RUN,target=/root/catkin_ws/src/my_navigation_configs/runs/outputs \\
         'rosnoetic:slam_toolbox' /root/catkin_ws/src/my_navigation_configs/worlds/{mapName} {bag_option}"""
     p = sp.Popen(launchstr, shell=True, stdout=sp.DEVNULL)
     p.wait()
