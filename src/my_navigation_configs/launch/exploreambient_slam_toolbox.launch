@@ -22,7 +22,7 @@
 	</group>
 	
 	<!-- RVIZ to view the visualization -->
-	<!--node name="RVIZ" pkg="rviz" type="rviz" args=" -d $(find my_navigation_configs)/launch/custom.rviz" /-->
+	<node name="RVIZ" pkg="rviz" type="rviz" args=" -d $(find my_navigation_configs)/launch/custom.rviz" />
 
 	<!-- Start Mapper to generate map from laser scans -->
 	<node pkg="slam_toolbox" type="sync_slam_toolbox_node" name="slam_toolbox" output="screen">
