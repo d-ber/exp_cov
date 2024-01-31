@@ -64,7 +64,7 @@ costmap_2d::Costmap2DROS* global_costmap, costmap_2d::Costmap2DROS* local_costma
 
     //we'll simulate every degree by default
     private_nh.param("setpback_speed", stepback_speed, -0.1);
-    private_nh.param("stepback_time", stepback_time, 2.0);
+    private_nh.param("stepback_time", stepback_time, 0.8);
 
     blp_nh.param("acc_lim_th", acc_lim_th_, 3.2);
     blp_nh.param("max_rotational_vel", max_rotational_vel_, 1.0);
