@@ -47,8 +47,8 @@
 
 namespace rotate_left_recovery{
   /**
-   * @class StepBackRecovery
-   * @brief A recovery behavior that stepbacks the robot in-place to attempt to clear out space
+   * @class RotateLeftRecovery
+   * @brief A recovery behavior that rotates the robot in-place to attempt to clear out space
    */
   class RotateLeftRecovery : public nav_core::RecoveryBehavior {
     public:
@@ -60,7 +60,7 @@ namespace rotate_left_recovery{
       RotateLeftRecovery();
 
       /**
-       * @brief  Initialization function for the StepBackRecovery recovery behavior
+       * @brief  Initialization function for the RotateLeftRecovery recovery behavior
        * @param tf A pointer to a transform listener
        * @param global_costmap A pointer to the global_costmap used by the navigation stack 
        * @param local_costmap A pointer to the local_costmap used by the navigation stack 
@@ -69,12 +69,12 @@ namespace rotate_left_recovery{
           costmap_2d::Costmap2DROS* global_costmap, costmap_2d::Costmap2DROS* local_costmap);
 
       /**
-       * @brief  Run the StepBackRecovery recovery behavior.
+       * @brief  Run the RotateLeftRecovery recovery behavior.
        */
       void runBehavior();
 
       /**
-       * @brief  Destructor for the stepback recovery behavior
+       * @brief  Destructor for the rotate recovery behavior
        */
       ~RotateLeftRecovery();
 
@@ -85,7 +85,7 @@ namespace rotate_left_recovery{
       /*tf::TransformListener* tf_;*/
       bool initialized_;
       double sim_granularity_, min_rotational_vel_, max_rotational_vel_, acc_lim_th_, tolerance_, frequency_;
-      double stepback_speed, stepback_time;
+      double rotate_speed, rotate_time;
       base_local_planner::CostmapModel* world_model_;
   };
 };

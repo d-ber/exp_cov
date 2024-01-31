@@ -63,8 +63,8 @@ costmap_2d::Costmap2DROS* global_costmap, costmap_2d::Costmap2DROS* local_costma
     ros::NodeHandle blp_nh("~/TrajectoryPlannerROS");
 
     //we'll simulate every degree by default
-    private_nh.param("rotate_speed", rotate_speed, -0.1);
-    private_nh.param("rotate_time", rotate_time, 0.8);
+    private_nh.param("rotate_speed", rotate_speed, -0.3);
+    private_nh.param("rotate_time", rotate_time, 0.5);
 
     blp_nh.param("acc_lim_th", acc_lim_th_, 3.2);
     blp_nh.param("max_rotational_vel", max_rotational_vel_, 1.0);
@@ -98,7 +98,7 @@ void RotateLeftRecovery::runBehavior()
         ROS_ERROR("[RotateLeftRecovery] The costmaps passed to the RotateLeftRecovery object cannot be NULL. Doing nothing.");
         return;
     }
-    ROS_INFO("[RotateLeftRecovery] StepBack recovery behavior started.");
+    ROS_INFO("[RotateLeftRecovery] Rotate left recovery behavior started.");
 
     ros::Rate r(10);
     ros::NodeHandle n;
@@ -118,67 +118,6 @@ void RotateLeftRecovery::runBehavior()
 
         r.sleep();
     }
-
-  /*
-  tf::Stamped<tf::Pose> global_pose;
-  local_costmap_->getRobotPose(global_pose);
-
-  double current_angle = -1.0 * M_PI;
-  bool got_180 = false;
-
-  double start_offset = 0 - angles::normalize_angle(tf::getYaw(global_pose.getRotation()));
-
-  while(n.ok())
-  {
-    local_costmap_->getRobotPose(global_pose);
-
-    double norm_angle = angles::normalize_angle(tf::getYaw(global_pose.getRotation()));
-    current_angle = angles::normalize_angle(norm_angle + start_offset);
-
-    //compute the distance left to rotate
-    double dist_left = M_PI - current_angle;
-
-    double x = global_pose.getOrigin().x(), y = global_pose.getOrigin().y();
-
-    //check if that velocity is legal by forward simulating
-    double sim_angle = 0.0;
-    while(sim_angle < dist_left){
-      double theta = tf::getYaw(global_pose.getRotation()) + sim_angle;
-
-      //make sure that the point is legal, if it isn't... we'll abort
-      double footprint_cost = world_model_->footprintCost(x, y, theta, local_costmap_->getRobotFootprint(), 0.0, 0.0);
-      if(footprint_cost < 0.0){
-        ROS_ERROR("StepBack recovery can't rotate in place because there is a potential collision. Cost: %.2f", footprint_cost);
-        return;
-      }
-
-      sim_angle += sim_granularity_;
-    }
-
-    //compute the velocity that will let us stop by the time we reach the goal
-    double vel = sqrt(2 * acc_lim_th_ * dist_left);
-
-    //make sure that this velocity falls within the specified limits
-    vel = std::min(std::max(vel, min_rotational_vel_), max_rotational_vel_);
-
-    geometry_msgs::Twist cmd_vel;
-    cmd_vel.linear.x = 0.0;
-    cmd_vel.linear.y = 0.0;
-    cmd_vel.angular.z = vel;
-
-    vel_pub.publish(cmd_vel);
-
-    //makes sure that we won't decide we're done right after we start
-    if(current_angle < 0.0)
-      got_180 = true;
-
-    //if we're done with our in-place rotation... then return
-    if(got_180 && current_angle >= (0.0 - tolerance_))
-      return;
-
-    r.sleep();
-  }
-  */
 }
 
 };
