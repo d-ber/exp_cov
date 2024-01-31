@@ -107,6 +107,32 @@ def extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap
     # Find contours in the mask
     contours_movement = cv2.findContours(color_mask_movement, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
 
+    # HSV ranges for closed doors (orange) and open doors (purple)
+    door_colors = ("orange", "purple") 
+    lower_door_range = (np.array([10, 100, 100]), np.array([130, 50, 50]))
+    upper_door_range = (np.array([20, 255, 255]), np.array([160, 255, 255]))
+
+    #Find doors
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    closed_doors_mask = cv2.inRange(hsv, lower_door_range[door_colors.index("orange")], upper_door_range[door_colors.index("orange")])
+    closed_doors_mask_dilated = cv2.dilate(closed_doors_mask, kernel, iterations=1)
+    open_doors_mask = cv2.inRange(hsv, lower_door_range[door_colors.index("purple")], upper_door_range[door_colors.index("purple")])
+    open_doors_mask_dilated = cv2.dilate(open_doors_mask, kernel, iterations=1)
+
+    open_doors = cv2.findContours(open_doors_mask_dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
+    closed_doors = cv2.findContours(closed_doors_mask_dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
+
+    # probability for orange/purple doors (0.05 prob to have a close door -> 0.95 of having it open)
+    p_doors = 0.05
+    bernoulli_doors = st.bernoulli(p_doors)
+
+    hsv = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
+    image_objects_removed[np.where(closed_doors_mask > 0)] = [255, 255, 255]
+    hsv[np.where(closed_doors_mask > 0)] = [255, 255, 255]
+    image_objects_removed[np.where(open_doors_mask > 0)] = [255, 255, 255]
+    hsv[np.where(open_doors_mask > 0)] = [255, 255, 255]
+    hsv = cv2.cvtColor(hsv, cv2.COLOR_BGR2HSV)
+
     color_masks = []
     images_with_boxes = []
     results = []
@@ -176,6 +202,34 @@ def extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap
         # Set the pixels in the original image where the color is extracted to white
         image_objects_removed[np.where(color_masks[i] > 0)] = [255, 255, 255]
 
+    translated_objs_image = image_objects_removed
+    
+    for closed_door in closed_doors:
+        for open_door in open_doors:
+            mask_open = np.zeros_like(hsv)
+            cv2.drawContours(mask_open, [open_door], -1, (255,255,255), cv2.FILLED)
+            mask_closed = np.zeros_like(hsv)
+            cv2.drawContours(mask_closed, [closed_door], -1, (255,255,255), cv2.FILLED)
+            overlapped = cv2.bitwise_and(mask_open, mask_closed)
+            overlap = np.count_nonzero(overlapped)
+            if overlap > 0:
+                mask_eroded = cv2.erode(mask_open, kernel, iterations=1)
+                if bernoulli_doors.rvs():
+                    mask_eroded = cv2.erode(mask_closed, kernel, iterations=1)
+                #_ = plt.subplot(111), plt.imshow(cv2.cvtColor(mask_eroded, cv2.COLOR_BGR2RGB)), plt.title('mask')
+                #plt.show()
+                translated_objs_image = cv2.bitwise_and(translated_objs_image, cv2.bitwise_not(mask_eroded))
+                #_ = plt.subplot(111), plt.imshow(cv2.cvtColor(hsv, cv2.COLOR_HSV2RGB)), plt.title('image')
+                #plt.show()
+                break
+            #_ = plt.subplot(311), plt.imshow(cv2.cvtColor(mask_closed, cv2.COLOR_BGR2RGB)), plt.title('closed')
+            #_ = plt.subplot(312), plt.imshow(cv2.cvtColor(mask_open, cv2.COLOR_BGR2RGB)), plt.title('open')
+            #_ = plt.subplot(313), plt.imshow(cv2.cvtColor(overlapped, cv2.COLOR_BGR2RGB)), plt.title('and')
+            #plt.show()
+
+    #_ = plt.subplot(111), plt.imshow(cv2.cvtColor(translated_objs_image, cv2.COLOR_BGR2RGB)), plt.title('image doors closed or open')
+    #plt.show()
+
     # translational probability red and blu obstacles
     mean_tra = 0
     std_tra = 10
@@ -195,7 +249,6 @@ def extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap
     p = 0.5
     bernoulli_clutter = st.bernoulli(p)
 
-    translated_objs_image = image_objects_removed
     rectangles_info = []
     contours_green_translated = list(contours[colors.index("green")])
     green_idx = 0
