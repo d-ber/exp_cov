@@ -63,8 +63,8 @@ costmap_2d::Costmap2DROS* global_costmap, costmap_2d::Costmap2DROS* local_costma
     ros::NodeHandle blp_nh("~/TrajectoryPlannerROS");
 
     //we'll simulate every degree by default
-    private_nh.param("rotate_speed", rotate_speed, -0.3);
-    private_nh.param("rotate_time", rotate_time, 0.5);
+    private_nh.param("rotate_speed", rotate_speed, -1.0);
+    private_nh.param("rotate_time", rotate_time, 1.5);
 
     blp_nh.param("acc_lim_th", acc_lim_th_, 3.2);
     blp_nh.param("max_rotational_vel", max_rotational_vel_, 1.0);
@@ -98,7 +98,7 @@ void RotateLeftRecovery::runBehavior()
         ROS_ERROR("[RotateLeftRecovery] The costmaps passed to the RotateLeftRecovery object cannot be NULL. Doing nothing.");
         return;
     }
-    ROS_INFO("[RotateLeftRecovery] Rotate left recovery behavior started.");
+    ROS_WARN("[RotateLeftRecovery] Rotate left recovery behavior started.");
 
     ros::Rate r(10);
     ros::NodeHandle n;
