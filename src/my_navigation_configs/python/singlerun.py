@@ -109,14 +109,17 @@ def checkActiveGoal(process, folder):
             return
 
 
-def launchNavigation(world, folder, rectangles_path, no_bag):
+def launchNavigation(world, folder, rectangles_path, no_bag, record_all_topics):
     """
     Calls the launch file and starts the exploration, waits until the process is done
     """
     p = None
     bag_arg = "true"
+    record_all_topics_arg = "false"
     if no_bag:
         bag_arg = "false"
+    if record_all_topics:
+        record_all_topics_arg = "true"
     try:
         launchString = (
             "roslaunch my_navigation_configs exploreambient_slam_toolbox.launch worldfile:="
@@ -129,6 +132,8 @@ def launchNavigation(world, folder, rectangles_path, no_bag):
             + rectangles_path
             + " record_bag:="
             + bag_arg
+            + " bag_all:="
+            + record_all_topics_arg
         )
 
         p = Popen(launchString, shell=True, preexec_fn=setsid)
@@ -159,7 +164,7 @@ def extract_number(worldname):
         return num.group(0)
     return None
 
-def exploreWorlds(project_path, world_path, no_bag):
+def exploreWorlds(project_path, world_path, no_bag, record_all_topics):
     """
     Given a folder with world file it runs 5 times each environment exploration
     """
@@ -197,7 +202,7 @@ def exploreWorlds(project_path, world_path, no_bag):
             time.sleep(4)
 
             print("START")
-            launchNavigation(world_path, run_folder, rect_path, no_bag)
+            launchNavigation(world_path, run_folder, rect_path, no_bag, record_all_topics)
             print("END")
             time.sleep(1)
 
@@ -207,6 +212,8 @@ def parse_args():
         help="Path to world file.")    
     parser.add_argument("--no-bag",  action='store_true', default=False,
         help="Use this to disable bag recording, default behaviour is enabled.") 
+    parser.add_argument("--bag-all",  action='store_true', default=False,
+        help="Use this to record all topics, default behaviour is disabled, i.e. only /odom /base_pose_ground_truth and /base_scan are recorded.") 
     return parser.parse_args()
 
 if __name__ == "__main__":
@@ -214,6 +221,7 @@ if __name__ == "__main__":
     args = parse_args()
     world_path = args.world
     no_bag = args.no_bag
+    record_all_topics = args.bag_all
     # retrieve current path
     project = os.path.expanduser("~/catkin_ws/src/my_navigation_configs")        
-    exploreWorlds(project, world_path, no_bag)
+    exploreWorlds(project, world_path, no_bag, record_all_topics)

@@ -7,6 +7,7 @@
 	<arg name="output" default="screen"/>
 	<arg name="frontier_selection" default="5"/>
 	<arg name="use_sim_time" default="true" />
+	<arg name="bag_all" default="false"/>
 	<arg name="rectangles_path"/>
 	<arg name="record_bag" default="true"/>
 	<param name="use_sim_time" value="true" />
@@ -18,7 +19,12 @@
 
 	<!-- Record ground truth values -->
 	<group if="$(arg record_bag)">
-		<node name="recorder" pkg="rosbag" type="record" args="--lz4 -O $(arg bag) /base_pose_ground_truth /odom /base_scan"/>
+		<group if="$(arg bag_all)">
+			<node name="recorder" pkg="rosbag" type="record" args="--lz4 -O $(arg bag) -a"/>
+		</group>
+		<group unless="$(arg bag_all)">
+			<node name="recorder" pkg="rosbag" type="record" args="--lz4 -O $(arg bag) /base_pose_ground_truth /odom /base_scan"/>
+		</group>
 	</group>
 	
 	<!-- RVIZ to view the visualization -->
