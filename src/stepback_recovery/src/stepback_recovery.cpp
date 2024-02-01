@@ -34,7 +34,7 @@ costmap_2d::Costmap2DROS* global_costmap, costmap_2d::Costmap2DROS* local_costma
     ros::NodeHandle private_nh("~/" + name_);
     ros::NodeHandle blp_nh("~/TrajectoryPlannerROS");
 
-    private_nh.param("stepback_len", stepback_len_, 5.0);
+    private_nh.param("stepback_len", stepback_len_, 0.15);
 
     // we'll simulate every 5 cm by default
     private_nh.param("sim_granularity", sim_granularity_, 0.05);
@@ -43,7 +43,7 @@ costmap_2d::Costmap2DROS* global_costmap, costmap_2d::Costmap2DROS* local_costma
     blp_nh.param("acc_lim_x", acc_lim_x_, 2.5);
     blp_nh.param("max_vel_trans", max_vel_trans_, 0.42);
     blp_nh.param("min_vel_trans", min_vel_trans_, 0.1);
-    blp_nh.param("xy_goal_tolerance", xy_goal_tolerance_, 0.2);
+    blp_nh.param("xy_goal_tolerance", xy_goal_tolerance_, 0.05);
 
     world_model_ = new base_local_planner::CostmapModel(*local_costmap_->getCostmap());
 
@@ -91,7 +91,7 @@ void StepBackRecovery::runBehavior()
     double target_y;
     double target_theta = start_theta;
 
-    if (std::fabs(angles::shortest_angular_distance(start_theta, 0.0))){ //move to the left
+    if (std::fabs(angles::shortest_angular_distance(start_theta, 0.0)) <= M_PI/2){ //move to the left
       target_x = start_x - stepback_len_ * std::cos(start_theta);
     } else{ //move to the right
       target_x = start_x + stepback_len_ * std::cos(start_theta);
@@ -102,13 +102,17 @@ void StepBackRecovery::runBehavior()
       target_y = start_y + stepback_len_ * std::sin(start_theta);
     }
 
-    while (n.ok() && ((std::fabs(current_x-target_x) > xy_goal_tolerance_) && (std::fabs(current_y-target_y) > xy_goal_tolerance_)))
+    //ROS_ERROR("INIZIO: start_x: %.2f, start_y: %.2f, start_theta: %.2f, current_x: %.2f, current_y: %.2f, current_theta: %.2f, target_x: %.2f, target_y: %.2f, target_theta: %.2f", start_x, start_y, start_theta, current_x, current_y, current_theta, target_x, target_y, target_theta);
+
+    while (n.ok() && ((std::fabs(current_x-target_x) > xy_goal_tolerance_) || (std::fabs(current_y-target_y) > xy_goal_tolerance_)))
     {
       // Update Current Pose
       local_costmap_->getRobotPose(global_pose);
       current_x = global_pose.pose.position.x;
       current_y = global_pose.pose.position.y;
       current_theta = tf2::getYaw(global_pose.pose.orientation);
+
+      //ROS_ERROR("start_x: %.2f, start_y: %.2f, start_theta: %.2f, current_x: %.2f, current_y: %.2f, current_theta: %.2f, target_x: %.2f, target_y: %.2f, target_theta: %.2f", start_x, start_y, start_theta, current_x, current_y, current_theta, target_x, target_y, target_theta);
 
       // distance already done
       double dist_done = std::sqrt(std::pow(current_y-start_y, 2)+std::pow(current_x-start_x, 2));
@@ -140,8 +144,8 @@ void StepBackRecovery::runBehavior()
         double footprint_cost = world_model_->footprintCost(sim_x, sim_y, sim_theta, local_costmap_->getRobotFootprint(), 0.0, 0.0);
         if (footprint_cost < 0.0)
         {
-          ROS_ERROR("Stepback Recovery can't stepback because there is a potential collision. Cost: %.2f",
-                    footprint_cost);
+          ROS_ERROR("Stepback Recovery can't stepback because there is a potential collision. Cost: %.2f", footprint_cost);
+          ROS_ERROR("Stepback Recovery can't stepback because there is a potential collision. Step considered: %.2f of %.2f left", sim_step, dist_left);
           return;
         }
 
@@ -150,6 +154,8 @@ void StepBackRecovery::runBehavior()
 
       // compute the velocity that will let us stop by the time we reach the goal
       double vel = sqrt(2 * acc_lim_x_ * dist_left);
+
+      ROS_ERROR("VEL: %.2f, start_x: %.2f, start_y: %.2f, start_theta: %.2f, current_x: %.2f, current_y: %.2f, current_theta: %.2f, target_x: %.2f, target_y: %.2f, target_theta: %.2f", vel, start_x, start_y, start_theta, current_x, current_y, current_theta, target_x, target_y, target_theta);
 
       // make sure that this velocity falls within the specified limits
       vel = std::min(std::max(vel, min_vel_trans_), max_vel_trans_);
