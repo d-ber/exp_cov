@@ -1,0 +1,8 @@
+<library path="lib/librotate_left_recovery">
+  <class name="rotate_left_recovery/RotateLeftRecovery" type="rotate_left_recovery::RotateLeftRecovery" base_class_type="nav_core::RecoveryBehavior">
+    <description>
+      A recovery behavior that rotates the robot to the left.
+    </description>
+  </class>
+</library>
+

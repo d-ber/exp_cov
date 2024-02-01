@@ -98,7 +98,7 @@ void StepBackRecovery::runBehavior()
         ROS_ERROR("[StepBack_Recovery] The costmaps passed to the StepBackRecovery object cannot be NULL. Doing nothing.");
         return;
     }
-    ROS_INFO("[StepBack_Recovery] StepBack recovery behavior started.");
+    ROS_WARN("[StepBack_Recovery] StepBack recovery behavior started.");
 
     ros::Rate r(10);
     ros::NodeHandle n;
