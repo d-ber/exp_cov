@@ -1,15 +1,14 @@
 <package>
     <name>stepback_recovery</name>
-    <version>1.10.3</version>
+    <version>0.0.1</version>
     <description>
 
         This package provides a recovery behavior for the navigation stack that attempts to step back the robot to get it unstuck.
 
     </description>
-    <author>Javier Monroy</author>
-    <maintainer email="jgmonroy@uma.es">Javier Monroy</maintainer>
-    <license>BSD</license>
 
+    <maintainer email="aislab@todo.todo">aislab</maintainer>
+    <license>TODO</license>
     <buildtool_depend>catkin</buildtool_depend>
 
     <build_depend>cmake_modules</build_depend>
