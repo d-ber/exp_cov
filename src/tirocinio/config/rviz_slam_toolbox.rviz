@@ -1,11 +1,11 @@
 Panels:
   - Class: rviz/Displays
-    Help Height: 78
+    Help Height: 0
     Name: Displays
     Property Tree Widget:
       Expanded: ~
       Splitter Ratio: 0.32367148995399475
-    Tree Height: 310
+    Tree Height: 388
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -249,6 +249,23 @@ Visualization Manager:
       Topic: /base_pose_ground_truth
       Unreliable: false
       Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /slam_toolbox/karto_graph_visualization
+      Name: MarkerArray
+      Namespaces:
+        slam_toolbox: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/InteractiveMarkers
+      Enable Transparency: true
+      Enabled: true
+      Name: InteractiveMarkers
+      Show Axes: false
+      Show Descriptions: true
+      Show Visual Aids: false
+      Update Topic: /slam_toolbox/update
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -286,10 +303,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 56.89689254760742
+      Scale: 46.57826614379883
       Target Frame: map
-      X: 0.05958428978919983
-      Y: 0.11525523662567139
+      X: -0.5919278264045715
+      Y: -1.144311785697937
     Saved: ~
 Window Geometry:
   Displays:
@@ -309,5 +326,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1831
-  X: 711
-  Y: 362
+  X: 923
+  Y: 150
