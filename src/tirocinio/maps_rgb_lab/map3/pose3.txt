@@ -1,0 +1,4 @@
+# Suggested initial pose:
+pose "-5.0 -5.0"
+# Scale:
+scale 0.042977
