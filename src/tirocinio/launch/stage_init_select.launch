@@ -1,15 +1,15 @@
 <launch>
 
   <arg name="worldfile" default="$(find tirocinio)/world/map_rgb_1.world"/>
-  <arg name="scan" default="/scan"/>
-  <arg name="map_rgb" default="1"/>
+ <arg name="scan" default="/scan"/>
   <arg name="rectangles" default="$(find tirocinio)/maps_rgb_lab/map1/simulated/rectangles_1704627975400279167.json"/>
-  <arg name="screen" default="home"/>
 
-    <node name="stage" pkg="stage_ros2" type="stageros" required="true" output="screen" args="$(arg worldfile)">
-      <remap from="base_scan" to="$(arg scan)"/>
-    </node>
-    <node name="select" pkg="tirocinio" type="disturb.py" output="screen"/>
-    <node name="pose_check" pkg="tirocinio" type="pose_check.py" output="screen" args="--path $(arg rectangles)"/>
+	<param name="use_sim_time" value="true" />
+
+  <node name="stage" pkg="stage_ros2" type="stageros" required="true" output="screen" args="$(arg worldfile)">
+   <remap from="base_scan" to="$(arg scan)"/>
+  </node>
+  <node name="select" pkg="tirocinio" type="disturb.py" output="screen"/>
+  <node name="pose_check" pkg="tirocinio" type="pose_check.py" output="screen" args="--path $(arg rectangles)"/>
 
 </launch>
