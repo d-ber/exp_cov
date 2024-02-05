@@ -1,5 +1,5 @@
 shutdown_costmaps: false
-controller_frequency: 10.0
+controller_frequency: 5.0
 planner_patience: 15
 controller_patience: 20.0
 conservative_reset_dist: 3.0
@@ -11,8 +11,9 @@ recovery_behaviors: [
   {name: conservative_reset, type: clear_costmap_recovery/ClearCostmapRecovery},
   {name: rotate_recovery, type: rotate_recovery/RotateRecovery},
   {name: aggressive_reset, type: clear_costmap_recovery/ClearCostmapRecovery},
+  {name: stepback_recovery, type: stepback_recovery/StepBackRecovery},
   {name: rotate_left_recovery, type: rotate_left_recovery/RotateLeftRecovery},
-  {name: stepback_recovery, type: stepback_recovery/StepBackRecovery}
+  {name: ministepback_recovery, type: ministepback_recovery/MiniStepBackRecovery}
 ]
 
 conservative_reset:
