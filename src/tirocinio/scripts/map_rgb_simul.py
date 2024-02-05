@@ -463,7 +463,7 @@ def get_world_text(image, name, speedup, pose, scale, sizex, sizey):
         ranger_return 1
     )
 
-    quit_time 36000 # 10 hours of simulated time
+    quit_time 360000 # 100 hours of simulated time
     speedup {speedup}
 
     paused 0
