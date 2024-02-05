@@ -1,0 +1,8 @@
+<library path="lib/libministepback_recovery">
+  <class name="ministepback_recovery/MiniStepBackRecovery" type="ministepback_recovery::MiniStepBackRecovery" base_class_type="nav_core::RecoveryBehavior">
+    <description>
+      A recovery behavior that steps back the robot a certain distance.
+    </description>
+  </class>
+</library>
+
