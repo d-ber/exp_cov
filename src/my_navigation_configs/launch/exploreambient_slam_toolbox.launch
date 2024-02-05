@@ -61,7 +61,7 @@
 
 	<!-- exploration parameters -->
 	<param name="frontier_selection" value="$(arg frontier_selection)" />
-	<node pkg="explore_lite" type="explore" respawn="true" name="explore" output="log">
+	<!--node pkg="explore_lite" type="explore" respawn="true" name="explore" output="log">
 		<param name="robot_base_frame"      value="base_link"/>
 		<param name="costmap_topic"         value="map"/>
 		<param name="costmap_updates_topic" value="map_updates"/>
@@ -72,7 +72,7 @@
 		<param name="gain_scale"            value="0"/>
 		<param name="transform_tolerance"   value="0.4"/>
 		<param name="min_frontier_size"     value="0.6"/>
-    </node>
+    </node-->
 
     <remap from="scan" to="base_scan" />
 

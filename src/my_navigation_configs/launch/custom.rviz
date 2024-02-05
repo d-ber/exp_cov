@@ -196,7 +196,7 @@ Visualization Manager:
       Marker Topic: /explore/frontiers
       Name: MarkerArray
       Namespaces:
-        frontiers: true
+        {}
       Queue Size: 10
       Value: true
     - Alpha: 1
@@ -284,7 +284,7 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: -0.1600000411272049
+      Angle: 0
       Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
@@ -294,10 +294,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 247.64720153808594
+      Scale: 265.5544128417969
       Target Frame: base_footprint
-      X: -1.1322712898254395
-      Y: 0.9030281901359558
+      X: 0
+      Y: 0
     Saved: ~
 Window Geometry:
   Displays:
@@ -316,4 +316,4 @@ Window Geometry:
     collapsed: false
   Width: 1870
   X: 101
-  Y: 37
+  Y: 27
