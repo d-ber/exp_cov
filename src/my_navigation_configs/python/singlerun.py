@@ -90,23 +90,25 @@ def saveMap(folder):
 
 def checkActiveGoal(process, folder):
     global lastUpdate
-    firstRun = True
+    MAX_EXPLORE = 5
+    explore_num = 0
     print("Started goal Thread, ")
     while True:
         time.sleep(3)
         print(f"-- Delta since last update: {rospy.get_rostime().secs - lastUpdate} ")
         if process.poll() is not None or rospy.get_rostime().secs - lastUpdate > 500:
-            if firstRun:
+            if explore_num < MAX_EXPLORE:
                 print("Restarting explore node to finish exploration")
                 p = Popen("rosnode kill explore", shell=True)
                 p.wait()
-                firstRun = False
+                explore_num += 1
                 lastUpdate = rospy.get_rostime().secs - 100
                 continue
-            saveMap(folder)
-            print("SHUTTING DOWN DUE TO GOAL TIMEOUT")
-            killProcess(process)
-            return
+            else:
+                saveMap(folder)
+                print("SHUTTING DOWN DUE TO GOAL TIMEOUT")
+                killProcess(process)
+                return
 
 
 def launchNavigation(world, folder, rectangles_path, no_bag, record_all_topics):
