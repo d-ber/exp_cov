@@ -72,7 +72,7 @@ void StepBackRecovery::runBehavior()
         ROS_ERROR("The costmaps passed to the StepBackRecovery object cannot be NULL. Doing nothing.");
         return;
     }
-    ROS_WARN("Stepback left recovery behavior started.");
+    ROS_WARN("Stepback recovery behavior started.");
 
     ros::Rate r(frequency_);
     ros::NodeHandle n;
@@ -155,7 +155,7 @@ void StepBackRecovery::runBehavior()
       // compute the velocity that will let us stop by the time we reach the goal
       double vel = sqrt(2 * acc_lim_x_ * dist_left);
 
-      ROS_ERROR("VEL: %.2f, start_x: %.2f, start_y: %.2f, start_theta: %.2f, current_x: %.2f, current_y: %.2f, current_theta: %.2f, target_x: %.2f, target_y: %.2f, target_theta: %.2f", vel, start_x, start_y, start_theta, current_x, current_y, current_theta, target_x, target_y, target_theta);
+      //ROS_ERROR("VEL: %.2f, start_x: %.2f, start_y: %.2f, start_theta: %.2f, current_x: %.2f, current_y: %.2f, current_theta: %.2f, target_x: %.2f, target_y: %.2f, target_theta: %.2f", vel, start_x, start_y, start_theta, current_x, current_y, current_theta, target_x, target_y, target_theta);
 
       // make sure that this velocity falls within the specified limits
       vel = std::min(std::max(vel, min_vel_trans_), max_vel_trans_);
