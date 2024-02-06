@@ -1,0 +1,2 @@
+idFile polSize LB UB iterations initWitnSize finalWitnSize initCandSize finalCandSize maxHorizontal IPSolved initDisTime insertDisTime selectCandTime initSolverTime solverTime scpResolTime newDisTime totalTime
+/home/d-ber/catkin_ws/src/tirocinio/scripts/maps_agp/map.pol 768 29 30 3 338 423 7165 9669 12 17 0.000533 1.89866 1.78345 21.054 8.17116 4.80106 0.089439 33.0006
