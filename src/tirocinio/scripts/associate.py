@@ -68,6 +68,17 @@ def read_file_list(filename):
     list = [(float(l[0]),l[1:]) for l in list if len(l)>1]
     return dict(list)
 
+def associate_already_perfect(first_list, second_list):
+    """
+    Associate two dictionaries of (stamp,data), where the time stamps match exactly. (Simulation power)
+    """
+    res = []
+    first_keys = list(first_list.keys())
+    for key in first_keys:
+        res.append(((key), (key)))
+    res.sort()
+    return res
+
 def associate(first_list, second_list,offset,max_difference):
     """
     Associate two dictionaries of (stamp,data). As the time stamps never match exactly, we aim 
