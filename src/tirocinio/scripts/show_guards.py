@@ -18,7 +18,7 @@ def main():
         for i in range(guards_num):
             x, y = str_to_float(guards_coords[i*2]), str_to_float(guards_coords[i*2+1])
             img = cv2.circle(img, (x,y), radius=2, color=(0, 0, 255), thickness=-1)
-        _ = plt.subplot(111), plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB)), plt.title('contours')
+        _ = plt.subplot(111), plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB)), plt.title('guards')
         plt.show()
 
 
