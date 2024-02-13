@@ -3,6 +3,7 @@ import shapely
 import shapely.validation
 import matplotlib.pyplot as plt
 import pyomo.environ as pyo
+import math
 
 
 def print_simple_param(name, value):
@@ -16,37 +17,58 @@ def print_vector_param(name, pairs):
 
 def print_bidimensional_param(name, rows, cols, vals):
     print(f"param {name} : ", end="")
-    for col in range(1, cols):
+    for col in range(0, cols):
         print(f" {col} ", end="")
     print(f" := ")
-    for row in range(1, rows):
-        print(f"{row}")
-        for col in range(1, cols):
-            print(f"{vals[row, col]}", end="")
+    for row in range(0, rows):
+        print(f"{row} ", end="")
+        for col in range(0, cols):
+            print(f"{vals[row][col]} ", end="")
         print("")
     print(";")
 
 def print_dat(poly):
+    print("\ndata;")
+
     print_simple_param("coeff_coverage", 1)
     print_simple_param("coeff_distanze", 1)
     print_simple_param("coeff_costo_guardie", 1)
     print_simple_param("min_coverage", 1)
 
-    witnesses = poly.exterior.segmentize(3).coords
+    witnesses = poly.exterior.segmentize(max_segment_length=30).coords
     nW = len(witnesses)
     guards = []
     # bounds Returns minimum bounding region (minx, miny, maxx, maxy)
-    for x in range(round(poly.bounds[0]), round(poly.bounds[2])):
-        for y in range(round(poly.bounds[1]), round(poly.bounds[3])):
+    for x in range(round(poly.bounds[0]), round(poly.bounds[2]), 2):
+        for y in range(round(poly.bounds[1]), round(poly.bounds[3]), 2):
             if poly.contains(shapely.Point([x, y])) and poly.exterior.distance(shapely.Point([x, y])) >= 1:
                 guards.append((x,y))
     nG = len(guards)
     print_simple_param("nW", nW)
     print_simple_param("nG", nG)
 
-    #print_bidimensional_param("Copertura", )
-    #print_bidimensional_param("Distanze", )
-    
+    copertura = []
+    for i, g in enumerate(guards):
+        copertura_g = []
+        for j, w in enumerate(witnesses):
+            seg = shapely.LineString([g, w])
+            if poly.contains(seg):
+                copertura_g.insert(j, 1)
+            else:
+                copertura_g.insert(j, 0)
+        copertura.insert(i, g)
+
+    print_bidimensional_param("Copertura", nW, nG, copertura)
+
+    distanze = []
+    for i1, g1 in enumerate(guards):
+        distanze_g = []
+        for i2, g2 in enumerate(guards):
+            distanze_g.insert(i2, math.dist(g1,g2))
+        distanze.insert(i1, distanze_g)
+    print_bidimensional_param("Distanze", nG, nG, distanze)
+
+    print("\nend;")
 
 '''
 def solve(poly):
