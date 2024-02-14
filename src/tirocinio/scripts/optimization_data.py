@@ -16,6 +16,7 @@ def print_vector_param(name, pairs):
     print(";")
 
 def print_bidimensional_param(name, rows, cols, vals):
+    #print(f"DEBUG: name:{name} rows:{rows} cols:{cols} vals[0]:{vals[0]}")
     print(f"param {name} : ", end="")
     for col in range(0, cols):
         print(f" {col} ", end="")
@@ -28,6 +29,8 @@ def print_bidimensional_param(name, rows, cols, vals):
     print(";")
 
 def print_dat(poly):
+    GUARD_RESOLUTION = 4
+    WITNESS_RESOLUTION = 5
     print("\ndata;")
 
     print_simple_param("coeff_coverage", 1)
@@ -35,12 +38,12 @@ def print_dat(poly):
     print_simple_param("coeff_costo_guardie", 1)
     print_simple_param("min_coverage", 1)
 
-    witnesses = poly.exterior.segmentize(max_segment_length=30).coords
+    witnesses = poly.exterior.segmentize(max_segment_length=WITNESS_RESOLUTION).coords
     nW = len(witnesses)
     guards = []
     # bounds Returns minimum bounding region (minx, miny, maxx, maxy)
-    for x in range(round(poly.bounds[0]), round(poly.bounds[2]), 2):
-        for y in range(round(poly.bounds[1]), round(poly.bounds[3]), 2):
+    for x in range(round(poly.bounds[0]), round(poly.bounds[2]), GUARD_RESOLUTION):
+        for y in range(round(poly.bounds[1]), round(poly.bounds[3]), GUARD_RESOLUTION):
             if poly.contains(shapely.Point([x, y])) and poly.exterior.distance(shapely.Point([x, y])) >= 1:
                 guards.append((x,y))
     nG = len(guards)
@@ -48,16 +51,17 @@ def print_dat(poly):
     print_simple_param("nG", nG)
 
     copertura = []
-    for i, g in enumerate(guards):
-        copertura_g = []
-        for j, w in enumerate(witnesses):
+    for i, w in enumerate(witnesses):
+        copertura_w = []
+        for j, g in enumerate(guards):
             seg = shapely.LineString([g, w])
             if poly.contains(seg):
-                copertura_g.insert(j, 1)
+                copertura_w.insert(j, 1)
             else:
-                copertura_g.insert(j, 0)
-        copertura.insert(i, g)
+                copertura_w.insert(j, 0)
+        copertura.insert(i, copertura_w)
 
+    print("DEBUG: ", len(copertura), len(copertura[0]))
     print_bidimensional_param("Copertura", nW, nG, copertura)
 
     distanze = []
@@ -88,7 +92,7 @@ def solve(poly):
 
 def main():
 
-    img_path = "/home/aislab/catkin_ws/src/tirocinio/scripts/maps_agp/gt_smoothed.png"
+    img_path = "/home/d-ber/catkin_ws/src/tirocinio/scripts/maps_agp/gt_smoothed.png"
     img = cv2.imread(img_path)
     img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
     contours, hierarchy = cv2.findContours(img, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
