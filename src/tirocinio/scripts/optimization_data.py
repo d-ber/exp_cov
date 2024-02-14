@@ -92,13 +92,16 @@ def solve(poly):
 
 def main():
 
-    img_path = "/home/d-ber/catkin_ws/src/tirocinio/scripts/maps_agp/gt_smoothed.png"
+    img_path = "/home/d-ber/catkin_ws/src/tirocinio/scripts/maps_agp/gt_filled.png"
     img = cv2.imread(img_path)
     img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
     contours, hierarchy = cv2.findContours(img, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
     hierarchy = hierarchy[0]
     img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
     poly = shapely.Polygon([[p[0][0], p[0][1]] for p in contours[0]])
+    poly = poly.buffer(0)
+    if poly.geom_type == 'MultiPolygon': # se poly non è un poligono ben definito provo a renderlo tale
+        poly = max(poly.geoms, key=lambda a: a.area)  
     if shapely.validation.explain_validity(poly) == "Valid Geometry":
         print_dat(poly)
     else:
