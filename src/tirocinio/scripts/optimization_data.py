@@ -18,25 +18,24 @@ def print_vector_param(name, pairs):
 def print_bidimensional_param(name, rows, cols, vals):
     #print(f"DEBUG: name:{name} rows:{rows} cols:{cols} vals[0]:{vals[0]}")
     print(f"param {name} : ", end="")
-    for col in range(0, cols):
+    for col in range(1, cols+1):
         print(f" {col} ", end="")
     print(f" := ")
-    for row in range(0, rows):
+    for row in range(1, rows+1):
         print(f"{row} ", end="")
         for col in range(0, cols):
-            print(f"{vals[row][col]} ", end="")
+            print(f"{vals[row-1][col-1]} ", end="")
         print("")
     print(";")
 
 def print_dat(poly):
-    GUARD_RESOLUTION = 4
-    WITNESS_RESOLUTION = 5
+    GUARD_RESOLUTION = 5
+    WITNESS_RESOLUTION = 20
     print("\ndata;")
 
     print_simple_param("coeff_coverage", 1)
     print_simple_param("coeff_distanze", 1)
-    print_simple_param("coeff_costo_guardie", 1)
-    print_simple_param("min_coverage", 1)
+    print_simple_param("min_coverage", 0.80)
 
     witnesses = poly.exterior.segmentize(max_segment_length=WITNESS_RESOLUTION).coords
     nW = len(witnesses)
@@ -49,6 +48,7 @@ def print_dat(poly):
     nG = len(guards)
     print_simple_param("nW", nW)
     print_simple_param("nG", nG)
+    print_vector_param("costi_guardie", [(i+1, 1) for i in range(nG)])
 
     copertura = []
     for i, w in enumerate(witnesses):
@@ -61,8 +61,7 @@ def print_dat(poly):
                 copertura_w.insert(j, 0)
         copertura.insert(i, copertura_w)
 
-    print("DEBUG: ", len(copertura), len(copertura[0]))
-    print_bidimensional_param("Copertura", nW, nG, copertura)
+    print_bidimensional_param("copertura", nW, nG, copertura)
 
     distanze = []
     for i1, g1 in enumerate(guards):
@@ -70,7 +69,8 @@ def print_dat(poly):
         for i2, g2 in enumerate(guards):
             distanze_g.insert(i2, math.dist(g1,g2))
         distanze.insert(i1, distanze_g)
-    print_bidimensional_param("Distanze", nG, nG, distanze)
+    print_bidimensional_param("distanze", nG, nG, distanze)
+
 
     print("\nend;")
 
