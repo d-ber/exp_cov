@@ -24,13 +24,13 @@ def print_bidimensional_param(name, rows, cols, vals):
     for row in range(1, rows+1):
         print(f"{row} ", end="")
         for col in range(0, cols):
-            print(f"{vals[row-1][col-1]} ", end="")
+            print(f"{vals[row-1][col]} ", end="")
         print("")
     print(";")
 
 def print_dat(poly):
-    GUARD_RESOLUTION = 5
-    WITNESS_RESOLUTION = 20
+    GUARD_RESOLUTION = 10
+    WITNESS_RESOLUTION = 25
     print("\ndata;")
 
     print_simple_param("coeff_coverage", 1)
@@ -43,13 +43,13 @@ def print_dat(poly):
     # bounds Returns minimum bounding region (minx, miny, maxx, maxy)
     for x in range(round(poly.bounds[0]), round(poly.bounds[2]), GUARD_RESOLUTION):
         for y in range(round(poly.bounds[1]), round(poly.bounds[3]), GUARD_RESOLUTION):
-            if poly.contains(shapely.Point([x, y])) and poly.exterior.distance(shapely.Point([x, y])) >= 1:
+            if poly.contains(shapely.Point([x, y])) and poly.exterior.distance(shapely.Point([x, y])) >= 5:
                 guards.append((x,y))
     nG = len(guards)
     print_simple_param("nW", nW)
     print_simple_param("nG", nG)
     print_vector_param("costi_guardie", [(i+1, 1) for i in range(nG)])
-
+    
     copertura = []
     for i, w in enumerate(witnesses):
         copertura_w = []
@@ -62,17 +62,20 @@ def print_dat(poly):
         copertura.insert(i, copertura_w)
 
     print_bidimensional_param("copertura", nW, nG, copertura)
-
+    
     distanze = []
     for i1, g1 in enumerate(guards):
         distanze_g = []
         for i2, g2 in enumerate(guards):
             distanze_g.insert(i2, math.dist(g1,g2))
         distanze.insert(i1, distanze_g)
-    print_bidimensional_param("distanze", nG, nG, distanze)
+    print_bidimensional_param("distanza", nG, nG, distanze)
 
 
     print("\nend;")
+
+    # Save guard location outside problem data since it's of no use (distances are precalculated)
+    print_vector_param("posizione_guardie", [(i+1, (f"{x} {y}")) for (i, (x,y)) in enumerate(guards)])
 
 '''
 def solve(poly):
@@ -92,7 +95,7 @@ def solve(poly):
 
 def main():
 
-    img_path = "/home/d-ber/catkin_ws/src/tirocinio/scripts/maps_agp/gt_filled.png"
+    img_path = "/home/d-ber/catkin_ws/src/tirocinio/scripts/maps_agp/gt_smoothed_clean.png"
     img = cv2.imread(img_path)
     img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
     contours, hierarchy = cv2.findContours(img, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
