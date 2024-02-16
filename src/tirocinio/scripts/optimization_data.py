@@ -2,7 +2,9 @@ import cv2
 import shapely
 import shapely.validation
 import matplotlib.pyplot as plt
-import pyomo.environ as pyo
+import concurrent.futures
+#import pyomo.environ as pyo
+import numpy as np
 import math
 
 
@@ -28,9 +30,28 @@ def print_bidimensional_param(name, rows, cols, vals):
         print("")
     print(";")
 
+def copertura_w(copertura_w_data):
+    MAX_VISIBILITY_RANGE = 10000
+    i, poly, w, guards = copertura_w_data
+    copertura_w = []
+    for j, g in enumerate(guards):
+        seg = shapely.LineString([g, w])
+        if poly.contains(seg) and seg.length < MAX_VISIBILITY_RANGE:
+            copertura_w.insert(j, 1)
+        else:
+            copertura_w.insert(j, 0)
+    return (i, copertura_w)
+
+def distanza_gg(distanze_gg_data):
+    dis_gg = []
+    i, g1, guards = distanze_gg_data
+    for i2, g2 in enumerate(guards):
+        dis_gg.insert(i2, math.dist(g1,g2))
+    return (i, dis_gg)
+
 def print_dat(poly):
-    GUARD_RESOLUTION = 10
-    WITNESS_RESOLUTION = 25
+    GUARD_RESOLUTION = 3
+    WITNESS_RESOLUTION = 5
     print("\ndata;")
 
     print_simple_param("coeff_coverage", 1)
@@ -51,26 +72,19 @@ def print_dat(poly):
     print_vector_param("costi_guardie", [(i+1, 1) for i in range(nG)])
     
     copertura = []
-    for i, w in enumerate(witnesses):
-        copertura_w = []
-        for j, g in enumerate(guards):
-            seg = shapely.LineString([g, w])
-            if poly.contains(seg):
-                copertura_w.insert(j, 1)
-            else:
-                copertura_w.insert(j, 0)
-        copertura.insert(i, copertura_w)
+    with concurrent.futures.ProcessPoolExecutor(max_workers=20) as executor:
+        copertura_w_data = [(i, poly, w, guards) for i, w in enumerate(witnesses)]
+        for i, cop_w in executor.map(copertura_w, copertura_w_data):
+            copertura.insert(i, cop_w)
 
     print_bidimensional_param("copertura", nW, nG, copertura)
     
     distanze = []
-    for i1, g1 in enumerate(guards):
-        distanze_g = []
-        for i2, g2 in enumerate(guards):
-            distanze_g.insert(i2, math.dist(g1,g2))
-        distanze.insert(i1, distanze_g)
+    with concurrent.futures.ProcessPoolExecutor(max_workers=20) as executor:
+        distanze_gg_data = [(i, g1, guards) for i, g1 in enumerate(guards)]
+        for i, dis_gg in executor.map(distanza_gg, distanze_gg_data):
+            distanze.insert(i, dis_gg)
     print_bidimensional_param("distanza", nG, nG, distanze)
-
 
     print("\nend;")
 
@@ -95,13 +109,20 @@ def solve(poly):
 
 def main():
 
-    img_path = "/home/d-ber/catkin_ws/src/tirocinio/scripts/maps_agp/gt_smoothed_clean.png"
+    img_path = "/home/d-ber/catkin_ws/src/tirocinio/scripts/maps_agp/map_grey_to_black.png"
     img = cv2.imread(img_path)
     img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-    contours, hierarchy = cv2.findContours(img, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
-    hierarchy = hierarchy[0]
+    contours, _ = cv2.findContours(img, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+    max_contour = max(contours, key = lambda cnt: cv2.contourArea(cnt))
     img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
-    poly = shapely.Polygon([[p[0][0], p[0][1]] for p in contours[0]])
+    debug_contour = False 
+    if debug_contour:
+        debug = np.zeros_like(img)
+        cv2.drawContours(debug, [max_contour], -1, (255,255,255), cv2.FILLED)
+        _ = plt.subplot(111), plt.imshow(cv2.cvtColor(debug, cv2.COLOR_BGR2RGB)), plt.title('guards')
+        plt.show()
+        exit()
+    poly = shapely.Polygon([[p[0][0], p[0][1]] for p in max_contour])
     poly = poly.buffer(0)
     if poly.geom_type == 'MultiPolygon': # se poly non è un poligono ben definito provo a renderlo tale
         poly = max(poly.geoms, key=lambda a: a.area)  
