@@ -64,7 +64,7 @@ def align(model,data):
     W = numpy.zeros( (3,3) )
     for column in range(model.shape[1]):
         W += numpy.outer(model_zerocentered[:,column],data_zerocentered[:,column])
-    U,d,Vh = numpy.linalg.linalg.svd(W.transpose())
+    U,d,Vh = numpy.linalg.svd(W.transpose())
     S = numpy.matrix(numpy.identity( 3 ))
     if(numpy.linalg.det(U) * numpy.linalg.det(Vh)<0):
         S[2,2] = -1
@@ -129,7 +129,7 @@ if __name__=="__main__":
     first_list = associate.read_file_list(args.first_file)
     second_list = associate.read_file_list(args.second_file)
 
-    matches = associate.associate(first_list, second_list,float(args.offset),float(args.max_difference))    
+    matches = associate.associate_already_perfect(first_list, second_list)    
     if len(matches)<2:
         sys.exit("Couldn't find matching timestamp pairs between groundtruth and estimated trajectory! Did you choose the correct sequence?")
 
@@ -140,11 +140,11 @@ if __name__=="__main__":
     
     second_xyz_aligned = rot * second_xyz + trans
     
-    first_stamps = first_list.keys()
+    first_stamps = list(first_list.keys())
     first_stamps.sort()
     first_xyz_full = numpy.matrix([[float(value) for value in first_list[b][0:3]] for b in first_stamps]).transpose()
     
-    second_stamps = second_list.keys()
+    second_stamps = list(second_list.keys())
     second_stamps.sort()
     second_xyz_full = numpy.matrix([[float(value)*float(args.scale) for value in second_list[b][0:3]] for b in second_stamps]).transpose()
     second_xyz_full_aligned = rot * second_xyz_full + trans
