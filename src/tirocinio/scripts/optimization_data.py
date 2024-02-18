@@ -56,11 +56,11 @@ def print_dat(poly):
     GUARD_RESOLUTION = 3
     WITNESS_RESOLUTION = 5
     MIN_DISTANCE_TO_POLY = 5
+    MIN_COVERAGE = 0.80
     print("\ndata;")
 
     print_simple_param("coeff_coverage", 1)
     print_simple_param("coeff_distanze", 1)
-    print_simple_param("min_coverage", 0.80)
 
     witnesses = poly.exterior.segmentize(max_segment_length=WITNESS_RESOLUTION).coords
     nW = len(witnesses)
@@ -74,13 +74,20 @@ def print_dat(poly):
     nG = len(guards)
     print_simple_param("nW", nW)
     print_simple_param("nG", nG)
-    print_vector_param("costi_guardie", [(i+1, 1) for i in range(nG)])
     
     copertura = []
+    copribili = 0
     with concurrent.futures.ProcessPoolExecutor(max_workers=20) as executor:
         copertura_w_data = [(i, poly, w, guards) for i, w in enumerate(witnesses)]
         for i, cop_w in executor.map(copertura_w, copertura_w_data):
             copertura.insert(i, cop_w)
+            if any(cop_w):
+                copribili += 1
+    
+    min_coverage = min(MIN_COVERAGE, (copribili/nW)-0.1)
+    print_simple_param("min_coverage", min_coverage)
+
+    print_vector_param("costi_guardie", [(i+1, 1) for i in range(nG)])
 
     print_bidimensional_param("copertura", nW, nG, copertura)
     
