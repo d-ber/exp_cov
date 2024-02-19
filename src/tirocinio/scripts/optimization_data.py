@@ -53,8 +53,8 @@ def min_distance_to_holes(poly_with_holes, point):
     return min([hole.distance(point) for hole in poly_with_holes.interiors])
 
 def print_dat(poly):
-    GUARD_RESOLUTION = 3
-    WITNESS_RESOLUTION = 5
+    GUARD_RESOLUTION = 5
+    WITNESS_NUMBER = 300
     MIN_DISTANCE_TO_POLY = 5
     MIN_COVERAGE = 0.80
     print("\ndata;")
@@ -62,7 +62,7 @@ def print_dat(poly):
     print_simple_param("coeff_coverage", 1)
     print_simple_param("coeff_distanze", 1)
 
-    witnesses = poly.exterior.segmentize(max_segment_length=WITNESS_RESOLUTION).coords
+    witnesses = [poly.exterior.line_interpolate_point(d, normalized=True) for d in np.linspace(0, 1, WITNESS_NUMBER)]
     nW = len(witnesses)
     guards = []
     # bounds Returns minimum bounding region (minx, miny, maxx, maxy)
