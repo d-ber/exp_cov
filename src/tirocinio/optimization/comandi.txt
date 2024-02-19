@@ -1,0 +1,13 @@
+ampl: model '/home/d-ber/catkin_ws/src/tirocinio/optimization/coverage.mod';
+ampl: data '/home/d-ber/catkin_ws/src/tirocinio/scripts/text.dat';
+ampl: option solver knitro;
+ampl: solve;
+ampl: display scelta_guardie;
+ampl: display coperto;
+ampl: display _solve_time;
+ampl: option display_eps 1e-5;
+ampl: display scelta_guardie;
+ampl: display coperto;
+ampl: option omit_zero_rows 1;
+ampl: display scelta_guardie;
+ampl: display coperto;
