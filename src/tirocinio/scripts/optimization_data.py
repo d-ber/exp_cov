@@ -102,6 +102,7 @@ def print_dat(poly):
 
     # Save guard location outside problem data since it's of no use (distances are precalculated)
     print_vector_param("posizione_guardie", [(i+1, (f"{x} {y}")) for (i, (x,y)) in enumerate(guards)])
+    print_vector_param("posizione_testimoni", [(i+1, (f"{p.x} {p.y}")) for (i, p) in enumerate(witnesses)])
 
 '''
 def solve(poly):
