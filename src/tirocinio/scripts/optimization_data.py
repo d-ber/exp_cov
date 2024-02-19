@@ -53,7 +53,7 @@ def min_distance_to_holes(poly_with_holes, point):
     return min([hole.distance(point) for hole in poly_with_holes.interiors])
 
 def print_dat(poly):
-    GUARD_RESOLUTION = 5
+    GUARD_MAXIMUM_NUMBER = 300
     WITNESS_NUMBER = 300
     MIN_DISTANCE_TO_POLY = 5
     MIN_COVERAGE = 0.80
@@ -65,12 +65,18 @@ def print_dat(poly):
     witnesses = [poly.exterior.line_interpolate_point(d, normalized=True) for d in np.linspace(0, 1, WITNESS_NUMBER)]
     nW = len(witnesses)
     guards = []
-    # bounds Returns minimum bounding region (minx, miny, maxx, maxy)
-    for x in range(round(poly.bounds[0]), round(poly.bounds[2]), GUARD_RESOLUTION):
-        for y in range(round(poly.bounds[1]), round(poly.bounds[3]), GUARD_RESOLUTION):
-            guard_candidate = shapely.Point([x, y])
-            if poly.contains(guard_candidate) and poly.exterior.distance(guard_candidate) >= MIN_DISTANCE_TO_POLY and min_distance_to_holes(poly, guard_candidate) >= MIN_DISTANCE_TO_POLY:
-                guards.append((x,y))
+    GUARD_RESOLUTION = 1
+    while True:
+        guards.clear()
+        # bounds Returns minimum bounding region (minx, miny, maxx, maxy)
+        for x in range(round(poly.bounds[0]), round(poly.bounds[2]), GUARD_RESOLUTION):
+            for y in range(round(poly.bounds[1]), round(poly.bounds[3]), GUARD_RESOLUTION):
+                guard_candidate = shapely.Point([x, y])
+                if poly.contains(guard_candidate) and poly.exterior.distance(guard_candidate) >= MIN_DISTANCE_TO_POLY and min_distance_to_holes(poly, guard_candidate) >= MIN_DISTANCE_TO_POLY:
+                    guards.append((x,y))
+        GUARD_RESOLUTION += 1
+        if len(guards) <= GUARD_MAXIMUM_NUMBER:
+            break
     nG = len(guards)
     print_simple_param("nW", nW)
     print_simple_param("nG", nG)
