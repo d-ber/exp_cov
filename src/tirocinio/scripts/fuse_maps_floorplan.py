@@ -27,13 +27,13 @@ def probabilize(image, num):
     return image / num
 
 def cost_update(floorplan, image, costs):
-    HISTORICAL_WEIGHT = 0.5
+    HISTORICAL_WEIGHT = 0.8
     NEW_WEIGHT = 1 - HISTORICAL_WEIGHT
     height, width = floorplan.shape
     for h in range(height):
         for w in range(width):
             if image[h, w] in [0, 254, 255] and floorplan[h, w] != 0: # black or white on map and not black on floorplan    
-                costs[h, w] = costs[h, w] * HISTORICAL_WEIGHT + (1 - ((image[h, w]/255) * NEW_WEIGHT))
+                costs[h, w] = costs[h, w] * HISTORICAL_WEIGHT + (1 - (image[h, w]/255)) * NEW_WEIGHT
     return costs
 
 def cost_initialize(floorplan):
@@ -53,6 +53,17 @@ def cost_initialize(floorplan):
 
     return costs
 
+def fill_holes(image):
+    contours, _ = cv2.findContours(image, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+    max_contour = max(contours, key = lambda cnt: cv2.contourArea(cnt))
+    for c in contours:
+        if cv2.contourArea(c) != cv2.contourArea(max_contour):
+            image = cv2.drawContours(image, [c], -1, (0), thickness=-1)
+    #_ = plt.subplot(111), plt.imshow(cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)), plt.title('filled')
+    #plt.show()
+    #exit()        
+    return image
+
 
 def main():
 
@@ -61,8 +72,10 @@ def main():
 
     floorplan_path = "/home/d-ber/catkin_ws/src/tirocinio/scripts/maps_floorplan/gt_floorplan.png"
     floorplan = cv2.imread(floorplan_path, cv2.IMREAD_GRAYSCALE)
+    height, width = floorplan.shape
+    points = (width, height)
 
-    fused_image = None
+    #fused_image = None
     addition = None
     m = 0
     costs = cost_initialize(floorplan)
@@ -71,10 +84,15 @@ def main():
         for f in files:
             if os.path.splitext(f)[1] in (".png", ".pgm") and f != os.path.basename(floorplan_path):
                 image = cv2.imread(os.path.join(root, f), cv2.IMREAD_GRAYSCALE) # 255=white, 205=gray, 0=black
+                image = cv2.resize(image, points, interpolation= cv2.INTER_NEAREST)
+
+                # Fill the holes with black, only if closed (closed black areas)
+                image = fill_holes(image)
+
                 addition = addimage(image.astype(int), addition)
-                print(f"Reading image {os.path.join(root, f)}")
+                #print(f"Reading image {os.path.join(root, f)}")
                 m += 1
-                fused_image = update_image(image, fused_image)
+                #fused_image = update_image(image, fused_image)
                 costs = cost_update(floorplan, image, costs)
 
     height, width = floorplan.shape
@@ -90,6 +108,11 @@ def main():
     ## Otsu's Binarization thresholding as by https://docs.opencv.org/3.4/d7/d4d/tutorial_py_thresholding.html
 
     blur = cv2.GaussianBlur(addition,(5,5),0)
+
+    addition = cv2.bitwise_and(addition, floorplan)
+    addition_thresholded = cv2.bitwise_and(addition_thresholded, floorplan)
+    addition_thresholded = fill_holes(addition_thresholded)
+
     # find normalized_histogram, and its cumulative distribution function
     hist = cv2.calcHist([blur],[0],None,[256],[0,256])
     hist_norm = hist.ravel()/hist.sum()
@@ -113,21 +136,31 @@ def main():
             thresh = i
     # find otsu's threshold value with OpenCV function
     ret, otsu = cv2.threshold(blur,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-    print( "Otsu: {} {}".format(thresh,ret) )
+    otsu = cv2.bitwise_and(otsu, floorplan)
+    otsu = fill_holes(otsu)
+    #print( "Otsu: {} {}".format(thresh,ret) )
     # Triangle algorithm thresholding
     ret, tri = cv2.threshold(blur,0,255,cv2.THRESH_BINARY+cv2.THRESH_TRIANGLE)
-    print( "Triangle: {}".format(ret) )
+    tri = cv2.bitwise_and(tri, floorplan)
+    tri = fill_holes(tri)
+    #print( "Triangle: {}".format(ret) )
 
-    _ = plt.subplot(231), plt.imshow(cv2.cvtColor(floorplan_with_cost, cv2.COLOR_GRAY2RGB)), plt.title('Floorplan with cost')
-    _ = plt.subplot(232), plt.imshow(cv2.cvtColor(fused_image, cv2.COLOR_BGR2RGB)), plt.title(f'Fused Map ({m} maps)')
+    with np.printoptions(threshold=np.inf):
+        print(costs)
+
+    cv2.imwrite("threshold.png", addition_thresholded)
+    cv2.imwrite("otsu.png", otsu)
+    cv2.imwrite("tri.png", tri)
+
+    _ = plt.subplot(231), plt.imshow(cv2.cvtColor(floorplan, cv2.COLOR_GRAY2RGB)), plt.title('Floorplan')
+    _ = plt.subplot(232), plt.imshow(cv2.cvtColor(floorplan_with_cost, cv2.COLOR_GRAY2RGB)), plt.title('Floorplan with cost')
+    #_ = plt.subplot(232), plt.imshow(cv2.cvtColor(fused_image, cv2.COLOR_BGR2RGB)), plt.title(f'Fused Map ({m} maps)')
     _ = plt.subplot(233), plt.imshow(cv2.cvtColor(addition, cv2.COLOR_BGR2RGB)), plt.title('Added Map')
     _ = plt.subplot(234), plt.imshow(cv2.cvtColor(addition_thresholded, cv2.COLOR_BGR2RGB)), plt.title('Added Map Thresholded')
     _ = plt.subplot(235), plt.imshow(cv2.cvtColor(otsu, cv2.COLOR_GRAY2RGB)), plt.title('Added Map Otsu\'s Binarization')
     _ = plt.subplot(236), plt.imshow(cv2.cvtColor(tri, cv2.COLOR_GRAY2RGB)), plt.title('Added Map Triangle algorithm')
     plt.show()
 
-                
     
-
 if __name__ == "__main__":
     main()
