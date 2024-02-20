@@ -1,6 +1,7 @@
 import numpy as np
 #from python_tsp.exact import solve_tsp_dynamic_programming
-from python_tsp.heuristics import solve_tsp_local_search
+from python_tsp.heuristics import solve_tsp_local_search, solve_tsp_simulated_annealing
+
 
 def main():
     dat_path = "/home/aislab/catkin_ws/src/tirocinio/optimization/test7/data.dat"
@@ -42,8 +43,11 @@ def main():
     
     distance_matrix = np.array(distanze_scelte, dtype=float)
     #permutation, distance = solve_tsp_dynamic_programming(distance_matrix)
-    permutation, distance = solve_tsp_local_search(distance_matrix)
-    print(permutation, distance)
+    permutation, distance = solve_tsp_simulated_annealing(distance_matrix)
+    permutation2, distance2 = solve_tsp_local_search(
+        distance_matrix, x0=permutation, perturbation_scheme="ps3"
+        )
+    print(permutation2, distance2)
 
 if __name__ == '__main__':
     main()
