@@ -29,6 +29,7 @@ s.t. Costo_assegnamento:
     z = coeff_coverage * (sum {g in Guardie} costi_guardie[g] * scelta_guardie[g]) + coeff_distanze * (sum {g1 in Guardie, g2 in Guardie} scelta_guardie_coppie[g1, g2] * distanza[g1, g2]);
 
 # Vincoli per linearizzare "scelta_guardie[g1] * scelta_guardie[g2]" in una var binaria semplice e per non rendere la fun. ob. quadratica
+# NOTA BENE: CON VARIABILI CONTINUE TRA 0 E 1, SI HA UN ERRORE >= 0 e <= 0.5 
 s.t. Linearizzazione1 {g1 in Guardie, g2 in Guardie}:
     scelta_guardie_coppie[g1, g2] >= scelta_guardie[g1] + scelta_guardie[g2] - 1;
 
