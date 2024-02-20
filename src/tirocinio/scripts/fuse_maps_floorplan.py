@@ -70,7 +70,7 @@ def main():
     args = parse_args()
     base_dir = args.dir
 
-    floorplan_path = "/home/d-ber/catkin_ws/src/tirocinio/scripts/maps_floorplan/gt_floorplan.png"
+    floorplan_path = "/home/aislab/catkin_ws/src/tirocinio/scripts/maps_agp/gt_floorplan.png"
     floorplan = cv2.imread(floorplan_path, cv2.IMREAD_GRAYSCALE)
     height, width = floorplan.shape
     points = (width, height)
@@ -145,8 +145,10 @@ def main():
     tri = fill_holes(tri)
     #print( "Triangle: {}".format(ret) )
 
-    with np.printoptions(threshold=np.inf):
-        print(costs)
+    with open("costs.txt", "w") as costs_file:
+        for h in range(height):
+            for w in range(width):
+                costs_file.write(f"{w} {h} {costs[h, w]}\n")
 
     cv2.imwrite("threshold.png", addition_thresholded)
     cv2.imwrite("otsu.png", otsu)
