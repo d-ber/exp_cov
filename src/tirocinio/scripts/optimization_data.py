@@ -50,10 +50,13 @@ def distanza_gg(distanze_gg_data):
     return (i, dis_gg)
 
 def min_distance_to_holes(poly_with_holes, point):
+    if len(poly_with_holes.interiors) == 0:
+        return -1 
     return min([hole.distance(point) for hole in poly_with_holes.interiors])
 
-def print_dat(poly):
+def print_dat(poly, costs_path):
     GUARD_MAXIMUM_NUMBER = 300
+    GUARD_COST_MULTIPLIER = 1
     WITNESS_NUMBER = 300
     MIN_DISTANCE_TO_POLY = 5
     MIN_COVERAGE = 0.80
@@ -72,7 +75,7 @@ def print_dat(poly):
         for x in range(round(poly.bounds[0]), round(poly.bounds[2]), GUARD_RESOLUTION):
             for y in range(round(poly.bounds[1]), round(poly.bounds[3]), GUARD_RESOLUTION):
                 guard_candidate = shapely.Point([x, y])
-                if poly.contains(guard_candidate) and poly.exterior.distance(guard_candidate) >= MIN_DISTANCE_TO_POLY and min_distance_to_holes(poly, guard_candidate) >= MIN_DISTANCE_TO_POLY:
+                if poly.contains(guard_candidate) and poly.exterior.distance(guard_candidate) >= MIN_DISTANCE_TO_POLY and (min_distance_to_holes(poly, guard_candidate) >= MIN_DISTANCE_TO_POLY or min_distance_to_holes(poly, guard_candidate) == -1):
                     guards.append((x,y))
         GUARD_RESOLUTION += 1
         if len(guards) <= GUARD_MAXIMUM_NUMBER:
@@ -93,7 +96,18 @@ def print_dat(poly):
     min_coverage = min(MIN_COVERAGE, (copribili/nW)-0.1)
     print_simple_param("min_coverage", min_coverage)
 
-    print_vector_param("costi_guardie", [(i+1, 1) for i in range(nG)])
+    guard_costs = []
+    with open(costs_path, "r") as costs_file:
+        costs = dict()
+        line = costs_file.readline()
+        while line != "":
+            x, y, cost = float(line.strip().split()[0]), float(line.strip().split()[1]), float(line.strip().split()[2])
+            costs[(x, y)] =  cost
+            line = costs_file.readline()
+        for (i, (x,y)) in enumerate(guards):
+            guard_costs.append((i+1, costs[x, y] * GUARD_COST_MULTIPLIER))
+
+    print_vector_param("costi_guardie", guard_costs)
 
     print_bidimensional_param("copertura", nW, nG, copertura)
     
@@ -128,7 +142,8 @@ def solve(poly):
 
 def main():
 
-    img_path = "/home/d-ber/catkin_ws/src/tirocinio/scripts/maps_agp/map_grey_to_black.png"
+    costs_path = "/home/aislab/catkin_ws/src/tirocinio/scripts/costs.txt"
+    img_path = "/home/aislab/catkin_ws/src/tirocinio/scripts/map_fusion/threshold.png"
     MIN_HOLE_AREA = 10
     DEBUG_HOLES = False
     DEBUG_CONTOUR = False 
@@ -139,7 +154,7 @@ def main():
     if DEBUG_CONTOUR:
         debug = np.zeros_like(img)
         cv2.drawContours(debug, [max_contour], -1, (255,255,255), cv2.FILLED)
-        _ = plt.subplot(111), plt.imshow(cv2.cvtColor(debug, cv2.COLOR_BGR2RGB)), plt.title('guards')
+        _ = plt.subplot(111), plt.imshow(cv2.cvtColor(debug, cv2.COLOR_BGR2RGB)), plt.title('max_contour')
         plt.show()
     img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
     holes = []
@@ -167,7 +182,7 @@ def main():
     if poly.geom_type == 'MultiPolygon': # se poly non è un poligono ben definito provo a renderlo tale
         poly = max(poly.geoms, key=lambda a: a.area)  
     if shapely.validation.explain_validity(poly) == "Valid Geometry":
-        print_dat(poly)
+        print_dat(poly, costs_path)
     else:
         print(shapely.validation.explain_validity(poly))
 
