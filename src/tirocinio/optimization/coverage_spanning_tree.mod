@@ -28,7 +28,7 @@ minimize Total_Cost:
 #### VINCOLI
 # Definisco il costo totale come peso_coverage*coverage + peso_distanze*distanze
 s.t. Costo_assegnamento:
-    z = coeff_coverage * (sum {g in Guardie} costi_guardie[g] * scelta_guardie[g]) + coeff_distanze * (sum {g1 in Guardie, g2 in Guardie} scelta_arco[g1, g2] * distanza[g1, g2]);
+    z = coeff_coverage * (sum {g in Guardie} costi_guardie[g] * scelta_guardie[g]) + coeff_distanze * (sum {g1 in Guardie, g2 in Guardie: g1<>g2} scelta_arco[g1, g2] * distanza[g1, g2]);
 
 # Ogni witness deve essere coperto (avere una guardia che lo copre scelto), a meno che non sia disabilitato, ovvero fuori dalla copertura (vedi vincolo Copertura_minima)
 s.t. Copertura_witnesses {w in Witnesses}:
@@ -44,8 +44,8 @@ s.t. Numero_vertici:
     n_vertici = sum {g in Guardie} scelta_guardie[g];
 
 # Posso scegliere archi solo tra coppie di guardie scelte
-s.t. Archi_su_scelta {g1 in Guardie, g2 in Guardie}:
-    scelta_arco[g1, g2] <= scelta_guardie[g1] * scelta_guardie[g2];
+s.t. Archi_su_scelta {g1 in Guardie, g2 in Guardie: g1<>g2}:
+    scelta_arco[g1, g2] + scelta_arco[g2, g1]  <= scelta_guardie[g1] * scelta_guardie[g2];
 
 # Scelgo una sola radice
 s.t. Radice_singola1:
@@ -57,15 +57,15 @@ s.t. Radice_singola2:
 
 # Vincoli di avere come numero di archi scelti n_vertici - 1
 s.t. Totale_archi:
-    sum {g1 in Guardie, g2 in Guardie} scelta_arco[g1, g2] = n_vertici - 1;
+    sum {g1 in Guardie, g2 in Guardie: g1<>g2} scelta_arco[g1, g2] = n_vertici - 1;
 
 # Il flusso dalla radice è n-1
 s.t. Radice_flusso:
-    (sum {g1 in Guardie, r in Guardie: g1<>r} flusso[g1, r] * radice[r]) - (sum {r in Guardie, g2 in Guardie: g2<>r} flusso[r, g2] * radice[r]) = n_vertici - 1;
+    (sum {r in Guardie, g2 in Guardie: g2<>r} flusso[r, g2] * radice[r]) = n_vertici - 1;
 
 # Ogni vertice non radice consuma flusso 1
 s.t. Consumo_flusso {g in Guardie}:
-    (1-radice[g]) * ((sum {g1 in Guardie: g<>g1} flusso[g1, g]) - (sum {g2 in Guardie: g<>g2} flusso[g, g2])) = (1-radice[g]);
+    (1-radice[g]) * scelta_guardie[g] * ((sum {g1 in Guardie: g<>g1} flusso[g1, g]) - (sum {g2 in Guardie: g<>g2} flusso[g, g2])) = (1-radice[g]) *  scelta_guardie[g];
 
 # Flusso possibile solo se arco in albero, e limite superiore di n_vertici - 1
 s.t. Flusso_in_albero {g1 in Guardie, g2 in Guardie: g1<>g2}:
