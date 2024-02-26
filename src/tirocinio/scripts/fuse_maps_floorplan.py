@@ -15,6 +15,8 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Merge maps automatically.')
     parser.add_argument("-d", '--dir', default=os.getcwd(),
         help="Base directory to read maps from.")
+    parser.add_argument("--gt-floorplan", default="",
+        help="Ground truth floorplan to compare to.")
     return parser.parse_args()
 
 def addimage(image, addition):
@@ -43,7 +45,7 @@ def cost_initialize(floorplan):
         for w in range(width):
             if floorplan[h, w] == 0: # black
                 costs[h, w] = 1
-            elif floorplan[h, w] == 255: # white
+            elif floorplan[h, w] in {255,254} : # white
                 costs[h, w] = 0
             else:
                 print(f"ERROR, unexpected value in floorplan: {floorplan[h, w]}")
@@ -55,51 +57,107 @@ def cost_initialize(floorplan):
 
 def fill_holes(image):
     contours, _ = cv2.findContours(image, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
-    max_contour = max(contours, key = lambda cnt: cv2.contourArea(cnt))
-    for c in contours:
-        if cv2.contourArea(c) != cv2.contourArea(max_contour):
-            image = cv2.drawContours(image, [c], -1, (0), thickness=-1)
-    #_ = plt.subplot(111), plt.imshow(cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)), plt.title('filled')
-    #plt.show()
-    #exit()        
+    if len(contours) > 0:
+        max_contour = max(contours, key = lambda cnt: cv2.contourArea(cnt))
+        for c in contours:
+            if cv2.contourArea(c) != cv2.contourArea(max_contour):
+                image = cv2.drawContours(image, [c], -1, (0), thickness=-1)
+        #_ = plt.subplot(111), plt.imshow(cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)), plt.title('filled')
+        #plt.show()
+        #exit()        
     return image
 
+def init_floorplan(image, max_height, max_width):
+    floorplan = np.zeros((max_height, max_width), dtype=np.uint8)
+    points = (max_width, max_height)
+    image = cv2.resize(image, points, interpolation= cv2.INTER_NEAREST)
+    non_bw_mask = cv2.inRange(image, 1, 253)
+    image[np.where(non_bw_mask == 255)] = [0]
+    return cv2.bitwise_or(floorplan, image)
+
+def update_floorplan(floorplan, image):
+    max_height, max_width = floorplan.shape
+    points = (max_width, max_height)
+
+    image = cv2.resize(image, points, interpolation= cv2.INTER_NEAREST)
+    non_bw_mask = cv2.inRange(image, 1, 253)
+    image[np.where(non_bw_mask == 255)] = [0]
+    return cv2.bitwise_or(floorplan, image)
 
 def main():
 
     args = parse_args()
     base_dir = args.dir
+    gt_floorplan_path = args.gt_floorplan 
 
-    floorplan_path = "/home/aislab/catkin_ws/src/tirocinio/scripts/maps_agp/gt_floorplan.png"
-    floorplan = cv2.imread(floorplan_path, cv2.IMREAD_GRAYSCALE)
-    height, width = floorplan.shape
-    points = (width, height)
+    gt_floorplan = None
+    if gt_floorplan_path != "":
+        gt_floorplan = cv2.imread(gt_floorplan_path, cv2.IMREAD_GRAYSCALE)
+
+    floorplan = None
 
     #fused_image = None
     addition = None
     m = 0
-    costs = cost_initialize(floorplan)
 
+    image_paths = []
     for root, _, files in os.walk(base_dir):
         for f in files:
-            if os.path.splitext(f)[1] in (".png", ".pgm") and f != os.path.basename(floorplan_path):
-                image = cv2.imread(os.path.join(root, f), cv2.IMREAD_GRAYSCALE) # 255=white, 205=gray, 0=black
-                image = cv2.resize(image, points, interpolation= cv2.INTER_NEAREST)
+            if os.path.splitext(f)[1] in (".png", ".pgm"):
+                image_paths.append(os.path.join(root, f))
+    
+    max_height, max_width = max([cv2.imread(img_path, cv2.IMREAD_GRAYSCALE).shape[0] for img_path in image_paths]), max([cv2.imread(img_path, cv2.IMREAD_GRAYSCALE).shape[1] for img_path in image_paths])
 
-                # Fill the holes with black, only if closed (closed black areas)
-                image = fill_holes(image)
+    TOLERANCE = 0.07
+    MAX_HEIGHT_ERROR = max_height * TOLERANCE
+    MAX_WIDTH_ERROR = max_width * TOLERANCE
 
-                addition = addimage(image.astype(int), addition)
-                #print(f"Reading image {os.path.join(root, f)}")
-                m += 1
-                #fused_image = update_image(image, fused_image)
-                costs = cost_update(floorplan, image, costs)
+    floorplan = init_floorplan(cv2.imread(image_paths[0], cv2.IMREAD_GRAYSCALE).astype(np.uint8), max_height, max_width)
+    #_ = plt.subplot(111), plt.imshow(cv2.cvtColor(floorplan, cv2.COLOR_GRAY2RGB)), plt.title(f"floorplan init")
+    #plt.show()
+    used = 0
+    for image_path in image_paths[1:]:
+        image =  cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+        if abs(image.shape[0]-floorplan.shape[0]) >= MAX_HEIGHT_ERROR or abs(image.shape[1]-floorplan.shape[1]) >= MAX_WIDTH_ERROR:
+            print(f"Floorplan creation: skipping image {os.path.basename(image_path)} with dim error {image.shape[0]-floorplan.shape[0]}, {image.shape[1]-floorplan.shape[1]}")
+            continue
+        used += 1
+        floorplan = update_floorplan(floorplan, image.astype(np.uint8))
 
-    height, width = floorplan.shape
+    print(f"Floorplan creation: used {used} out of {len(image_paths)} images.")
+
+    #height, width = floorplan.shape
+    points = (max_width, max_height)
+
+    costs = cost_initialize(floorplan)
+
+    for image_path in image_paths:
+        image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE) # 255=white, 205=gray, 0=black
+        if abs(image.shape[0]-floorplan.shape[0]) >= MAX_HEIGHT_ERROR or abs(image.shape[1]-floorplan.shape[1]) >= MAX_WIDTH_ERROR:
+            print(f"Image Merge: skipping image {os.path.basename(image_path)} with dim error h:{image.shape[0]-floorplan.shape[0]}, w:{image.shape[1]-floorplan.shape[1]}")
+            continue
+        else:
+            print(f"Image Merge: acceptable error {os.path.basename(image_path)} with dim error h:{image.shape[0]-floorplan.shape[0]}, w:{image.shape[1]-floorplan.shape[1]}")
+        image = cv2.resize(image, points, interpolation= cv2.INTER_NEAREST)
+
+        # Fill the holes with black, only if closed (closed black areas)
+        image = cv2.resize(image, points, interpolation= cv2.INTER_NEAREST)
+        image = fill_holes(image)
+
+        #_ = plt.subplot(121), plt.imshow(cv2.cvtColor(floorplan, cv2.COLOR_GRAY2RGB)), plt.title('floorplan')
+        #_ = plt.subplot(122), plt.imshow(cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)), plt.title(f"image {os.path.basename(image_path)}")
+        #plt.show()
+
+        addition = addimage(image.astype(np.int32), addition)
+        #print(f"Reading image {os.path.join(root, f)}")
+        m += 1
+        #fused_image = update_image(image, fused_image)
+        costs = cost_update(floorplan, image, costs)
+
     #floorplan_with_cost = np.array([[round((1-costs[h, w]) * 255) for w in range(width)] for h in range(height)])
     floorplan_with_cost = floorplan.copy()
-    for h in range(height):
-        for w in range(width):
+    for h in range(max_height):
+        for w in range(max_width):
             floorplan_with_cost[h, w] = round((1-costs[h, w]) * 255)
 
     addition = probabilize(addition, m).astype(np.uint8)
@@ -146,23 +204,32 @@ def main():
     #print( "Triangle: {}".format(ret) )
 
     with open("costs.txt", "w") as costs_file:
-        for h in range(height):
-            for w in range(width):
+        for h in range(max_height):
+            for w in range(max_width):
                 costs_file.write(f"{w} {h} {costs[h, w]}\n")
 
     cv2.imwrite("threshold.png", addition_thresholded)
     cv2.imwrite("otsu.png", otsu)
     cv2.imwrite("tri.png", tri)
 
-    _ = plt.subplot(231), plt.imshow(cv2.cvtColor(floorplan, cv2.COLOR_GRAY2RGB)), plt.title('Floorplan')
-    _ = plt.subplot(232), plt.imshow(cv2.cvtColor(floorplan_with_cost, cv2.COLOR_GRAY2RGB)), plt.title('Floorplan with cost')
-    #_ = plt.subplot(232), plt.imshow(cv2.cvtColor(fused_image, cv2.COLOR_BGR2RGB)), plt.title(f'Fused Map ({m} maps)')
-    _ = plt.subplot(233), plt.imshow(cv2.cvtColor(addition, cv2.COLOR_BGR2RGB)), plt.title('Added Map')
-    _ = plt.subplot(234), plt.imshow(cv2.cvtColor(addition_thresholded, cv2.COLOR_BGR2RGB)), plt.title('Added Map Thresholded')
-    _ = plt.subplot(235), plt.imshow(cv2.cvtColor(otsu, cv2.COLOR_GRAY2RGB)), plt.title('Added Map Otsu\'s Binarization')
-    _ = plt.subplot(236), plt.imshow(cv2.cvtColor(tri, cv2.COLOR_GRAY2RGB)), plt.title('Added Map Triangle algorithm')
-    plt.show()
-
+    if gt_floorplan is not None:
+        _ = plt.subplot(331), plt.imshow(cv2.cvtColor(gt_floorplan, cv2.COLOR_GRAY2RGB)), plt.title('GT Floorplan')
+        _ = plt.subplot(332), plt.imshow(cv2.cvtColor(floorplan, cv2.COLOR_GRAY2RGB)), plt.title(f'Extracted Floorplan with {TOLERANCE} Tolerance')
+        _ = plt.subplot(333), plt.imshow(cv2.cvtColor(floorplan_with_cost, cv2.COLOR_GRAY2RGB)), plt.title('Floorplan with cost')
+        _ = plt.subplot(334), plt.imshow(cv2.cvtColor(addition, cv2.COLOR_BGR2RGB)), plt.title('Added Map')
+        _ = plt.subplot(335), plt.imshow(cv2.cvtColor(addition_thresholded, cv2.COLOR_BGR2RGB)), plt.title('Added Map Thresholded')
+        _ = plt.subplot(337), plt.imshow(cv2.cvtColor(otsu, cv2.COLOR_GRAY2RGB)), plt.title('Added Map Otsu\'s Binarization')
+        _ = plt.subplot(338), plt.imshow(cv2.cvtColor(tri, cv2.COLOR_GRAY2RGB)), plt.title('Added Map Triangle algorithm')
+        plt.show()
+    else:
+        _ = plt.subplot(231), plt.imshow(cv2.cvtColor(floorplan, cv2.COLOR_GRAY2RGB)), plt.title('Floorplan')
+        _ = plt.subplot(232), plt.imshow(cv2.cvtColor(floorplan_with_cost, cv2.COLOR_GRAY2RGB)), plt.title('Floorplan with cost')
+        #_ = plt.subplot(232), plt.imshow(cv2.cvtColor(fused_image, cv2.COLOR_BGR2RGB)), plt.title(f'Fused Map ({m} maps)')
+        _ = plt.subplot(233), plt.imshow(cv2.cvtColor(addition, cv2.COLOR_BGR2RGB)), plt.title('Added Map')
+        _ = plt.subplot(234), plt.imshow(cv2.cvtColor(addition_thresholded, cv2.COLOR_BGR2RGB)), plt.title('Added Map Thresholded')
+        _ = plt.subplot(235), plt.imshow(cv2.cvtColor(otsu, cv2.COLOR_GRAY2RGB)), plt.title('Added Map Otsu\'s Binarization')
+        _ = plt.subplot(236), plt.imshow(cv2.cvtColor(tri, cv2.COLOR_GRAY2RGB)), plt.title('Added Map Triangle algorithm')
+        plt.show()
     
 if __name__ == "__main__":
     main()
