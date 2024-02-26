@@ -14,7 +14,7 @@ TrajectoryPlannerROS:
 
 # Goal Tolerance Parameters
   xy_goal_tolerance: 0.10
-  yaw_goal_tolerance: 0.17
+  yaw_goal_tolerance: 0.5
 
 # Differential-drive robot configuration
   holonomic_robot: false
