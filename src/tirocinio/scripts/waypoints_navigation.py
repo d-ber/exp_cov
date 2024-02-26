@@ -5,7 +5,14 @@ from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from actionlib_msgs.msg import GoalStatus
 from geometry_msgs.msg import Pose, Point, Quaternion
 from tf.transformations import quaternion_from_euler
+from actionlib.action_client import ActionClient, CommState, get_name_of_constant
 
+class SimpleGoalState:
+    PENDING = 0
+    ACTIVE = 1
+    DONE = 2
+
+SimpleGoalState.to_string = classmethod(get_name_of_constant)
 
 class waypoint_sender():
 
@@ -14,26 +21,64 @@ class waypoint_sender():
         x, y, z, w = quaternion_from_euler(0, 0, 0) # quaternion_from_euler(roll, pitch, yaw)
         for waypoint in waypoints:
             self.pose_seq.append(Pose(waypoint, Quaternion(x, y, z, w)))
-        rospy.loginfo(f"Wyapoint sender started. Will send up to {len(self.pose_seq)} waypoints.")
+        rospy.loginfo(f"Waypoint sender started. Will send up to {len(self.pose_seq)} waypoints.")
         self.goal_cnt = 0
         #Create action client
-        self.client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
+        self.action_client = ActionClient('move_base', MoveBaseAction)
         rospy.loginfo("Waiting for move_base action server...")
-        wait = self.client.wait_for_server()
+        wait = self.action_client.wait_for_server()
         if not wait:
             rospy.logerr("Action server not available!")
             rospy.signal_shutdown("Action server not available!")
             return
         rospy.loginfo("Waypoint sender connected to move base server.")
         rospy.loginfo("Starting waypoint navigation.")
-        self.movebase_client()
+        self.MAX_WAIT = 120
+        self.simple_state = SimpleGoalState.DONE
+        self.send_goal()
+        rospy.spin()
 
     def active_cb(self):
-        rospy.loginfo(f"Goal pose {self.goal_cnt+1} is now being processed by the Action Server...")
+        rospy.loginfo(f"Goal pose {self.goal_cnt} is now being processed by the Action Server...")
 
     def feedback_cb(self, feedback):
         #rospy.loginfo(f"Feedback for goal {self.goal_cnt}: {feedback}")
         rospy.loginfo(f"Feedback for goal pose {self.goal_cnt} received")
+
+    def handle_transition(self, gh):
+        if gh != self.gh:
+            rospy.logerr("Got a transition callback on a goal handle that we're not tracking")
+            return
+
+        comm_state = gh.get_comm_state()
+
+        rospy.loginfo(f"Transitioning with comm_state '{CommState.to_string(comm_state)}', simple_state '{SimpleGoalState.to_string(self.simple_state)}'")
+
+        error_msg = "Received comm state %s when in simple state %s with SimpleActionClient in NS %s" % \
+            (CommState.to_string(comm_state), SimpleGoalState.to_string(self.simple_state), rospy.resolve_name(self.action_client.ns))
+
+        if comm_state == CommState.ACTIVE:
+            if self.simple_state == SimpleGoalState.PENDING:
+                self.simple_state = SimpleGoalState.ACTIVE
+                self.active_cb()
+            elif self.simple_state == SimpleGoalState.DONE:
+                self.simple_state = SimpleGoalState.ACTIVE
+                self.active_cb()
+        elif comm_state == CommState.RECALLING:
+            if self.simple_state != SimpleGoalState.PENDING:
+                rospy.logerr(error_msg)
+        elif comm_state == CommState.PREEMPTING:
+            if self.simple_state == SimpleGoalState.PENDING:
+                self.simple_state = SimpleGoalState.ACTIVE
+                self.active_cb()
+            elif self.simple_state == SimpleGoalState.DONE:
+                rospy.logerr(error_msg)
+        elif comm_state == CommState.DONE:
+            if self.simple_state in [SimpleGoalState.PENDING, SimpleGoalState.ACTIVE]:
+                self.done_cb(gh.get_goal_status(), gh.get_result())
+                self.simple_state = SimpleGoalState.DONE
+            elif self.simple_state == SimpleGoalState.DONE:
+                rospy.logerr("SimpleActionClient received DONE twice")
 
     def done_cb(self, status, result):
         self.goal_cnt += 1
@@ -58,36 +103,50 @@ class waypoint_sender():
                                     #    sent over the wire by an action server
         '''
         if status == GoalStatus.PREEMPTED:
-            rospy.loginfo(f"Goal pose {self.goal_cnt} received a cancel request after it started executing, completed execution.")
+            rospy.loginfo(f"Goal pose {self.goal_cnt-1} received a cancel request after it started executing, completed execution.")
         elif status == GoalStatus.SUCCEEDED:
-            rospy.loginfo(f"Goal pose {self.goal_cnt} reached. Result is {result}") 
+            rospy.loginfo(f"Goal pose {self.goal_cnt-1} reached.") 
             if self.goal_cnt < len(self.pose_seq):
-                self.movebase_client()
+                self.send_goal()
             else:
                 rospy.loginfo("Final goal pose reached!")
                 rospy.signal_shutdown("Final goal pose reached!")
                 return
         elif status == GoalStatus.ABORTED:
-            rospy.loginfo(f"Goal pose {self.goal_cnt} was aborted by the Action Server")
-            rospy.signal_shutdown(f"Goal pose {self.goal_cnt} aborted, shutting down!")
+            rospy.loginfo(f"Goal pose {self.goal_cnt-1} was aborted by the Action Server")
+            rospy.signal_shutdown(f"Goal pose {self.goal_cnt-1} aborted, shutting down!")
             return
         elif status == GoalStatus.REJECTED:
-            rospy.loginfo(f"Goal pose {self.goal_cnt} has been rejected by the Action Server")
-            rospy.signal_shutdown(f"Goal pose {self.goal_cnt} rejected, shutting down!")
+            rospy.loginfo(f"Goal pose {self.goal_cnt-1} has been rejected by the Action Server")
+            rospy.signal_shutdown(f"Goal pose {self.goal_cnt-1} rejected, shutting down!")
             return
         elif status == GoalStatus.RECALLED:
-            rospy.loginfo(f"Goal pose {self.goal_cnt} received a cancel request before it started executing, successfully cancelled!")
+            rospy.loginfo(f"Goal pose {self.goal_cnt-1} received a cancel request before it started executing, successfully cancelled!")
 
-    def movebase_client(self):
+    def handle_feedback(self, gh, feedback):
+        if not self.gh:
+            # this is not actually an error - there can be a small window in which old feedback
+            # can be received between the time this variable is reset and a new goal is
+            # sent and confirmed
+            return
+        if gh != self.gh:
+            rospy.logerr("Got a feedback callback on a goal handle that we're not tracking. %s vs %s" %
+                         (self.gh.comm_state_machine.action_goal.goal_id.id, gh.comm_state_machine.action_goal.goal_id.id))
+            return
+        self.feedback_cb(feedback)
+
+    def send_goal(self):
         goal = MoveBaseGoal()
         goal.target_pose.header.seq = self.goal_cnt
         goal.target_pose.header.frame_id = "map"
         goal.target_pose.header.stamp = rospy.Time.now() 
         goal.target_pose.pose = self.pose_seq[self.goal_cnt]
         rospy.loginfo(f"Sending goal pose {self.goal_cnt} to Action Server")
-        rospy.loginfo(str(self.pose_seq[self.goal_cnt]))
-        self.client.send_goal(goal, self.done_cb, self.active_cb, self.feedback_cb)
-        rospy.spin()
+        rospy.loginfo(str(self.pose_seq[self.goal_cnt]))       
+        self.gh = None
+        self.simple_state = SimpleGoalState.PENDING
+        self.gh = self.action_client.send_goal(goal, self.handle_transition, self.handle_feedback)
+        self.goal_start = rospy.get_rostime().secs
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Send a list of waypoints to move_base.')
