@@ -24,10 +24,26 @@ def main():
             if line.split()[0] in guardie_scelte:
                 posizioni_guardie.append((line.strip().split()[1], line.strip().split()[2]))
             line = data_file.readline()
-    for (x, y) in posizioni_guardie:
-        img = cv2.circle(img, (int(x), int(y)), radius=1, color=(0, 0, 255), thickness=-1)
-    _ = plt.subplot(111), plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB)), plt.title('Chosen Guards')
-    plt.show()
+    
+    scale = 0.035888 # scale for map_rgb1
+    image_width = img.shape[1]
+    image_height = img.shape[0]
+    sizex = img.shape[0]
+    sizex = sizex/(1/scale)
+    sizey = img.shape[1]
+    sizey = sizey/(1/scale)
+    size_width = sizey
+    size_height = sizex
+
+    with open("posizioni.txt", "w") as file_posizioni:
+        for (x, y) in posizioni_guardie:
+            # Convert to stage coordinates
+            stage_x = (-size_width/2) + ((size_width/2 - (-size_width/2)) / (image_width - 0)) * (int(x) - 0)
+            stage_y = (-size_height/2) + ((size_height/2 - (-size_height/2)) / (image_height - 0)) * ((image_height-int(y)) - 0)
+            file_posizioni.write(f"{stage_x}, {stage_y}\n")
+            img = cv2.circle(img, (int(x), int(y)), radius=1, color=(0, 0, 255), thickness=-1)
+        _ = plt.subplot(111), plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB)), plt.title('Chosen Guards')
+        plt.show()
 
 
 if __name__ == '__main__':
