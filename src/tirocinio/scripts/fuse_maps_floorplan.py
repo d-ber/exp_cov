@@ -211,6 +211,7 @@ def main():
     cv2.imwrite("threshold.png", addition_thresholded)
     cv2.imwrite("otsu.png", otsu)
     cv2.imwrite("tri.png", tri)
+    cv2.imwrite("floorplan.png", floorplan)
 
     if gt_floorplan is not None:
         _ = plt.subplot(331), plt.imshow(cv2.cvtColor(gt_floorplan, cv2.COLOR_GRAY2RGB)), plt.title('GT Floorplan')

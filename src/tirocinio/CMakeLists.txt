@@ -161,6 +161,7 @@ catkin_install_python(PROGRAMS
   scripts/map_rgb_simul.py
   scripts/modify_and_run.py
   scripts/pose_check.py
+  scripts/waypoint_navigation.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

@@ -3,9 +3,11 @@ import argparse
 import actionlib
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from actionlib_msgs.msg import GoalStatus
-from geometry_msgs.msg import Pose, Point, Quaternion
+from geometry_msgs.msg import Pose, Point, PoseStamped, Quaternion
 from tf.transformations import quaternion_from_euler
 from actionlib.action_client import ActionClient, CommState, get_name_of_constant
+from nav_msgs.msg import Odometry
+from nav_msgs.srv import GetPlan
 
 class SimpleGoalState:
     PENDING = 0
@@ -31,12 +33,20 @@ class waypoint_sender():
             rospy.logerr("Action server not available!")
             rospy.signal_shutdown("Action server not available!")
             return
+        rospy.wait_for_service('/move_base/make_plan')
+        self.get_plan = rospy.ServiceProxy('/move_base/GlobalPlanner/make_plan', GetPlan)
+        self.odom_srv = rospy.Subscriber("/odom", Odometry, callback=self.save_odom)
         rospy.loginfo("Waypoint sender connected to move base server.")
         rospy.loginfo("Starting waypoint navigation.")
         self.MAX_WAIT = 120
+        self.PLAN_CHECK_WAIT = 15
+        self.PLAN_CHECK_MAX_RETRIES = 3
         self.simple_state = SimpleGoalState.DONE
         self.send_goal()
         rospy.spin()
+
+    def save_odom(self, msg):
+        self.odom = msg.pose.pose
 
     def active_cb(self):
         rospy.loginfo(f"Goal pose {self.goal_cnt} is now being processed by the Action Server...")
@@ -44,6 +54,42 @@ class waypoint_sender():
     def feedback_cb(self, feedback):
         #rospy.loginfo(f"Feedback for goal {self.goal_cnt}: {feedback}")
         rospy.loginfo(f"Feedback for goal pose {self.goal_cnt} received")
+        if abs(rospy.Time.now().secs - self.goal_start) >= self.MAX_WAIT:
+            if self.goal_cnt < len(self.pose_seq):
+                rospy.loginfo(f"Timeout reached for current goal. Skipping to next one.")
+                self.goal_cnt += 1
+                self.send_goal()
+            else:
+                rospy.loginfo(f"Timeout reached for last goal. Waypoint navigation ended.")
+                rospy.signal_shutdown("Waypoint navigation ended.")
+                return
+        elif abs(rospy.Time.now().secs - self.last_plan_check) > self.PLAN_CHECK_WAIT:
+            start = PoseStamped()
+            start.header.frame_id = "map"
+            start.header.stamp = rospy.Time.now() 
+            start.pose = self.odom
+            goal = PoseStamped()
+            goal.header.frame_id = "map"
+            goal.header.stamp = rospy.Time.now() 
+            goal.pose = self.pose_seq[self.goal_cnt]
+            tolerance = 0.5
+            no_plan = True
+            try:
+                plan = self.get_plan(start, goal, tolerance)
+                #rospy.loginfo(f"plan:\n{plan}")
+                no_plan = len(plan.plan.poses) == 0
+            except Exception as e:
+                no_plan = True
+                rospy.loginfo(f"Plan check {self.plan_check_retries} out of {self.PLAN_CHECK_MAX_RETRIES} failed with exception.")
+                rospy.loginfo(f"start:\n{start}\ngoal:\n{goal}\ntolerance:\n{tolerance}\nexception:\n{e}")
+            finally:
+                if no_plan:
+                    rospy.loginfo(f"Plan check {self.plan_check_retries} out of {self.PLAN_CHECK_MAX_RETRIES} failed without plan.")
+                    self.plan_check_retries += 1
+                else:
+                    rospy.loginfo(f"Plan check {self.plan_check_retries} out of {self.PLAN_CHECK_MAX_RETRIES} ok.")
+                    self.plan_check_retries = 1
+                self.last_plan_check = rospy.get_rostime().secs
 
     def handle_transition(self, gh):
         if gh != self.gh:
@@ -113,8 +159,13 @@ class waypoint_sender():
                 rospy.signal_shutdown("Final goal pose reached!")
                 return
         elif status == GoalStatus.ABORTED:
-            rospy.loginfo(f"Goal pose {self.goal_cnt-1} was aborted by the Action Server")
-            rospy.signal_shutdown(f"Goal pose {self.goal_cnt-1} aborted, shutting down!")
+            rospy.loginfo(f"Goal pose {self.goal_cnt-1} was aborted by the Action Server. Skipping it")
+            if self.goal_cnt < len(self.pose_seq):
+                self.send_goal()
+            else:
+                rospy.loginfo("Final goal pose aborted.")
+                rospy.signal_shutdown("Final goal pose aborted.")
+                return
             return
         elif status == GoalStatus.REJECTED:
             rospy.loginfo(f"Goal pose {self.goal_cnt-1} has been rejected by the Action Server")
@@ -135,18 +186,24 @@ class waypoint_sender():
             return
         self.feedback_cb(feedback)
 
-    def send_goal(self):
+    def get_current_goal(self):
         goal = MoveBaseGoal()
         goal.target_pose.header.seq = self.goal_cnt
         goal.target_pose.header.frame_id = "map"
         goal.target_pose.header.stamp = rospy.Time.now() 
         goal.target_pose.pose = self.pose_seq[self.goal_cnt]
+        return goal
+
+    def send_goal(self):
+        goal = self.get_current_goal()
         rospy.loginfo(f"Sending goal pose {self.goal_cnt} to Action Server")
         rospy.loginfo(str(self.pose_seq[self.goal_cnt]))       
         self.gh = None
         self.simple_state = SimpleGoalState.PENDING
         self.gh = self.action_client.send_goal(goal, self.handle_transition, self.handle_feedback)
         self.goal_start = rospy.get_rostime().secs
+        self.last_plan_check = self.goal_start
+        self.plan_check_retries = 1
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Send a list of waypoints to move_base.')
