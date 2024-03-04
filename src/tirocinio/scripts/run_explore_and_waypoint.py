@@ -11,6 +11,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Start exploration, logging time info to file and saving the final map.')
     parser.add_argument('--waypoints', required=True, help="Path to the waypoints csv file.")
     parser.add_argument('--world', required=True, help="Path to the stage world file.")
+    parser.add_argument('-r', '--runs', required=False, default=1,  type=check_positive, help="Number of tests to run.", metavar="RUNS")
     return parser.parse_args()
 
 def now():
@@ -27,7 +28,6 @@ def run_expl(logfile_path):
                 for line in process.stdout:
                     line = line.decode('utf8')
                     if line.strip()[1:].startswith("["):
-                        #print(line)
                         if "exploration stopped." in line.lower():
                             logfile.write(f"{now()}: Finished exploration.\n")
                             break
@@ -57,9 +57,7 @@ def run_cov(waypoints, logfile_path="./coverage.log"):
                 logfile.write(f"{now()}: Starting waypoint navigation.\n")
                 for line in process.stdout:
                     line = line.decode('utf8')
-                    if line.strip()[1:].startswith("["):
-                        #print(line)
-                        if "final goal" in line.lower():
+                    if "final goal" in line.lower():
                             logfile.write(f"{now()}: Finished waypoint navigation.\n")
                             break
             except KeyboardInterrupt as e:
@@ -105,28 +103,52 @@ def run_coverage(cmd_args, logfile_path):
             sleep(10)
             print("started slam.")
             time = run_cov(cmd_args.waypoints, logfile_path)
+            print("coverage finished.")
             slam_process.kill()
             stage_process.kill()
             return time
+
+def check_positive(value):
+    try:
+        value = int(value)
+        if value <= 0:
+            raise argparse.ArgumentTypeError("{} is not a positive integer".format(value))
+    except ValueError:
+        raise Exception("{} is not an integer".format(value))
+    return value
 
 def main(cmd_args):    
     logfile_path_exploration = "explore.log"
     logfile_path_coverage = "coverage.log"
     logfile_path_result = "result.log"
-    exploration_time = run_exploration(cmd_args, logfile_path_exploration)
-    sleep(10)
-    coverage_time = run_coverage(cmd_args, logfile_path_coverage)
-    with open(logfile_path_result, mode="+a", encoding="utf-8") as logfile:
-        msg = f"Coverage time: {coverage_time}; Exploration time: {exploration_time}. Exploration - Coverage: {exploration_time-coverage_time}. Unit is seconds."
-        print(msg)
-        logfile.write(f"{msg}\n")
-        expl_map = cv2.imread("Map_exploration.png", cv2.IMREAD_GRAYSCALE)
-        cov_map = cv2.imread("Map_coverage.png", cv2.IMREAD_GRAYSCALE)
-        expl_map_area = np.sum(expl_map >= 250)
-        cov_map_area = np.sum(cov_map >= 250)
-        msg = f"Coverage mapped area: {cov_map_area}; Exploration mapped area: {expl_map_area}. Exploration - Coverage: {expl_map_area-cov_map_area}. Unit is 0.05 meters, a pixel in the map."
-        print(msg)
-        logfile.write(f"{msg}\n")
+
+    maxrun = 0
+    for i in os.listdir(os.getcwd()):
+        try:
+            if int(i[3:]) >= maxrun:
+                maxrun = int(i[3:]) + 1
+        except:
+            continue
+    for r in range(int(cmd_args.runs)):
+        run_subfolder = f"run{maxrun+r}"
+        os.mkdir(run_subfolder)
+        logfile_path_exploration_run = os.path.join(run_subfolder, logfile_path_exploration)
+        logfile_path_coverage_run = os.path.join(run_subfolder, logfile_path_coverage)
+        logfile_path_result_run = os.path.join(run_subfolder, logfile_path_result)
+        exploration_time = run_exploration(cmd_args, logfile_path_exploration_run)
+        sleep(2)
+        coverage_time = run_coverage(cmd_args, logfile_path_coverage_run)
+        with open(logfile_path_result_run, mode="+a", encoding="utf-8") as logfile:
+            msg = f"{now()}: Coverage time: {coverage_time}; Exploration time: {exploration_time}. Exploration - Coverage: {exploration_time-coverage_time}. Unit is seconds."
+            print(msg)
+            logfile.write(f"{msg}\n")
+            expl_map = cv2.imread("Map_exploration.png", cv2.IMREAD_GRAYSCALE)
+            cov_map = cv2.imread("Map_coverage.png", cv2.IMREAD_GRAYSCALE)
+            expl_map_area = np.sum(expl_map >= 250)
+            cov_map_area = np.sum(cov_map >= 250)
+            msg = f"{now()}: Coverage mapped area: {cov_map_area}; Exploration mapped area: {expl_map_area}. Exploration - Coverage: {expl_map_area-cov_map_area}. Unit is 0.05 meters, a pixel in the map."
+            print(msg)
+            logfile.write(f"{msg}\n")
 
 if __name__ == "__main__":
 
