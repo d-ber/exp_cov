@@ -1,6 +1,5 @@
 import subprocess as sp
 import os
-import logging
 from time import gmtime, strftime, sleep
 import argparse
 from PIL import Image
@@ -14,11 +13,11 @@ def parse_args():
 def now():
     return strftime("%Y-%m-%d %H:%M:%S", gmtime())
 
-def main(cmd_args):    
+def run(logfile_path):    
     start = None
     args = ["roslaunch", "tirocinio", "explore_lite2.launch"]
     with sp.Popen(args, stdout=sp.PIPE, stderr=sp.STDOUT) as process:
-        with open(cmd_args.file, mode="+a", encoding="utf-8") as logfile:
+        with open(logfile_path, mode="+a", encoding="utf-8") as logfile:
             try:
                 start = rospy.get_rostime().secs
                 logfile.write(f"{now()}: Starting exploration.\n")
@@ -32,7 +31,8 @@ def main(cmd_args):
             except KeyboardInterrupt as e:
                 logfile.write(f"{now()}: Exploration Interrupted.\n")
             finally:
-                logfile.write(f"{now()}: Exploration ros time is {strftime('%H:%M:%S', gmtime(rospy.get_rostime().secs - start))}.\n")
+                time = rospy.get_rostime().secs - start
+                logfile.write(f"{now()}: Exploration ros time is {strftime('%H:%M:%S', gmtime(time))}.\n")
                 process.kill()
                 save_map = ["rosrun", "map_server", "map_saver", "-f", "Map"]
                 sp.run(save_map)
@@ -41,6 +41,8 @@ def main(cmd_args):
                     os.remove("Map.pgm")
                 except IOError:
                     print("Cannot convert pgm map to png.")
+                finally:
+                    return time
 
 if __name__ == "__main__":
 
@@ -48,5 +50,4 @@ if __name__ == "__main__":
     sleep(3)
     args = parse_args()
 
-    main(args)
-
+    run(args.file)
