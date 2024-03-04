@@ -1,7 +1,9 @@
 import subprocess as sp
 from time import gmtime, strftime, sleep
 import argparse
+import cv2
 from PIL import Image
+import numpy as np
 import os
 import rospy
 
@@ -79,7 +81,7 @@ def run_cov(waypoints, logfile_path="./coverage.log"):
 def run_exploration(cmd_args, logfile_path):
     print("starting exploration.")
     stage_args = ["roslaunch", "tirocinio", "stage_init.launch", f"worldfile:={cmd_args.world}"]
-    slam_args = ["roslaunch", "tirocinio", "slam_toolbox.launch"]
+    slam_args = ["roslaunch", "tirocinio", "slam_toolbox_no_rviz.launch"]
     with sp.Popen(stage_args, stdout=sp.DEVNULL, stderr=sp.DEVNULL) as stage_process:
         sleep(3)
         print("started stage.")
@@ -95,7 +97,7 @@ def run_exploration(cmd_args, logfile_path):
 def run_coverage(cmd_args, logfile_path):
     print("starting coverage.")
     stage_args = ["roslaunch", "tirocinio", "stage_init.launch", f"worldfile:={cmd_args.world}"]
-    slam_args = ["roslaunch", "tirocinio", "slam_toolbox.launch"]
+    slam_args = ["roslaunch", "tirocinio", "slam_toolbox_no_rviz.launch"]
     with sp.Popen(stage_args, stdout=sp.DEVNULL, stderr=sp.DEVNULL) as stage_process:
         sleep(3)
         print("started stage.")
@@ -116,6 +118,13 @@ def main(cmd_args):
     coverage_time = run_coverage(cmd_args, logfile_path_coverage)
     with open(logfile_path_result, mode="+a", encoding="utf-8") as logfile:
         msg = f"Coverage time: {coverage_time}; Exploration time: {exploration_time}. Exploration - Coverage: {exploration_time-coverage_time}. Unit is seconds."
+        print(msg)
+        logfile.write(f"{msg}\n")
+        expl_map = cv2.imread("Map_exploration.png", cv2.IMREAD_GRAYSCALE)
+        cov_map = cv2.imread("Map_coverage.png", cv2.IMREAD_GRAYSCALE)
+        expl_map_area = np.sum(expl_map >= 250)
+        cov_map_area = np.sum(cov_map >= 250)
+        msg = f"Coverage mapped area: {cov_map_area}; Exploration mapped area: {expl_map_area}. Exploration - Coverage: {expl_map_area-cov_map_area}. Unit is 0.05 meters, a pixel in the map."
         print(msg)
         logfile.write(f"{msg}\n")
 
