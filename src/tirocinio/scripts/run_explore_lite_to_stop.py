@@ -3,6 +3,7 @@ import os
 import logging
 from time import gmtime, strftime, sleep
 import argparse
+from PIL import Image
 import rospy
 
 def parse_args():
@@ -36,7 +37,14 @@ def main(cmd_args):
                 print(f"{strftime('%H:%M:%S', gmtime(start))}.\n")
                 logfile.write(f"{now()}: Exploration ros time is {strftime('%H:%M:%S', gmtime(rospy.get_rostime().secs - start))}.\n")
                 process.kill()
-    
+                save_map = ["rosrun", "map_server", "map_saver", "-f", "Map"]
+                sp.run(save_map)
+                try:
+                    Image.open("Map.pgm").save("Map.png")
+                    os.remove("Map.pgm")
+                except IOError:
+                    print("Cannot convert pgm map to png.")
+                    
 if __name__ == "__main__":
 
     rospy.init_node('just_for_time', anonymous=True)
