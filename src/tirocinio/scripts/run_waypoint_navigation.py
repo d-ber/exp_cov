@@ -8,7 +8,7 @@ import rospy
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Start waypoint navigation, logging time info to file and saving the final map.')
-    parser.add_argument('-f', '--file', default="./exploration.log", help="Path to the log file.", metavar="LOG_FILE_PATH")
+    parser.add_argument('-f', '--file', default="./coverage.log", help="Path to the log file.", metavar="LOG_FILE_PATH")
     parser.add_argument('-w', '--waypoints', required=True, help="Path to the waypoints csv file.")
     return parser.parse_args()
 

@@ -8,8 +8,7 @@ import rospy
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Start exploration, logging time info to file and saving the final map.')
-    parser.add_argument('-f', '--file', default="./exploration.log",
-        help="Path to the log file.", metavar="LOG_FILE_PATH")
+    parser.add_argument('-f', '--file', default="./exploration.log", help="Path to the log file.", metavar="LOG_FILE_PATH")
     return parser.parse_args()
 
 def now():
