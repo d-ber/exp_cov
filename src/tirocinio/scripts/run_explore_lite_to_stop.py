@@ -7,7 +7,7 @@ from PIL import Image
 import rospy
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Start exploration in docker containers.')
+    parser = argparse.ArgumentParser(description='Start exploration, logging time info tofile and saving the final map.')
     parser.add_argument('-f', '--file', default="./exploration.log",
         help="Path to the log file.", metavar="LOG_FILE_PATH")
     return parser.parse_args()
@@ -44,7 +44,7 @@ def main(cmd_args):
                     os.remove("Map.pgm")
                 except IOError:
                     print("Cannot convert pgm map to png.")
-                    
+
 if __name__ == "__main__":
 
     rospy.init_node('just_for_time', anonymous=True)
