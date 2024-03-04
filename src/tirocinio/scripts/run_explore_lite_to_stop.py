@@ -2,16 +2,23 @@ import subprocess as sp
 import os
 import logging
 from time import gmtime, strftime, sleep
+import argparse
 import rospy
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Start exploration in docker containers.')
+    parser.add_argument('-f', '--file', default="./exploration.log",
+        help="Path to the log file.", metavar="LOG_FILE_PATH")
+    return parser.parse_args()
 
 def now():
     return strftime("%Y-%m-%d %H:%M:%S", gmtime())
 
-def main():    
+def main(cmd_args):    
     start = None
     args = ["roslaunch", "tirocinio", "explore_lite2.launch"]
     with sp.Popen(args, stdout=sp.PIPE, stderr=sp.STDOUT) as process:
-        with open('exploration.log', mode="+a", encoding="utf-8") as logfile:
+        with open(cmd_args.file, mode="+a", encoding="utf-8") as logfile:
             try:
                 start = rospy.get_rostime().secs
                 logfile.write(f"{now()}: Starting exploration.\n")
@@ -34,4 +41,7 @@ if __name__ == "__main__":
 
     rospy.init_node('just_for_time', anonymous=True)
     sleep(3)
-    main()
+    args = parse_args()
+
+    main(args)
+
