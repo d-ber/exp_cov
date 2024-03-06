@@ -162,6 +162,9 @@ catkin_install_python(PROGRAMS
   scripts/modify_and_run.py
   scripts/pose_check.py
   scripts/waypoint_navigation.py
+  scripts/run_explore_lite_to_stop.py
+  scripts/run_waypoint_navigation.py
+  scripts/run_explore_and_waypoint.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
