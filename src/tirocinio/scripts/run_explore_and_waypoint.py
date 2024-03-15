@@ -17,7 +17,7 @@ def parse_args():
 def now():
     return strftime("%Y-%m-%d %H:%M:%S", gmtime())
 
-def run_expl(logfile_path):   
+def run_expl(logfile_path, run_subfolder = ""):   
     start = None
     args = ["roslaunch", "tirocinio", "explore_lite2.launch"]
     with sp.Popen(args, stdout=sp.PIPE, stderr=sp.STDOUT) as process:
@@ -37,17 +37,18 @@ def run_expl(logfile_path):
                 time = rospy.get_rostime().secs - start
                 logfile.write(f"{now()}: Exploration ros time is {strftime('%H:%M:%S', gmtime(time))}.\n")
                 process.kill()
-                save_map = ["rosrun", "map_server", "map_saver", "-f", "Map_exploration"]
+                map_name = os.path.join(run_subfolder, "Map_exploration")
+                save_map = ["rosrun", "map_server", "map_saver", "-f", map_name]
                 sp.run(save_map)
                 try:
-                    Image.open("Map_exploration.pgm").save("Map_exploration.png")
-                    os.remove("Map_exploration.pgm")
+                    Image.open(f"{map_name}.pgm").save(f"{map_name}.png")
+                    os.remove(f"{map_name}.pgm")
                 except IOError:
                     print("Cannot convert pgm map to png.")
                 finally:
                     return time
 
-def run_cov(waypoints, logfile_path="./coverage.log"):    
+def run_cov(waypoints, logfile_path="./coverage.log", run_subfolder = ""):    
     start = None
     args = ["rosrun", "tirocinio", "waypoint_navigation.py", "-p", waypoints]
     with sp.Popen(args, stdout=sp.PIPE, stderr=sp.STDOUT) as process:
@@ -66,17 +67,18 @@ def run_cov(waypoints, logfile_path="./coverage.log"):
                 time = rospy.get_rostime().secs - start
                 logfile.write(f"{now()}: Waypoint navigation ros time is {strftime('%H:%M:%S', gmtime(time))}.\n")
                 process.kill()
-                save_map = ["rosrun", "map_server", "map_saver", "-f", "Map_coverage"]
+                map_name = os.path.join(run_subfolder, "Map_coverage")
+                save_map = ["rosrun", "map_server", "map_saver", "-f", map_name]
                 sp.run(save_map)
                 try:
-                    Image.open("Map_coverage.pgm").save("Map_coverage.png")
-                    os.remove("Map_coverage.pgm")
+                    Image.open(f"{map_name}.pgm").save(f"{map_name}.png")
+                    os.remove(f"{map_name}.pgm")
                 except IOError:
                     print("Cannot convert pgm map to png.")
                 finally:
                     return time
 
-def run_exploration(cmd_args, logfile_path):
+def run_exploration(cmd_args, logfile_path, run_subfolder):
     print("starting exploration.")
     stage_args = ["roslaunch", "tirocinio", "stage_init.launch", f"worldfile:={cmd_args.world}"]
     slam_args = ["roslaunch", "tirocinio", "slam_toolbox_no_rviz.launch"]
@@ -86,13 +88,13 @@ def run_exploration(cmd_args, logfile_path):
         with sp.Popen(slam_args, stdout=sp.DEVNULL, stderr=sp.DEVNULL) as slam_process:
             sleep(10)
             print("started slam.")
-            time = run_expl(logfile_path)
+            time = run_expl(logfile_path, run_subfolder)
             print("exploration finished.")
             slam_process.kill()
             stage_process.kill()
             return time
 
-def run_coverage(cmd_args, logfile_path):
+def run_coverage(cmd_args, logfile_path, run_subfolder):
     print("starting coverage.")
     stage_args = ["roslaunch", "tirocinio", "stage_init.launch", f"worldfile:={cmd_args.world}"]
     slam_args = ["roslaunch", "tirocinio", "slam_toolbox_no_rviz.launch"]
@@ -102,7 +104,7 @@ def run_coverage(cmd_args, logfile_path):
         with sp.Popen(slam_args, stdout=sp.DEVNULL, stderr=sp.DEVNULL) as slam_process:
             sleep(10)
             print("started slam.")
-            time = run_cov(cmd_args.waypoints, logfile_path)
+            time = run_cov(cmd_args.waypoints, logfile_path, run_subfolder)
             print("coverage finished.")
             slam_process.kill()
             stage_process.kill()
@@ -129,26 +131,35 @@ def main(cmd_args):
                 maxrun = int(i[3:]) + 1
         except:
             continue
+    time_deltas = list()
+    area_deltas = list()
     for r in range(int(cmd_args.runs)):
+        print(f"run {r}/int(cmd_args.runs) starting.")
         run_subfolder = f"run{maxrun+r}"
         os.mkdir(run_subfolder)
         logfile_path_exploration_run = os.path.join(run_subfolder, logfile_path_exploration)
         logfile_path_coverage_run = os.path.join(run_subfolder, logfile_path_coverage)
         logfile_path_result_run = os.path.join(run_subfolder, logfile_path_result)
-        exploration_time = run_exploration(cmd_args, logfile_path_exploration_run)
+        exploration_time = run_exploration(cmd_args, logfile_path_exploration_run, run_subfolder)
         sleep(2)
-        coverage_time = run_coverage(cmd_args, logfile_path_coverage_run)
+        coverage_time = run_coverage(cmd_args, logfile_path_coverage_run, run_subfolder)
         with open(logfile_path_result_run, mode="+a", encoding="utf-8") as logfile:
-            msg = f"{now()}: Coverage time: {coverage_time}; Exploration time: {exploration_time}. Exploration - Coverage: {exploration_time-coverage_time}. Unit is seconds."
+            time_delta = exploration_time-coverage_time
+            time_deltas.append(exploration_time-coverage_time)
+            msg = f"{now()}: Coverage time: {coverage_time}; Exploration time: {exploration_time}. Exploration - Coverage: {time_delta}. Unit is seconds."
             print(msg)
             logfile.write(f"{msg}\n")
-            expl_map = cv2.imread("Map_exploration.png", cv2.IMREAD_GRAYSCALE)
-            cov_map = cv2.imread("Map_coverage.png", cv2.IMREAD_GRAYSCALE)
+            expl_map = cv2.imread(os.path.join(run_subfolder, "Map_exploration.png"), cv2.IMREAD_GRAYSCALE)
+            cov_map = cv2.imread(os.path.join(run_subfolder, "Map_coverage.png"), cv2.IMREAD_GRAYSCALE)
             expl_map_area = np.sum(expl_map >= 250)
             cov_map_area = np.sum(cov_map >= 250)
-            msg = f"{now()}: Coverage mapped area: {cov_map_area}; Exploration mapped area: {expl_map_area}. Exploration - Coverage: {expl_map_area-cov_map_area}. Unit is 0.05 meters, a pixel in the map."
+            area_delta = expl_map_area-cov_map_area
+            area_deltas.append(area_delta)
+            msg = f"{now()}: Coverage mapped area: {cov_map_area}; Exploration mapped area: {expl_map_area}. Exploration - Coverage: {area_delta}. Unit is 0.05 meters, a pixel in the map."
             print(msg)
             logfile.write(f"{msg}\n")
+        print(f"run {r}/int(cmd_args.runs) finished.")
+    print(f"time_deltas (exploration-coverage): {time_deltas}\n;\narea_deltas (exploration-coverage): {area_deltas}\n;\n")
 
 if __name__ == "__main__":
 
