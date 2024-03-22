@@ -52,8 +52,8 @@ for i in range(1,11):
                         else:
                             cov_dist.append(float(num))
                     
-    df_cov = pd.DataFrame(list(zip(cov_times, cov_areas, cov_dist)), columns =['Time', 'Area'])
-    df_exp = pd.DataFrame(list(zip(exp_times, exp_areas, exp_dist)), columns =['Time', 'Area'])
+    df_cov = pd.DataFrame(list(zip(cov_times, cov_areas, cov_dist)), columns =['Time', 'Area', "Distance"])
+    df_exp = pd.DataFrame(list(zip(exp_times, exp_areas, exp_dist)), columns =['Time', 'Area', "Distance"])
     df_cov.sort_values(by=['Time'])
     df_exp.sort_values(by=['Time'])
 
@@ -81,8 +81,8 @@ for i in range(1,11):
     cov_dist_tot += cov_dist
     exp_dist_tot += exp_dist
 
-df_cov = pd.DataFrame(list(zip(cov_times_tot, cov_areas_tot, cov_dist_tot)), columns =['Time', 'Area'])
-df_exp = pd.DataFrame(list(zip(exp_times_tot, exp_areas_tot, exp_dist_tot)), columns =['Time', 'Area'])
+df_cov = pd.DataFrame(list(zip(cov_times_tot, cov_areas_tot, cov_dist_tot)), columns =['Time', 'Area', "Distance"])
+df_exp = pd.DataFrame(list(zip(exp_times_tot, exp_areas_tot, exp_dist_tot)), columns =['Time', 'Area', "Distance"])
 print(len(df_cov))
 print(len(df_cov[df_cov["Area"]<10_000]))
 
