@@ -24,8 +24,8 @@ for i in range(1,11):
             d = os.path.join(root, d)
             files_in_dir = os.listdir(d)
             for f in files_in_dir:
-                if os.path.basename(f) == "result.log":
-                    f = os.path.join(root,f)
+                if os.stat(os.path.join(d,f)).st_size != 0 and os.path.basename(f) == "result.log":
+                    f = os.path.join(d,f)
                     with open(f, "r") as file:
                         print(f)
                         line = file.readline()
@@ -40,8 +40,8 @@ for i in range(1,11):
                         cov_areas.append(int(nums[6+0]))
                         print("exp area:", nums[6+1])
                         exp_areas.append(int(nums[6+1]))
-                elif os.path.basename(f) == "explore.log" or os.path.basename(f) == "coverage.log" :
-                    f = os.path.join(root,f)
+                elif os.stat(os.path.join(d,f)).st_size != 0 and os.path.basename(f) == "explore.log" or os.path.basename(f) == "coverage.log" :
+                    f = os.path.join(d,f)
                     with open(f, "r") as file:
                         for j in range(3):
                             line = file.readline()
@@ -57,20 +57,32 @@ for i in range(1,11):
     df_cov.sort_values(by=['Time'])
     df_exp.sort_values(by=['Time'])
 
+    fig, axs = plt.subplots(2, 2, figsize=(12, 12))
+    axs[0,0].boxplot([df_cov["Distance"], df_exp["Distance"]])
+    axs[0,0].set_xticklabels(['Coverage', 'Exploration'])
+    axs[0,0].set_ylabel('Distance')
+    axs[0,0].set_title(f"Distance Traveled Comparison {i}")
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
-    ax1.boxplot([cov_dist, exp_dist])
-    ax1.set_xticklabels(['Coverage', 'Exploration'])
-    ax1.set_ylabel('Distance')
-    ax1.set_title(f"Distance Traveled Comparison {i}")
+    axs[0,1].boxplot([df_cov["Time"], df_exp["Time"]])
+    axs[0,1].set_xticklabels(['Coverage', 'Exploration'])
+    axs[0,1].set_ylabel('Time')
+    axs[0,1].set_title(f"Time Comparison {i}")
 
-    ax2.scatter(df_cov['Time'].values, df_cov['Area'].values, marker='o', linestyle='-', label='Coverage')
-    ax2.scatter(df_exp['Time'].values, df_exp['Area'].values, marker='s', linestyle='--', label='Exploration')
-    ax2.set_title(f"Time vs Area {i}")
-    ax2.set_xlabel('Time')
-    ax2.set_ylabel('Area')
-    ax2.grid(False)
-    ax2.legend()
+    axs[1,0].scatter(df_cov['Distance'].values, df_cov['Area'].values, marker='o', linestyle='-', label='Coverage')
+    axs[1,0].scatter(df_exp['Distance'].values, df_exp['Area'].values, marker='s', linestyle='--', label='Exploration')
+    axs[1,0].set_title(f"Distance Traveled VS Area Mapped {i}")
+    axs[1,0].set_xlabel('Distance Traveled')
+    axs[1,0].set_ylabel('Area')
+    axs[1,0].grid(False)
+    axs[1,0].legend()
+
+    axs[1,1].scatter(df_cov['Time'].values, df_cov['Area'].values, marker='o', linestyle='-', label='Coverage')
+    axs[1,1].scatter(df_exp['Time'].values, df_exp['Area'].values, marker='s', linestyle='--', label='Exploration')
+    axs[1,1].set_title(f"Time vs Area {i}")
+    axs[1,1].set_xlabel('Time')
+    axs[1,1].set_ylabel('Area')
+    axs[1,1].grid(False)
+    axs[1,1].legend()
     plt.savefig(f"ambiente{i}.png")
     plt.show()
     i += 1 
@@ -86,19 +98,34 @@ df_exp = pd.DataFrame(list(zip(exp_times_tot, exp_areas_tot, exp_dist_tot)), col
 print(len(df_cov))
 print(len(df_cov[df_cov["Area"]<10_000]))
 
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
-ax1.boxplot([cov_dist_tot, exp_dist_tot])
-ax1.set_xticklabels(['Coverage', 'Exploration'])
-ax1.set_ylabel('Distance')
-ax1.set_title('Distance Traveled Comparison')
 
-ax2.scatter(df_cov['Time'].values, df_cov['Area'].values, marker='o', linestyle='-', label='Coverage')
-ax2.scatter(df_exp['Time'].values, df_exp['Area'].values, marker='s', linestyle='--', label='Exploration')
-ax2.set_title('Time vs Area')
-ax2.set_xlabel('Time')
-ax2.set_ylabel('Area')
-ax2.grid(False)
-ax2.legend()
+fig, axs = plt.subplots(2, 2, figsize=(12, 12))
+axs[0,0].boxplot([df_cov["Distance"], df_exp["Distance"]])
+axs[0,0].set_xticklabels(['Coverage', 'Exploration'])
+axs[0,0].set_ylabel('Distance')
+axs[0,0].set_title(f"Distance Traveled Comparison Totale")
+
+axs[0,1].boxplot([df_cov["Time"], df_exp["Time"]])
+axs[0,1].set_xticklabels(['Coverage', 'Exploration'])
+axs[0,1].set_ylabel('Time')
+axs[0,1].set_title(f"Time Comparison Totale")
+
+axs[1,0].scatter(df_cov['Distance'].values, df_cov['Area'].values, marker='o', linestyle='-', label='Coverage')
+axs[1,0].scatter(df_exp['Distance'].values, df_exp['Area'].values, marker='s', linestyle='--', label='Exploration')
+axs[1,0].set_title(f"Distance Traveled VS Area Mapped")
+axs[1,0].set_xlabel('Distance Traveled')
+axs[1,0].set_ylabel('Area')
+axs[1,0].grid(False)
+axs[1,0].legend()
+
+axs[1,1].scatter(df_cov['Time'].values, df_cov['Area'].values, marker='o', linestyle='-', label='Coverage')
+axs[1,1].scatter(df_exp['Time'].values, df_exp['Area'].values, marker='s', linestyle='--', label='Exploration')
+axs[1,1].set_title(f"Time vs Area")
+axs[1,1].set_xlabel('Time')
+axs[1,1].set_ylabel('Area')
+axs[1,1].grid(False)
+axs[1,1].legend()
+
 plt.savefig(f"generale.png")
 plt.show()
 
