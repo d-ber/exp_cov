@@ -1,0 +1,4 @@
+time_deltas (exploration-coverage): [186, 334, 322, 341, 59, 486, 641, 290, 79, -26, 1056]
+;
+area_deltas (exploration-coverage): [-3496, -3291, -1975, 8944, 1372, 2774, 1378, -4221, -1899, -5418, 1792]
+;
