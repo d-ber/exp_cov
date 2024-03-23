@@ -59,8 +59,8 @@ def run_cov(waypoints, logfile_path="./coverage.log", run_subfolder = ""):
                 for line in process.stdout:
                     line = line.decode('utf8')
                     if "final goal" in line.lower():
-                            logfile.write(f"{now()}: Finished waypoint navigation.\n")
-                            break
+                        logfile.write(f"{now()}: Finished waypoint navigation.\n")
+                        break
             except KeyboardInterrupt as e:
                 logfile.write(f"{now()}: Waypoint navigation Interrupted.\n")
             finally:
@@ -82,33 +82,41 @@ def run_exploration(cmd_args, logfile_path, run_subfolder):
     print("starting exploration.")
     stage_args = ["roslaunch", "tirocinio", "stage_init.launch", f"worldfile:={cmd_args.world}"]
     slam_args = ["roslaunch", "tirocinio", "slam_toolbox_no_rviz.launch"]
+    dist_args = ["rosrun", "tirocinio", "distance_check.py"]
     with sp.Popen(stage_args, stdout=sp.DEVNULL, stderr=sp.DEVNULL) as stage_process:
         sleep(3)
         print("started stage.")
         with sp.Popen(slam_args, stdout=sp.DEVNULL, stderr=sp.DEVNULL) as slam_process:
             sleep(10)
             print("started slam.")
-            time = run_expl(logfile_path, run_subfolder)
-            print("exploration finished.")
-            slam_process.kill()
-            stage_process.kill()
-            return time
+            with open(logfile_path, mode="+a", encoding="utf-8") as logfile:
+                with sp.Popen(dist_args, stdout=logfile, stderr=logfile) as dist_process:
+                    time = run_expl(logfile_path, run_subfolder)
+                    print("exploration finished.")
+                    dist_process.terminate()
+                    slam_process.terminate()
+                    stage_process.terminate()
+                    return time
 
 def run_coverage(cmd_args, logfile_path, run_subfolder):
     print("starting coverage.")
     stage_args = ["roslaunch", "tirocinio", "stage_init.launch", f"worldfile:={cmd_args.world}"]
-    slam_args = ["roslaunch", "tirocinio", "slam_toolbox_no_rviz.launch"]
+    slam_args = ["roslaunch", "tirocinio", "waypoint_slam.launch"]
+    dist_args = ["rosrun", "tirocinio", "distance_check.py"]
     with sp.Popen(stage_args, stdout=sp.DEVNULL, stderr=sp.DEVNULL) as stage_process:
         sleep(3)
         print("started stage.")
         with sp.Popen(slam_args, stdout=sp.DEVNULL, stderr=sp.DEVNULL) as slam_process:
             sleep(10)
             print("started slam.")
-            time = run_cov(cmd_args.waypoints, logfile_path, run_subfolder)
-            print("coverage finished.")
-            slam_process.kill()
-            stage_process.kill()
-            return time
+            with open(logfile_path, mode="+a", encoding="utf-8") as logfile:
+                with sp.Popen(dist_args, stdout=logfile, stderr=logfile) as dist_process:
+                    time = run_cov(cmd_args.waypoints, logfile_path, run_subfolder)
+                    print("coverage finished.")
+                    dist_process.terminate()
+                    slam_process.terminate()
+                    stage_process.terminate()
+                    return time
 
 def check_positive(value):
     try:
@@ -134,7 +142,7 @@ def main(cmd_args):
     time_deltas = list()
     area_deltas = list()
     for r in range(int(cmd_args.runs)):
-        print(f"run {r}/int(cmd_args.runs) starting.")
+        print(f"run {r}/{cmd_args.runs} starting.")
         run_subfolder = f"run{maxrun+r}"
         os.mkdir(run_subfolder)
         logfile_path_exploration_run = os.path.join(run_subfolder, logfile_path_exploration)
