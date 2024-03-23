@@ -1,0 +1,48 @@
+[0m[ INFO] [1711201746.953913641]: Waiting for the map[0m
+[0m[ INFO] [1711201747.173358396]: Received a 235 X 174 map @ 0.050 m/pix[0m
+[0m[ INFO] [1711201747.173368496]: Writing map occupancy data to run0/Map_exploration.pgm[0m
+[0m[ INFO] [1711201747.173590726]: Writing map occupancy data to run0/Map_exploration.yaml[0m
+[0m[ INFO] [1711201747.173617976]: Done
+[0m
+[0m[ INFO] [1711201794.749115758]: Waiting for the map[0m
+[0m[ INFO] [1711201794.972559721]: Received a 235 X 173 map @ 0.050 m/pix[0m
+[0m[ INFO] [1711201794.972571571]: Writing map occupancy data to run0/Map_coverage.pgm[0m
+[0m[ INFO] [1711201794.972787601]: Writing map occupancy data to run0/Map_coverage.yaml[0m
+[0m[ INFO] [1711201794.972812411]: Done
+[0m
+[0m[ INFO] [1711201876.168017960]: Waiting for the map[0m
+[0m[ INFO] [1711201876.408051943]: Received a 236 X 174 map @ 0.050 m/pix[0m
+[0m[ INFO] [1711201876.408063233]: Writing map occupancy data to run1/Map_exploration.pgm[0m
+[0m[ INFO] [1711201876.408291673]: Writing map occupancy data to run1/Map_exploration.yaml[0m
+[0m[ INFO] [1711201876.408318313]: Done
+[0m
+[0m[ INFO] [1711201919.504639307]: Waiting for the map[0m
+[0m[ INFO] [1711201919.786948941]: Received a 235 X 173 map @ 0.050 m/pix[0m
+[0m[ INFO] [1711201919.786959211]: Writing map occupancy data to run1/Map_coverage.pgm[0m
+[0m[ INFO] [1711201919.787172411]: Writing map occupancy data to run1/Map_coverage.yaml[0m
+[0m[ INFO] [1711201919.787196851]: Done
+[0m
+[0m[ INFO] [1711202005.835168561]: Waiting for the map[0m
+[0m[ INFO] [1711202006.060745909]: Received a 236 X 157 map @ 0.050 m/pix[0m
+[0m[ INFO] [1711202006.060759149]: Writing map occupancy data to run2/Map_exploration.pgm[0m
+[0m[ INFO] [1711202006.060972709]: Writing map occupancy data to run2/Map_exploration.yaml[0m
+[0m[ INFO] [1711202006.060997399]: Done
+[0m
+[0m[ INFO] [1711202049.577870628]: Waiting for the map[0m
+[0m[ INFO] [1711202049.781155279]: Received a 235 X 173 map @ 0.050 m/pix[0m
+[0m[ INFO] [1711202049.781168189]: Writing map occupancy data to run2/Map_coverage.pgm[0m
+[0m[ INFO] [1711202049.781395970]: Writing map occupancy data to run2/Map_coverage.yaml[0m
+[0m[ INFO] [1711202049.781424620, 322.600000000]: Done
+[0m
+[0m[ INFO] [1711202139.215658457]: Waiting for the map[0m
+[0m[ INFO] [1711202139.417354229]: Received a 236 X 174 map @ 0.050 m/pix[0m
+[0m[ INFO] [1711202139.417367579]: Writing map occupancy data to run3/Map_exploration.pgm[0m
+[0m[ INFO] [1711202139.417598039]: Writing map occupancy data to run3/Map_exploration.yaml[0m
+[0m[ INFO] [1711202139.417625879]: Done
+[0m
+[0m[ INFO] [1711202182.978427512]: Waiting for the map[0m
+[0m[ INFO] [1711202183.253574812]: Received a 235 X 173 map @ 0.050 m/pix[0m
+[0m[ INFO] [1711202183.253588122]: Writing map occupancy data to run3/Map_coverage.pgm[0m
+[0m[ INFO] [1711202183.253814352]: Writing map occupancy data to run3/Map_coverage.yaml[0m
+[0m[ INFO] [1711202183.253839922]: Done
+[0m
