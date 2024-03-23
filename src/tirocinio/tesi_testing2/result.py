@@ -11,6 +11,8 @@ exp_areas_tot = list()
 cov_dist_tot = list()
 exp_dist_tot = list()
 
+tot_ambienti = 0
+
 directories = [d for d in os.listdir(os.getcwd()) if os.path.isdir(os.path.join(os.getcwd(), d))]
 for i, dir_i in enumerate(directories):
     cov_times = list()
@@ -55,6 +57,9 @@ for i, dir_i in enumerate(directories):
                     
     df_cov = pd.DataFrame(list(zip(cov_times, cov_areas, cov_dist)), columns =['Time', 'Area', "Distance"])
     df_exp = pd.DataFrame(list(zip(exp_times, exp_areas, exp_dist)), columns =['Time', 'Area', "Distance"])
+    if len(df_cov) > 1:
+        tot_ambienti += 1
+    print(len(df_cov))
     df_cov.sort_values(by=['Time'])
     df_exp.sort_values(by=['Time'])
 
@@ -69,16 +74,16 @@ for i, dir_i in enumerate(directories):
     axs[0,1].set_ylabel('Time')
     axs[0,1].set_title(f"Time Comparison {i}")
 
-    axs[1,0].scatter(df_cov['Distance'].values, df_cov['Area'].values, marker='o', linestyle='-', label='Coverage')
-    axs[1,0].scatter(df_exp['Distance'].values, df_exp['Area'].values, marker='s', linestyle='--', label='Exploration')
+    axs[1,0].scatter(df_cov['Distance'].values, df_cov['Area'].values, marker='x', linestyle='-', label='Coverage')
+    axs[1,0].scatter(df_exp['Distance'].values, df_exp['Area'].values, marker='+', linestyle='--', label='Exploration')
     axs[1,0].set_title(f"Distance Traveled VS Area Mapped {i}")
     axs[1,0].set_xlabel('Distance Traveled')
     axs[1,0].set_ylabel('Area')
     axs[1,0].grid(False)
     axs[1,0].legend()
 
-    axs[1,1].scatter(df_cov['Time'].values, df_cov['Area'].values, marker='o', linestyle='-', label='Coverage')
-    axs[1,1].scatter(df_exp['Time'].values, df_exp['Area'].values, marker='s', linestyle='--', label='Exploration')
+    axs[1,1].scatter(df_cov['Time'].values, df_cov['Area'].values, marker='x', linestyle='-', label='Coverage')
+    axs[1,1].scatter(df_exp['Time'].values, df_exp['Area'].values, marker='+', linestyle='--', label='Exploration')
     axs[1,1].set_title(f"Time vs Area {i}")
     axs[1,1].set_xlabel('Time')
     axs[1,1].set_ylabel('Area')
@@ -96,8 +101,7 @@ for i, dir_i in enumerate(directories):
 
 df_cov = pd.DataFrame(list(zip(cov_times_tot, cov_areas_tot, cov_dist_tot)), columns =['Time', 'Area', "Distance"])
 df_exp = pd.DataFrame(list(zip(exp_times_tot, exp_areas_tot, exp_dist_tot)), columns =['Time', 'Area', "Distance"])
-print(len(df_cov))
-print(len(df_cov[df_cov["Area"]<10_000]))
+print(f"Eseguite {len(df_cov)} run in {tot_ambienti} ambienti")
 
 
 fig, axs = plt.subplots(2, 2, figsize=(12, 12))
