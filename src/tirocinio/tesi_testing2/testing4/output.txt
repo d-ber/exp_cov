@@ -243,3 +243,58 @@ time_deltas (exploration-coverage): [157, 4621, 147, 110, 450, 1415, 347, 350, 2
 area_deltas (exploration-coverage): [463, 891, 847, -4036, 1294, 656, 923, 397, 145, 411]
 ;
 
+run 0/1 starting.
+starting exploration.
+started stage.
+started slam.
+[ INFO] [1711211766.907730981]: Waiting for the map
+[ INFO] [1711211767.152252094]: Received a 92 X 178 map @ 0.050 m/pix
+[ INFO] [1711211767.152267584]: Writing map occupancy data to run9/Map_exploration.pgm
+[ INFO] [1711211767.152393704]: Writing map occupancy data to run9/Map_exploration.yaml
+[ INFO] [1711211767.152421774]: Done
+
+exploration finished.
+starting coverage.
+started stage.
+started slam.
+[ INFO] [1711211834.719831675]: Waiting for the map
+[ INFO] [1711211834.985613508]: Received a 228 X 172 map @ 0.050 m/pix
+[ INFO] [1711211834.985630798]: Writing map occupancy data to run9/Map_coverage.pgm
+[ INFO] [1711211834.985886468]: Writing map occupancy data to run9/Map_coverage.yaml
+[ INFO] [1711211834.985928038]: Done
+
+coverage finished.
+2024-03-23 16:37:15: Coverage time: 413; Exploration time: 258. Exploration - Coverage: -155. Unit is seconds.
+2024-03-23 16:37:15: Coverage mapped area: 8789; Exploration mapped area: 4842. Exploration - Coverage: -3947. Unit is 0.05 meters, a pixel in the map.
+run 0/int(cmd_args.runs) finished.
+time_deltas (exploration-coverage): [-155]
+;
+area_deltas (exploration-coverage): [-3947]
+;
+run 0/1 starting.
+starting exploration.
+started stage.
+started slam.
+[ INFO] [1711211959.790476525]: Waiting for the map
+[ INFO] [1711211960.050496359]: Received a 228 X 174 map @ 0.050 m/pix
+[ INFO] [1711211960.050517889]: Writing map occupancy data to run9/Map_exploration.pgm
+[ INFO] [1711211960.050744299]: Writing map occupancy data to run9/Map_exploration.yaml
+[ INFO] [1711211960.050775249]: Done
+
+exploration finished.
+starting coverage.
+started stage.
+started slam.
+[ INFO] [1711212033.635690389]: Waiting for the map
+[ INFO] [1711212033.837970292]: Received a 227 X 172 map @ 0.050 m/pix
+[ INFO] [1711212033.837985332]: Writing map occupancy data to run9/Map_coverage.pgm
+[ INFO] [1711212033.838202742]: Writing map occupancy data to run9/Map_coverage.yaml
+[ INFO] [1711212033.838229861]: Done
+
+coverage finished.
+2024-03-23 16:40:34: Coverage time: 461; Exploration time: 579. Exploration - Coverage: 118. Unit is seconds.
+2024-03-23 16:40:34: Coverage mapped area: 8869; Exploration mapped area: 9870. Exploration - Coverage: 1001. Unit is 0.05 meters, a pixel in the map.
+run 0/int(cmd_args.runs) finished.
+time_deltas (exploration-coverage): [118]
+;
+area_deltas (exploration-c

@@ -14,7 +14,9 @@ exp_dist_tot = list()
 tot_ambienti = 0
 
 directories = [d for d in os.listdir(os.getcwd()) if os.path.isdir(os.path.join(os.getcwd(), d))]
+directories.sort()
 for i, dir_i in enumerate(directories):
+    i += 1 
     cov_times = list()
     exp_times = list()
     cov_areas = list()
@@ -91,7 +93,6 @@ for i, dir_i in enumerate(directories):
     axs[1,1].legend()
     plt.savefig(f"ambiente{i}.png")
     plt.show()
-    i += 1 
     cov_times_tot += cov_times
     exp_times_tot += exp_times
     cov_areas_tot += cov_areas
@@ -115,16 +116,16 @@ axs[0,1].set_xticklabels(['Coverage', 'Exploration'])
 axs[0,1].set_ylabel('Time')
 axs[0,1].set_title(f"Time Comparison Totale")
 
-axs[1,0].scatter(df_cov['Distance'].values, df_cov['Area'].values, marker='o', linestyle='-', label='Coverage')
-axs[1,0].scatter(df_exp['Distance'].values, df_exp['Area'].values, marker='s', linestyle='--', label='Exploration')
+axs[1,0].scatter(df_cov['Distance'].values, df_cov['Area'].values, marker='x', linestyle='-', label='Coverage')
+axs[1,0].scatter(df_exp['Distance'].values, df_exp['Area'].values, marker='+', linestyle='--', label='Exploration')
 axs[1,0].set_title(f"Distance Traveled VS Area Mapped")
 axs[1,0].set_xlabel('Distance Traveled')
 axs[1,0].set_ylabel('Area')
 axs[1,0].grid(False)
 axs[1,0].legend()
 
-axs[1,1].scatter(df_cov['Time'].values, df_cov['Area'].values, marker='o', linestyle='-', label='Coverage')
-axs[1,1].scatter(df_exp['Time'].values, df_exp['Area'].values, marker='s', linestyle='--', label='Exploration')
+axs[1,1].scatter(df_cov['Time'].values, df_cov['Area'].values, marker='x', linestyle='-', label='Coverage')
+axs[1,1].scatter(df_exp['Time'].values, df_exp['Area'].values, marker='+', linestyle='--', label='Exploration')
 axs[1,1].set_title(f"Time vs Area")
 axs[1,1].set_xlabel('Time')
 axs[1,1].set_ylabel('Area')
@@ -147,8 +148,8 @@ axs[0,1].set_ylabel('Time')
 axs[0,1].set_title(f"Time Comparison Totale")
 axs[0,1].set_ylim(0, max(max(df_cov['Time']), max(df_exp['Time'])) * 1.1)
 
-axs[1,0].scatter(df_cov['Distance'].values, df_cov['Area'].values, marker='o', linestyle='-', label='Coverage')
-axs[1,0].scatter(df_exp['Distance'].values, df_exp['Area'].values, marker='s', linestyle='--', label='Exploration')
+axs[1,0].scatter(df_cov['Distance'].values, df_cov['Area'].values, marker='x', linestyle='-', label='Coverage')
+axs[1,0].scatter(df_exp['Distance'].values, df_exp['Area'].values, marker='+', linestyle='--', label='Exploration')
 axs[1,0].set_title(f"Distance Traveled VS Area Mapped")
 axs[1,0].set_xlabel('Distance Traveled')
 axs[1,0].set_ylabel('Area')
@@ -157,8 +158,8 @@ axs[1,0].set_xlim(0, max(max(df_cov['Distance']), max(df_exp['Distance'])) * 1.1
 axs[1,0].set_ylim(0,  max(max(df_cov['Area']), max(df_exp['Area'])) * 1.1)
 axs[1,0].legend()
 
-axs[1,1].scatter(df_cov['Time'].values, df_cov['Area'].values, marker='o', linestyle='-', label='Coverage')
-axs[1,1].scatter(df_exp['Time'].values, df_exp['Area'].values, marker='s', linestyle='--', label='Exploration')
+axs[1,1].scatter(df_cov['Time'].values, df_cov['Area'].values, marker='x', linestyle='-', label='Coverage')
+axs[1,1].scatter(df_exp['Time'].values, df_exp['Area'].values, marker='+', linestyle='--', label='Exploration')
 axs[1,1].set_title(f"Time vs Area")
 axs[1,1].set_xlabel('Time')
 axs[1,1].set_ylabel('Area')
