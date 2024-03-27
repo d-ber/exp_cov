@@ -62,9 +62,9 @@ for i, dir_i in enumerate(directories):
     if len(df_cov) > 1:
         tot_ambienti += 1
     print(len(df_cov))
+    '''
     df_cov.sort_values(by=['Time'])
     df_exp.sort_values(by=['Time'])
-
     fig, axs = plt.subplots(2, 2, figsize=(12, 12))
     axs[0,0].boxplot([df_cov["Distance"], df_exp["Distance"]])
     axs[0,0].set_xticklabels(['Coverage', 'Exploration'])
@@ -91,8 +91,9 @@ for i, dir_i in enumerate(directories):
     axs[1,1].set_ylabel('Area')
     axs[1,1].grid(False)
     axs[1,1].legend()
-    plt.savefig(f"ambiente{i}.png")
+    plt.savefig(f"ambiente{i}.png", dpi=600)
     plt.show()
+    '''
     cov_times_tot += cov_times
     exp_times_tot += exp_times
     cov_areas_tot += cov_areas
@@ -106,12 +107,12 @@ print(f"Eseguite {len(df_cov)} run in {tot_ambienti} ambienti")
 
 
 fig, axs = plt.subplots(2, 2, figsize=(12, 12))
-axs[0,0].boxplot([df_cov["Distance"], df_exp["Distance"]])
+axs[0,0].violinplot([df_cov["Distance"], df_exp["Distance"]])
 axs[0,0].set_xticklabels(['Coverage', 'Exploration'])
 axs[0,0].set_ylabel('Distance')
 axs[0,0].set_title(f"Distance Traveled Comparison Totale")
 
-axs[0,1].boxplot([df_cov["Time"], df_exp["Time"]])
+axs[0,1].violinplot([df_cov["Time"], df_exp["Time"]])
 axs[0,1].set_xticklabels(['Coverage', 'Exploration'])
 axs[0,1].set_ylabel('Time')
 axs[0,1].set_title(f"Time Comparison Totale")
@@ -132,17 +133,17 @@ axs[1,1].set_ylabel('Area')
 axs[1,1].grid(False)
 axs[1,1].legend()
 
-plt.savefig(f"generale.png")
+plt.savefig(f"generale.png", dpi=600)
 plt.show()
 
 fig, axs = plt.subplots(2, 2, figsize=(12, 12))
-axs[0,0].boxplot([df_cov["Distance"], df_exp["Distance"]])
+axs[0,0].violinplot([df_cov["Distance"], df_exp["Distance"]])
 axs[0,0].set_xticklabels(['Coverage', 'Exploration'])
 axs[0,0].set_ylabel('Distance')
 axs[0,0].set_title(f"Distance Traveled Comparison Totale")
 axs[0,0].set_ylim(0, max(max(df_cov['Distance']), max(df_exp['Distance'])) * 1.1)
 
-axs[0,1].boxplot([df_cov["Time"], df_exp["Time"]])
+axs[0,1].violinplot([df_cov["Time"], df_exp["Time"]])
 axs[0,1].set_xticklabels(['Coverage', 'Exploration'])
 axs[0,1].set_ylabel('Time')
 axs[0,1].set_title(f"Time Comparison Totale")
@@ -167,8 +168,78 @@ axs[1,1].grid(False)
 axs[1,1].set_xlim(0, max(max(df_cov['Time']), max(df_exp['Time'])) * 1.1)
 axs[1,1].set_ylim(0,  max(max(df_cov['Area']), max(df_exp['Area'])) * 1.1)
 axs[1,1].legend()
-plt.savefig(f"generale_zero_based.png")
+plt.savefig(f"generale_zero_based.png", dpi=600)
 plt.show()
+
+# Plot violinplot for Distance
+plt.figure(figsize=(6, 6))
+plt.violinplot([df_cov["Distance"], df_exp["Distance"]], widths=0.7)
+plt.xticks([1, 2], ['Coverage', 'Esplorazione Greedy'])
+plt.ylabel('Distanza Percorsa [m]')
+#plt.title(f"Distance Traveled Comparison Totale")
+plt.ylim(0, max(max(df_cov['Distance']), max(df_exp['Distance'])) * 1.1)
+plt.savefig("testing_violinplot_distanza.svg", bbox_inches="tight")
+plt.savefig("testing_violinplot_distanza.png", bbox_inches="tight")
+plt.close()
+
+# Plot violinplot for Time
+plt.figure(figsize=(6, 6))
+plt.violinplot([df_cov["Time"], df_exp["Time"]], widths=0.7)
+plt.xticks([1, 2], ['Coverage', 'Esplorazione Greedy'])
+plt.ylabel('Tempo [s]')
+#plt.title(f"Time Comparison Totale")
+plt.ylim(0, max(max(df_cov['Time']), max(df_exp['Time'])) * 1.1)
+plt.savefig("testing_violinplot_tempo.svg", bbox_inches="tight")
+plt.savefig("testing_violinplot_tempo.png", bbox_inches="tight")
+plt.close()
+
+# Plot violinplot for Area
+plt.figure(figsize=(6, 6))
+plt.violinplot([df_cov["Area"], df_exp["Area"]], widths=0.7)
+plt.xticks([1, 2], ['Coverage', 'Esplorazione Greedy'])
+plt.ylabel('Area [0.05 m^2]')
+#plt.title(f"Time Comparison Totale")
+plt.ylim(0, max(max(df_cov['Area']), max(df_exp['Area'])) * 1.1)
+plt.savefig("testing_violinplot_area.svg", bbox_inches="tight")
+plt.savefig("testing_violinplot_area.png", bbox_inches="tight")
+plt.close()
+
+# Plot scatter plot for Distance vs Area
+plt.figure(figsize=(8, 6))
+plt.scatter(df_cov['Distance'].values, df_cov['Area'].values, marker='x', linestyle='-', label='Coverage')
+plt.scatter(df_exp['Distance'].values, df_exp['Area'].values, marker='+', linestyle='--', label='Esplorazione Greedy')
+#plt.title(f"Distance Traveled VS Area Mapped")
+plt.xlabel('Distanza percorsa [m]')
+plt.ylabel('Area mappata [0.05 m^2]')
+plt.grid(False)
+plt.xlim(0, max(max(df_cov['Distance']), max(df_exp['Distance'])) * 1.1)
+plt.ylim(0,  max(max(df_cov['Area']), max(df_exp['Area'])) * 1.1)
+plt.legend()
+plt.savefig("testing_scatter_distanza_area.svg", bbox_inches="tight")
+plt.savefig("testing_scatter_distanza_area.png", bbox_inches="tight")
+plt.close()
+
+# Plot scatter plot for Time vs Area
+plt.figure(figsize=(8, 6))
+plt.scatter(df_cov['Time'].values, df_cov['Area'].values, marker='x', linestyle='-', label='Coverage')
+plt.scatter(df_exp['Time'].values, df_exp['Area'].values, marker='+', linestyle='--', label='Esplorazione Greedy')
+plt.title(f"Time vs Area")
+plt.xlabel('Tempo [s]')
+plt.ylabel('Area mappata [0.05 m^2]')
+plt.grid(False)
+plt.xlim(0, max(max(df_cov['Time']), max(df_exp['Time'])) * 1.1)
+plt.ylim(0,  max(max(df_cov['Area']), max(df_exp['Area'])) * 1.1)
+plt.legend()
+plt.savefig("testing_scatter_tempo_area.svg", bbox_inches="tight")
+plt.savefig("testing_scatter_tempo_area.png", bbox_inches="tight")
+plt.close()
+
+print(f"tempo coverage: {df_cov['Time'].describe()}")
+print(f"distanza coverage: {df_cov['Distance'].describe()}")
+print(f"area coverage: {df_cov['Area'].describe()}")
+print(f"tempo esplorazione: {df_exp['Time'].describe()}")
+print(f"distanza esplorazione: {df_exp['Distance'].describe()}")
+print(f"area esplorazione: {df_exp['Area'].describe()}")
 
 
 exit()
