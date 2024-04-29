@@ -159,6 +159,7 @@ catkin_install_python(PROGRAMS
   scripts/disturb.py
   scripts/lidar_maxrange_filter.py
   scripts/map_rgb_simul.py
+  scripts/distance_check.py
   scripts/modify_and_run.py
   scripts/pose_check.py
   scripts/waypoint_navigation.py
