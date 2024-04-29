@@ -122,6 +122,7 @@ def main():
             print(f"Floorplan creation: skipping image {os.path.basename(image_path)} with dim error {image.shape[0]-floorplan.shape[0]}, {image.shape[1]-floorplan.shape[1]}")
             continue
         used += 1
+        cv2.imwrite(os.path.join("usate", os.path.basename(image_path)), image)
         floorplan = update_floorplan(floorplan, image.astype(np.uint8))
 
     print(f"Floorplan creation: used {used} out of {len(image_paths)} images.")
@@ -161,6 +162,7 @@ def main():
             floorplan_with_cost[h, w] = round((1-costs[h, w]) * 255)
 
     addition = probabilize(addition, m).astype(np.uint8)
+    cv2.imwrite("addition.png", addition)
     _, addition_thresholded = cv2.threshold(addition, 190, 255, cv2.THRESH_BINARY)
 
     ## Otsu's Binarization thresholding as by https://docs.opencv.org/3.4/d7/d4d/tutorial_py_thresholding.html
@@ -212,6 +214,7 @@ def main():
     cv2.imwrite("otsu.png", otsu)
     cv2.imwrite("tri.png", tri)
     cv2.imwrite("floorplan.png", floorplan)
+    cv2.imwrite("added_map.png", addition)
 
     if gt_floorplan is not None:
         _ = plt.subplot(331), plt.imshow(cv2.cvtColor(gt_floorplan, cv2.COLOR_GRAY2RGB)), plt.title('GT Floorplan')
