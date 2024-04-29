@@ -142,7 +142,7 @@ def main(cmd_args):
     time_deltas = list()
     area_deltas = list()
     for r in range(int(cmd_args.runs)):
-        print(f"run {r}/{cmd_args.runs} starting.")
+        print(f"run {r+1}/{cmd_args.runs} starting.")
         run_subfolder = f"run{maxrun+r}"
         os.mkdir(run_subfolder)
         logfile_path_exploration_run = os.path.join(run_subfolder, logfile_path_exploration)
@@ -166,7 +166,7 @@ def main(cmd_args):
             msg = f"{now()}: Coverage mapped area: {cov_map_area}; Exploration mapped area: {expl_map_area}. Exploration - Coverage: {area_delta}. Unit is 0.05 meters, a pixel in the map."
             print(msg)
             logfile.write(f"{msg}\n")
-        print(f"run {r}/int(cmd_args.runs) finished.")
+        print(f"run {r+1}/{cmd_args.runs} finished.")
     print(f"time_deltas (exploration-coverage): {time_deltas}\n;\narea_deltas (exploration-coverage): {area_deltas}\n;\n")
 
 if __name__ == "__main__":
