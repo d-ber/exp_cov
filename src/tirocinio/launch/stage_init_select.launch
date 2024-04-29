@@ -12,4 +12,8 @@
   <node name="select" pkg="tirocinio" type="disturb.py" output="screen"/>
   <node name="pose_check" pkg="tirocinio" type="pose_check.py" output="screen" args="--path $(arg rectangles)"/>
 
+  <param name="robot_description" command="$(find xacro)/xacro --inorder $(find turtlebot3_description)/urdf/turtlebot3_$(arg model).urdf.xacro" />
+
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-urdf -model turtlebot3 -param robot_description" />
+
 </launch>

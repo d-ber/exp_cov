@@ -1,0 +1,505 @@
+ampl: model '/home/d-ber/catkin_ws/src/tirocinio/optimization/test11/coverage.mod';
+ampl: data '/home/d-ber/catkin_ws/src/tirocinio/optimization/test11/data.dat';
+ampl: option solver knitro;
+ampl: solve;
+Artelys Knitro 14.0.0: 
+=======================================
+          Commercial License
+         Artelys Knitro 14.0.0
+=======================================
+
+No start point provided -- Knitro computing one.
+
+WARNING: Problem appears to have nonlinear equalities and be non-convex.
+         The Knitro mixed integer solver is designed for convex problems.
+         For non-convex problems it is only a heuristic, and the reported
+         bounds and optimality claims cannot be verified.
+
+concurrent_evals:        0
+datacheck:               0
+hessian_no_f:            1
+The problem is identified as a MIQCQP.
+Knitro changing mip_method from AUTO to 1.
+Knitro changing mip_rootalg from AUTO to 1.
+Knitro changing mip_lpalg from AUTO to 3.
+Knitro changing mip_branchrule from AUTO to 2.
+Knitro changing mip_selectrule from AUTO to 2.
+Knitro changing mip_mir from AUTO to 2.
+Knitro changing mip_clique from AUTO to 0.
+Knitro changing mip_zerohalf from AUTO to 0.
+Knitro changing mip_liftproject from AUTO to 0.
+Knitro changing mip_knapsack from AUTO to 2.
+Knitro changing mip_gomory from AUTO to 0.
+Knitro changing mip_cut_flowcover from AUTO to 2.
+Knitro changing mip_cut_probing from AUTO to 1.
+Knitro changing mip_rounding from AUTO to 3.
+Knitro changing mip_heuristic_strategy from AUTO to 1.
+Knitro changing mip_heuristic_feaspump from AUTO to 1.
+Knitro changing mip_heuristic_misqp from AUTO to 0.
+Knitro changing mip_heuristic_mpec from AUTO to 1.
+Knitro changing mip_heuristic_diving from AUTO to 0.
+Knitro changing mip_heuristic_lns from AUTO to 0.
+Knitro changing mip_heuristic_localsearch from AUTO to 1.
+Knitro changing mip_pseudoinit from AUTO to 1.
+
+Problem Characteristics                                 (   Presolved)
+-----------------------
+Objective goal:  Minimize
+Objective type:  linear
+Number of variables:                                521 (         521)
+    bounded below only:                               0 (           0)
+    bounded above only:                               0 (           0)
+    bounded below and above:                        520 (         520)
+    fixed:                                            0 (           0)
+    free:                                             1 (           1)
+Number of binary variables:                         520 (         520)
+Number of integer variables:                          0 (           0)
+Number of constraints:                              277 (         277)
+    linear equalities:                                0 (           0)
+    quadratic equalities:                             1 (           1)
+    gen. nonlinear equalities:                        0 (           0)
+    linear one-sided inequalities:                  276 (         276)
+    quadratic one-sided inequalities:                 0 (           0)
+    gen. nonlinear one-sided inequalities:            0 (           0)
+    linear two-sided inequalities:                    0 (           0)
+    quadratic two-sided inequalities:                 0 (           0)
+    gen. nonlinear two-sided inequalities:            0 (           0)
+Number of nonzeros in Jacobian:                    6474 (        6474)
+Number of nonzeros in Hessian:                    29890 (       29890)
+
+Knitro using Branch and Bound method with 8 threads.
+
+Initial points
+--------------
+No initial point provided for the root node relaxation.
+No primal point provided for the MIP.
+
+Root node relaxation
+--------------------
+
+ Iter      Objective      Feasibility        Optimality       Time 
+                             error              error        (secs)
+ ----      ---------      -----------        ----------      ------
+    1    2.41559e+06         0.640200           22.9274       0.028
+    2    1.53116e+06         0.220051           3.20793       0.030
+    3        409500.      9.87668e-04           1.07958       0.032
+    4        160441.      0.00000e+00           1.58193       0.034
+    5        104714.      0.00000e+00          0.255952       0.036
+    6        78101.4      0.00000e+00          0.179710       0.038
+    7        62058.5      0.00000e+00          0.208927       0.040
+    8        55928.2      0.00000e+00       8.61859e-02       0.042
+    9        51281.8      0.00000e+00       6.28393e-02       0.044
+   10        49528.1      0.00000e+00       3.63884e-02       0.046
+   11        48781.1      0.00000e+00       9.34013e-03       0.048
+   12        48410.0      0.00000e+00       6.02801e-02       0.050
+   13        48187.3      0.00000e+00       3.95347e-02       0.056
+   14        48143.1      0.00000e+00       1.45507e-02       0.059
+   15        48130.6      0.00000e+00       1.62190e-02       0.063
+   16        48124.3      0.00000e+00       2.11256e-02       0.067
+   17        48114.4      1.36372e-11       2.40104e-02       0.072
+   18        48114.3      1.36945e-11       2.40104e-02       0.080
+   19        48109.2      1.46028e-12       2.29035e-02       0.088
+   20        48108.6      1.54698e-12       2.54108e-02       0.094
+   21        48108.6      7.81306e-11       5.00393e-04       0.097
+   22        48108.5      9.88051e-11       2.23835e-08       0.101
+   23        48108.5      9.98874e-11       5.18003e-09       0.108
+   24        48108.5      9.98874e-11       5.18003e-09       0.111
+
+Tree search
+-----------
+
+       Nodes        Best solution   Best bound      Gap       Time 
+   Expl  |  Unexpl      value         value                  (secs)
+   ---------------  -------------   ----------      ---      ------
+      1       2                        48108.5                0.114
+      7       8      82606.1 DURD      48458.0     41.34%     0.229
+     13      14      58472.8   FP      48638.3     16.82%     0.407
+    187     188      52021.6 FCRD      49508.6      4.83%     1.498
+    195     196      50502.9 FCRD      49530.8      1.92%     1.533
+    227     224      50491.2 FCRD      49559.3      1.85%     1.644
+    299     273      50115.9 LEAF      49645.8      0.94%     1.927
+    624       4      50115.9           49695.5      0.84%     3.215
+    688      38      49998.8 FCRD      49695.5      0.61%     4.047
+    876      12      49876.3 FCRD      49779.9      0.19%     5.871
+    906       0      49876.3           49894.7     -0.04%     6.316
+
+EXIT: Optimal solution found (assuming convexity).
+
+HINT: The problem may be a non-convex mixed-integer problem.  Set
+      mip_multistart=1 to enable a mixed-integer multistart heuristic,
+      which may improve the chances of finding the global solution.
+
+Final Statistics for MIP
+------------------------
+Final objective value               =  4.98762585665650e+04
+Final bound value                   =  4.98947042629904e+04
+Final optimality gap (abs / rel)    =  -1.84e+01 / -3.70e-04 (-0.04%)
+# of root cutting plane rounds      =  2
+# of restarts                       =  1
+# of nodes processed                =  906 (20.355s)
+# of strong branching evaluations   =  255 (15.940s)
+# of function evaluations           =  0 (0.000s)
+# of gradient evaluations           =  0 (0.000s)
+# of hessian evaluations            =  0 (0.000s)
+# of hessian-vector evaluations     =  0
+# of subproblems processed          =  1156 (37.304s)
+Total program time (secs)           =  6.31572 (37.759 CPU time)
+Time spent in evaluations (secs)    =  0.00000
+
+Cuts statistics (gen / add)
+---------------------------
+Knapsack cuts                       =  0 / 0
+Mixed-integer rounding cuts         =  0 / 0
+Flow-cover cuts                     =  0 / 0
+Probing cuts                        =  0 / 0
+
+Heuristics statistics (calls / successes / time)
+------------------------------------------------
+Feasibility pump                    =  2 / 1 / 0.294s
+Rounding heuristic                  =  10 / 8 / 0.083s
+MPEC heuristic                      =  6 / 1 / 0.820s
+Local search heuristic              =  0 / 0 / 0.000s
+
+===========================================================================
+
+                       Knitro 14.0.0: Locally optimal or satisfactory solution.
+objective 49876.25857; optimality gap 6.95e-310
+906 nodes; 1156 subproblem solves
+
+suffix feaserror OUT;
+suffix opterror OUT;
+suffix numfcevals OUT;
+suffix numiters OUT;
+suffix incumbent OUT;
+suffix relaxbnd OUT;
+ampl: display scelta_guardie;
+scelta_guardie [*] :=
+  1 0    26 0    51 0    76 0   101 0   126 0   151 0   176 0   201 0   226 0
+  2 1    27 0    52 0    77 0   102 1   127 0   152 0   177 0   202 0   227 0
+  3 0    28 0    53 0    78 0   103 0   128 0   153 0   178 0   203 0   228 0
+  4 0    29 1    54 0    79 0   104 0   129 0   154 0   179 0   204 0   229 0
+  5 0    30 0    55 0    80 0   105 0   130 0   155 0   180 0   205 0   230 0
+  6 0    31 0    56 0    81 0   106 0   131 1   156 0   181 0   206 0   231 0
+  7 0    32 0    57 0    82 0   107 0   132 0   157 1   182 0   207 0   232 0
+  8 0    33 0    58 0    83 0   108 0   133 0   158 0   183 0   208 0   233 0
+  9 0    34 0    59 0    84 0   109 1   134 0   159 0   184 0   209 0   234 0
+ 10 0    35 0    60 0    85 0   110 0   135 0   160 0   185 0   210 0   235 0
+ 11 0    36 0    61 0    86 0   111 0   136 0   161 1   186 0   211 0   236 0
+ 12 0    37 0    62 0    87 0   112 0   137 0   162 0   187 0   212 0   237 0
+ 13 0    38 0    63 0    88 0   113 1   138 0   163 0   188 0   213 0   238 0
+ 14 0    39 0    64 0    89 1   114 0   139 0   164 0   189 0   214 0   239 0
+ 15 0    40 0    65 0    90 0   115 1   140 0   165 0   190 0   215 0   240 0
+ 16 0    41 0    66 0    91 0   116 0   141 0   166 0   191 0   216 0   241 0
+ 17 1    42 0    67 0    92 0   117 0   142 0   167 0   192 0   217 0   242 0
+ 18 0    43 0    68 0    93 0   118 0   143 0   168 0   193 0   218 0   243 0
+ 19 0    44 0    69 0    94 0   119 0   144 0   169 0   194 0   219 0   244 1
+ 20 0    45 0    70 0    95 0   120 0   145 0   170 0   195 0   220 0   245 0
+ 21 0    46 0    71 0    96 0   121 0   146 0   171 0   196 0   221 0
+ 22 0    47 0    72 0    97 0   122 0   147 0   172 0   197 0   222 0
+ 23 0    48 0    73 0    98 0   123 0   148 0   173 0   198 0   223 0
+ 24 0    49 0    74 0    99 0   124 1   149 0   174 1   199 0   224 0
+ 25 0    50 0    75 0   100 1   125 1   150 0   175 0   200 0   225 1
+;
+
+ampl: display coperto;
+coperto [*] :=
+  1 1    31 1    61 1    91 1   121 1   151 1   181 0   211 1   241 1   271 0
+  2 1    32 0    62 1    92 1   122 1   152 0   182 1   212 1   242 0   272 0
+  3 1    33 1    63 0    93 1   123 1   153 0   183 1   213 1   243 1   273 1
+  4 1    34 1    64 1    94 1   124 1   154 0   184 1   214 0   244 1   274 1
+  5 1    35 1    65 1    95 1   125 1   155 0   185 1   215 1   245 0   275 1
+  6 1    36 1    66 0    96 1   126 1   156 0   186 1   216 1   246 1   276 1
+  7 1    37 1    67 1    97 1   127 1   157 0   187 1   217 0   247 1   277 1
+  8 1    38 1    68 1    98 1   128 0   158 1   188 1   218 0   248 1   278 1
+  9 1    39 1    69 1    99 1   129 1   159 1   189 1   219 0   249 1   279 1
+ 10 0    40 1    70 1   100 1   130 1   160 1   190 1   220 0   250 1   280 1
+ 11 0    41 1    71 0   101 1   131 0   161 1   191 1   221 1   251 1   281 1
+ 12 0    42 1    72 1   102 1   132 0   162 1   192 1   222 1   252 1   282 1
+ 13 1    43 1    73 1   103 1   133 0   163 1   193 1   223 1   253 1   283 1
+ 14 1    44 1    74 1   104 1   134 1   164 0   194 1   224 1   254 1   284 1
+ 15 1    45 1    75 1   105 1   135 1   165 0   195 1   225 1   255 1   285 1
+ 16 1    46 0    76 1   106 1   136 1   166 0   196 1   226 1   256 1   286 1
+ 17 1    47 0    77 1   107 1   137 0   167 0   197 1   227 1   257 1   287 0
+ 18 1    48 1    78 1   108 1   138 0   168 1   198 1   228 1   258 1   288 1
+ 19 1    49 1    79 1   109 0   139 0   169 1   199 1   229 1   259 1   289 1
+ 20 1    50 1    80 1   110 1   140 0   170 1   200 1   230 1   260 1   290 1
+ 21 1    51 1    81 0   111 1   141 0   171 1   201 1   231 1   261 1   291 1
+ 22 1    52 1    82 1   112 1   142 0   172 1   202 1   232 0   262 1   292 1
+ 23 1    53 1    83 0   113 1   143 0   173 1   203 1   233 1   263 1   293 1
+ 24 1    54 1    84 1   114 1   144 0   174 1   204 1   234 1   264 1   294 1
+ 25 1    55 1    85 0   115 0   145 0   175 1   205 1   235 1   265 1   295 1
+ 26 1    56 1    86 1   116 1   146 1   176 1   206 1   236 1   266 1   296 0
+ 27 0    57 1    87 1   117 1   147 1   177 0   207 1   237 0   267 1   297 1
+ 28 1    58 1    88 1   118 1   148 0   178 0   208 1   238 1   268 0   298 0
+ 29 1    59 1    89 1   119 1   149 0   179 0   209 1   239 1   269 1   299 1
+ 30 1    60 1    90 1   120 1   150 1   180 1   210 1   240 1   270 0   300 1
+;
+
+ampl: option omit_zero_rows 1;
+ampl: option display_1col 11110;
+ampl: display scelta_guardie;
+scelta_guardie [*] :=
+  2  1
+ 17  1
+ 29  1
+ 89  1
+100  1
+102  1
+109  1
+113  1
+115  1
+124  1
+125  1
+131  1
+157  1
+161  1
+174  1
+225  1
+244  1
+;
+
+ampl: display coperto;
+coperto [*] :=
+  1  1
+  2  1
+  3  1
+  4  1
+  5  1
+  6  1
+  7  1
+  8  1
+  9  1
+ 13  1
+ 14  1
+ 15  1
+ 16  1
+ 17  1
+ 18  1
+ 19  1
+ 20  1
+ 21  1
+ 22  1
+ 23  1
+ 24  1
+ 25  1
+ 26  1
+ 28  1
+ 29  1
+ 30  1
+ 31  1
+ 33  1
+ 34  1
+ 35  1
+ 36  1
+ 37  1
+ 38  1
+ 39  1
+ 40  1
+ 41  1
+ 42  1
+ 43  1
+ 44  1
+ 45  1
+ 48  1
+ 49  1
+ 50  1
+ 51  1
+ 52  1
+ 53  1
+ 54  1
+ 55  1
+ 56  1
+ 57  1
+ 58  1
+ 59  1
+ 60  1
+ 61  1
+ 62  1
+ 64  1
+ 65  1
+ 67  1
+ 68  1
+ 69  1
+ 70  1
+ 72  1
+ 73  1
+ 74  1
+ 75  1
+ 76  1
+ 77  1
+ 78  1
+ 79  1
+ 80  1
+ 82  1
+ 84  1
+ 86  1
+ 87  1
+ 88  1
+ 89  1
+ 90  1
+ 91  1
+ 92  1
+ 93  1
+ 94  1
+ 95  1
+ 96  1
+ 97  1
+ 98  1
+ 99  1
+100  1
+101  1
+102  1
+103  1
+104  1
+105  1
+106  1
+107  1
+108  1
+110  1
+111  1
+112  1
+113  1
+114  1
+116  1
+117  1
+118  1
+119  1
+120  1
+121  1
+122  1
+123  1
+124  1
+125  1
+126  1
+127  1
+129  1
+130  1
+134  1
+135  1
+136  1
+146  1
+147  1
+150  1
+151  1
+158  1
+159  1
+160  1
+161  1
+162  1
+163  1
+168  1
+169  1
+170  1
+171  1
+172  1
+173  1
+174  1
+175  1
+176  1
+180  1
+182  1
+183  1
+184  1
+185  1
+186  1
+187  1
+188  1
+189  1
+190  1
+191  1
+192  1
+193  1
+194  1
+195  1
+196  1
+197  1
+198  1
+199  1
+200  1
+201  1
+202  1
+203  1
+204  1
+205  1
+206  1
+207  1
+208  1
+209  1
+210  1
+211  1
+212  1
+213  1
+215  1
+216  1
+221  1
+222  1
+223  1
+224  1
+225  1
+226  1
+227  1
+228  1
+229  1
+230  1
+231  1
+233  1
+234  1
+235  1
+236  1
+238  1
+239  1
+240  1
+241  1
+243  1
+244  1
+246  1
+247  1
+248  1
+249  1
+250  1
+251  1
+252  1
+253  1
+254  1
+255  1
+256  1
+257  1
+258  1
+259  1
+260  1
+261  1
+262  1
+263  1
+264  1
+265  1
+266  1
+267  1
+269  1
+273  1
+274  1
+275  1
+276  1
+277  1
+278  1
+279  1
+280  1
+281  1
+282  1
+283  1
+284  1
+285  1
+286  1
+288  1
+289  1
+290  1
+291  1
+292  1
+293  1
+294  1
+295  1
+297  1
+299  1
+300  1
+;
+
+ampl: 

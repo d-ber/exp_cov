@@ -7,6 +7,7 @@ local_costmap:
   transform_tolerance: 0.5 # Specifies the delay in transform (tf) data that is tolerable in seconds
 
   rolling_window: true # true means that the costmap will remain centered around the robot 
+  track_unknown_space: false
 
   # costmap resolution parameters
   width: 4.0

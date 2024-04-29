@@ -5,8 +5,9 @@ import matplotlib.pyplot as plt
 import concurrent.futures
 #import pyomo.environ as pyo
 import numpy as np
-import math
-
+from pathfinding.core.diagonal_movement import DiagonalMovement
+from pathfinding.core.grid import Grid
+from pathfinding.finder.a_star import AStarFinder
 
 def print_simple_param(name, value):
     print(f"param {name} := {value};")
@@ -44,9 +45,17 @@ def copertura_w(copertura_w_data):
 
 def distanza_gg(distanze_gg_data):
     dis_gg = []
-    i, g1, guards = distanze_gg_data
+    i, g1, guards, pathfinding_matrix = distanze_gg_data
+    finder = AStarFinder(diagonal_movement=DiagonalMovement.always)
+    pathfinding_grid = Grid(matrix=pathfinding_matrix)
+    g1_x, g1_y = g1 
     for i2, g2 in enumerate(guards):
-        dis_gg.insert(i2, math.dist(g1,g2))
+        pathfinding_grid.cleanup()
+        start = pathfinding_grid.node(g1_x, g1_y)
+        g2_x, g2_y = g2
+        end = pathfinding_grid.node(g2_x, g2_y)
+        path, _ = finder.find_path(start, end, pathfinding_grid)
+        dis_gg.insert(i2, len(path))
     return (i, dis_gg)
 
 def min_distance_to_holes(poly_with_holes, point):
@@ -54,8 +63,8 @@ def min_distance_to_holes(poly_with_holes, point):
         return -1 
     return min([hole.distance(point) for hole in poly_with_holes.interiors])
 
-def print_dat(poly, costs_path):
-    GUARD_MAXIMUM_NUMBER = 300
+def print_dat(poly, costs_path, pathfinding_matrix):
+    GUARD_MAXIMUM_NUMBER = 50
     GUARD_COST_MULTIPLIER = 1
     WITNESS_NUMBER = 300
     MIN_DISTANCE_TO_POLY = 5
@@ -112,8 +121,8 @@ def print_dat(poly, costs_path):
     print_bidimensional_param("copertura", nW, nG, copertura)
     
     distanze = []
-    with concurrent.futures.ProcessPoolExecutor(max_workers=20) as executor:
-        distanze_gg_data = [(i, g1, guards) for i, g1 in enumerate(guards)]
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        distanze_gg_data = [(i, g1, guards, pathfinding_matrix) for i, g1 in enumerate(guards)]
         for i, dis_gg in executor.map(distanza_gg, distanze_gg_data):
             distanze.insert(i, dis_gg)
     print_bidimensional_param("distanza", nG, nG, distanze)
@@ -124,26 +133,10 @@ def print_dat(poly, costs_path):
     print_vector_param("posizione_guardie", [(i+1, (f"{x} {y}")) for (i, (x,y)) in enumerate(guards)])
     print_vector_param("posizione_testimoni", [(i+1, (f"{p.x} {p.y}")) for (i, p) in enumerate(witnesses)])
 
-'''
-def solve(poly):
-    model = pyo.ConcreteModel()
-    model.nW = pyo.Param(within=pyo.NonNegativeIntegers)
-    model.nG = pyo.Param(within=pyo.NonNegativeIntegers)
-    model.Witnesses = pyo.RangeSet(1, model.nW.values)
-    model.Guards = pyo.RangeSet(1, model.nG)
-    model.coeff_coverage = pyo.Param()
-    model.coeff_distanze = pyo.Param()
-    model.coeff_costo_guardie = pyo.Param()
-    model.min_coverage = pyo.Param(within=pyo.PercentFraction)
-    model.Costi_Guardie = pyo.RangeSet(1, model.nG, initialize=)
-    g =
-    model.Distanze = pyo.Set(initialize=model.Guards[model.Guards])
-'''
-
 def main():
 
-    costs_path = "/home/aislab/catkin_ws/src/tirocinio/scripts/costs.txt"
-    img_path = "/home/aislab/catkin_ws/src/tirocinio/scripts/map_fusion/threshold.png"
+    costs_path = "/home/d-ber/catkin_ws/src/tirocinio/scripts/costs.txt"
+    img_path = "/home/d-ber/catkin_ws/src/tirocinio/scripts/tri.png"
     MIN_HOLE_AREA = 10
     DEBUG_HOLES = False
     DEBUG_CONTOUR = False 
@@ -156,6 +149,16 @@ def main():
         cv2.drawContours(debug, [max_contour], -1, (255,255,255), cv2.FILLED)
         _ = plt.subplot(111), plt.imshow(cv2.cvtColor(debug, cv2.COLOR_BGR2RGB)), plt.title('max_contour')
         plt.show()
+    height, width = img.shape
+    pathfinding_matrix = []
+    for h in range(height):
+        row = []
+        for w in range(width):
+            if img[h, w] < 10:
+                row.append(0)
+            else:
+                row.append(1)
+        pathfinding_matrix.append(row)
     img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
     holes = []
     for c in contours:
@@ -182,7 +185,7 @@ def main():
     if poly.geom_type == 'MultiPolygon': # se poly non è un poligono ben definito provo a renderlo tale
         poly = max(poly.geoms, key=lambda a: a.area)  
     if shapely.validation.explain_validity(poly) == "Valid Geometry":
-        print_dat(poly, costs_path)
+        print_dat(poly, costs_path, pathfinding_matrix)
     else:
         print(shapely.validation.explain_validity(poly))
 

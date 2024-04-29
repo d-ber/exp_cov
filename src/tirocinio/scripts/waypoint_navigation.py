@@ -149,7 +149,12 @@ class waypoint_sender():
                                     #    sent over the wire by an action server
         '''
         if status == GoalStatus.PREEMPTED:
-            rospy.loginfo(f"Goal pose {self.goal_cnt-1} received a cancel request after it started executing, completed execution.")
+            if self.goal_cnt < len(self.pose_seq):
+                rospy.loginfo(f"Goal pose {self.goal_cnt-1} received a cancel request after it started executing, completed execution.")
+            else:
+                rospy.loginfo("Final goal preempted!")
+                rospy.signal_shutdown("Final goal preempted!")
+                return
         elif status == GoalStatus.SUCCEEDED:
             rospy.loginfo(f"Goal pose {self.goal_cnt-1} reached.") 
             if self.goal_cnt < len(self.pose_seq):
@@ -165,14 +170,22 @@ class waypoint_sender():
             else:
                 rospy.loginfo("Final goal pose aborted.")
                 rospy.signal_shutdown("Final goal pose aborted.")
-                return
             return
         elif status == GoalStatus.REJECTED:
-            rospy.loginfo(f"Goal pose {self.goal_cnt-1} has been rejected by the Action Server")
-            rospy.signal_shutdown(f"Goal pose {self.goal_cnt-1} rejected, shutting down!")
+            if self.goal_cnt < len(self.pose_seq):
+                rospy.loginfo(f"Goal pose {self.goal_cnt-1} has been rejected by the Action Server")
+                rospy.signal_shutdown(f"Goal pose {self.goal_cnt-1} rejected, shutting down!")
+            else:
+                rospy.loginfo("Final goal pose rejected.")
+                rospy.signal_shutdown("Final goal pose rejected.")
             return
         elif status == GoalStatus.RECALLED:
-            rospy.loginfo(f"Goal pose {self.goal_cnt-1} received a cancel request before it started executing, successfully cancelled!")
+            if self.goal_cnt < len(self.pose_seq):
+                rospy.loginfo(f"Goal pose {self.goal_cnt-1} received a cancel request before it started executing, successfully cancelled!")
+            else:
+                rospy.loginfo("Final goal pose recalled.")
+                rospy.signal_shutdown("Final goal pose recalled.")
+                return
 
     def handle_feedback(self, gh, feedback):
         if not self.gh:

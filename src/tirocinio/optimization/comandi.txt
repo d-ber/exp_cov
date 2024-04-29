@@ -9,6 +9,7 @@ ampl: option display_eps 1e-5;
 ampl: display scelta_guardie;
 ampl: display coperto;
 ampl: option omit_zero_rows 1;
+ampl: option display_1col 11110;
 ampl: display scelta_guardie;
 ampl: display coperto;
 ampl: display coperto, n_vertici, scelta_arco, scelta_guardie, radice, flusso, z;
