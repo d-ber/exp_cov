@@ -112,15 +112,19 @@ def main():
     MAX_HEIGHT_ERROR = max_height * TOLERANCE
     MAX_WIDTH_ERROR = max_width * TOLERANCE
 
-    floorplan = init_floorplan(cv2.imread(image_paths[0], cv2.IMREAD_GRAYSCALE).astype(np.uint8), max_height, max_width)
+    to_initialize = True
     #_ = plt.subplot(111), plt.imshow(cv2.cvtColor(floorplan, cv2.COLOR_GRAY2RGB)), plt.title(f"floorplan init")
     #plt.show()
     used = 0
+    to_initialize = True
     for image_path in image_paths[1:]:
         image =  cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-        if abs(image.shape[0]-floorplan.shape[0]) >= MAX_HEIGHT_ERROR or abs(image.shape[1]-floorplan.shape[1]) >= MAX_WIDTH_ERROR:
-            print(f"Floorplan creation: skipping image {os.path.basename(image_path)} with dim error {image.shape[0]-floorplan.shape[0]}, {image.shape[1]-floorplan.shape[1]}")
+        if abs(image.shape[0]-max_height) >= MAX_HEIGHT_ERROR or abs(image.shape[1]-max_width) >= MAX_WIDTH_ERROR:
+            print(f"Floorplan creation: skipping image {os.path.basename(image_path)} with dim error {image.shape[0]-max_height}, {image.shape[1]-max_width}")
             continue
+        elif to_initialize:
+            floorplan = init_floorplan(image.astype(np.uint8), max_height, max_width)
+            to_initialize = False
         used += 1
         cv2.imwrite(os.path.join("usate", os.path.basename(image_path)), image)
         floorplan = update_floorplan(floorplan, image.astype(np.uint8))
