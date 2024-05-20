@@ -117,7 +117,7 @@ def main():
     #plt.show()
     used = 0
     to_initialize = True
-    for image_path in image_paths[1:]:
+    for image_path in image_paths:
         image =  cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
         if abs(image.shape[0]-max_height) >= MAX_HEIGHT_ERROR or abs(image.shape[1]-max_width) >= MAX_WIDTH_ERROR:
             print(f"Floorplan creation: skipping image {os.path.basename(image_path)} with dim error {image.shape[0]-max_height}, {image.shape[1]-max_width}")
