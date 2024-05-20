@@ -113,8 +113,8 @@ def fuse(samples: int, base_dir: str = os.getcwd(), gt_floorplan_path: str ="", 
     else:
         sample_dir = f"{samples}_sample_size"
         print(f"Sample size equal to {samples}.")
-    os.makedirs(os.path.join(os.getcwd(), sample_dir, USATE_DIRNAME))
-    os.makedirs(os.path.join(os.getcwd(), sample_dir, IGNORATE_DIRNAME))
+    os.makedirs(os.path.join(os.getcwd(), sample_dir, USATE_DIRNAME), exist_ok=True)
+    os.makedirs(os.path.join(os.getcwd(), sample_dir, IGNORATE_DIRNAME), exist_ok=True)
 
     image_paths = []
     for root, _, files in os.walk(base_dir):
