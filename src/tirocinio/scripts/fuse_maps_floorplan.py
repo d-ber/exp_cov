@@ -105,13 +105,16 @@ def fuse(samples: int, base_dir: str = os.getcwd(), gt_floorplan_path: str ="", 
     floorplan = None
     addition = None
 
+    IGNORATE_DIRNAME = "ignorate"
+    USATE_DIRNAME = "usate"
     sample_dir = ""
     if complete:
         print("Sample size complete.")
     else:
         sample_dir = f"{samples}_sample_size"
         print(f"Sample size equal to {samples}.")
-        os.mkdir(sample_dir)
+        os.makedirs(os.path.join(os.getcwd(), sample_dir, USATE_DIRNAME))
+        os.makedirs(os.path.join(os.getcwd(), sample_dir, IGNORATE_DIRNAME))
 
     image_paths = []
     for root, _, files in os.walk(base_dir):
@@ -132,12 +135,13 @@ def fuse(samples: int, base_dir: str = os.getcwd(), gt_floorplan_path: str ="", 
         image =  cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
         if abs(image.shape[0]-max_height) >= MAX_HEIGHT_ERROR or abs(image.shape[1]-max_width) >= MAX_WIDTH_ERROR:
             print(f"Floorplan creation: skipping image {os.path.basename(image_path)} with dim error {image.shape[0]-max_height}, {image.shape[1]-max_width}")
+            cv2.imwrite(os.path.join(os.getcwd(), sample_dir, IGNORATE_DIRNAME, os.path.basename(image_path)), image)
             continue
         elif to_initialize:
             floorplan = init_floorplan(image.astype(np.uint8), max_height, max_width)
             to_initialize = False
         used += 1
-        cv2.imwrite(os.path.join(os.getcwd(), sample_dir, "usate", os.path.basename(image_path)), image)
+        cv2.imwrite(os.path.join(os.getcwd(), sample_dir, USATE_DIRNAME, os.path.basename(image_path)), image)
         floorplan = update_floorplan(floorplan, image.astype(np.uint8))
 
     print(f"Floorplan creation: used {used} out of {len(image_paths)} images.")
