@@ -84,7 +84,7 @@ def translate_obj(obj_img, movement_area, img, dist_tra, dist_rot, show_steps, d
     return (dst, dx, dy)
 
 
-def extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=False, show_steps=False, save_map=False, sizex=20, sizey=20):
+def extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=False, show_steps=False, save_map=False, sizex=20, sizey=20, silent=False):
     # Copy
     image_objects_removed = image.copy()
     
@@ -325,7 +325,8 @@ def extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap
         # Write JSON data to a file
         with open(rectangles_path, 'w') as json_file:
             json_file.write(json_data)
-            print("Saved rectangles info as {}".format(rectangles_path))
+            if not silent:
+                print("Saved rectangles info as {}".format(rectangles_path))
 
     return translated_objs_image
 
@@ -400,6 +401,8 @@ def parse_args():
         help="Number of meters per pixel in png map.")
     parser.add_argument("--world-num", type=check_positive_or_zero, default=None, metavar="N",
         help="Use this to produce a maps that ends in N and save it. Setting this argument overrides --worlds.")    
+    parser.add_argument('--silent', action='store_true',
+        help="Use this to avoid printing info.")   
     return parser.parse_args()
 
 def get_world_text(image, name, speedup, pose, scale, sizex, sizey):
@@ -516,6 +519,7 @@ def main():
     pose = args.pose
     scale = args.scale
     world_num = args.world_num
+    silent = args.silent
 
 
     movement_mask_image = cv2.imread(movement_mask_image_path, cv2.IMREAD_COLOR)
@@ -533,7 +537,7 @@ def main():
                 rectangles_path = os.path.join(base_dir, "rectangles.json")
             else:
                 rectangles_path = os.path.join(base_dir, 'rectangles_' + str(time.time_ns()) + '.json')
-            image_modified = extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=show_recap, show_steps=show_steps, save_map=save_map, sizex=sizex, sizey=sizey)
+            image_modified = extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=show_recap, show_steps=show_steps, save_map=save_map, sizex=sizex, sizey=sizey, silent=silent)
 
             if save_map:
                 if no_timestamp:
@@ -548,14 +552,16 @@ def main():
                         filename = os.path.join(base_dir, "image_" + str(time.time_ns()) + ".png")
                 
                 cv2.imwrite(filename, image_modified)
-                print("Saved map as {}".format(filename))
+                if not silent:
+                    print("Saved map as {}".format(filename))
         else:
             for i in range(batch):
                 rectangles_path = os.path.join(base_dir, 'rectangles_' + str(i) + '.json')
-                image_modified = extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=show_recap, show_steps=show_steps, save_map=True, sizex=sizex, sizey=sizey)
+                image_modified = extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=show_recap, show_steps=show_steps, save_map=True, sizex=sizex, sizey=sizey, silent=silent)
                 filename = os.path.join(base_dir, "image_" + str(i) + ".png")
                 cv2.imwrite(filename, image_modified)
-                print("Saved map as {}".format(filename))
+                if not silent:
+                    print("Saved map as {}".format(filename))
     elif world_num is not None:
 
         name = os.path.basename(os.path.splitext(image_path)[0])
@@ -564,14 +570,16 @@ def main():
         bitmaps_dir = os.path.join(base_dir, "bitmaps")
         if not os.path.exists(bitmaps_dir) or not os.path.isdir(bitmaps_dir):
             os.makedirs(bitmaps_dir)
-        image_modified = extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=show_recap, show_steps=show_steps, save_map=True, sizex=sizex, sizey=sizey)
+        image_modified = extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=show_recap, show_steps=show_steps, save_map=True, sizex=sizex, sizey=sizey, silent=silent)
         filename = os.path.join(base_dir, "bitmaps/image{}.png".format(i))
         cv2.imwrite(filename, image_modified)
-        print("Saved map as {}".format(filename))
+        if not silent:
+            print("Saved map as {}".format(filename))
         worldfile_path = os.path.join(base_dir, "world{}.world".format(i))
         with open(worldfile_path, "w", encoding="utf-8") as worldfile:
             worldfile.write(get_world_text(i, name, speedup, pose, scale, sizex, sizey))
-            print("Saved worldfile as {}".format(worldfile_path))
+            if not silent:
+                print("Saved worldfile as {}".format(worldfile_path))
     else:
 
         name = os.path.basename(os.path.splitext(image_path)[0])
@@ -580,14 +588,16 @@ def main():
             bitmaps_dir = os.path.join(base_dir, "bitmaps")
             if not os.path.exists(bitmaps_dir) or not os.path.isdir(bitmaps_dir):
                 os.makedirs(bitmaps_dir)
-            image_modified = extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=show_recap, show_steps=show_steps, save_map=True, sizex=sizex, sizey=sizey)
+            image_modified = extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=show_recap, show_steps=show_steps, save_map=True, sizex=sizex, sizey=sizey, silent=silent)
             filename = os.path.join(base_dir, "bitmaps/image{}.png".format(i))
             cv2.imwrite(filename, image_modified)
-            print("Saved map as {}".format(filename))
+            if not silent:
+                print("Saved map as {}".format(filename))
             worldfile_path = os.path.join(base_dir, "world{}.world".format(i))
             with open(worldfile_path, "w", encoding="utf-8") as worldfile:
                 worldfile.write(get_world_text(i, name, speedup, pose, scale, sizex, sizey))
-                print("Saved worldfile as {}".format(worldfile_path))
+                if not silent:
+                    print("Saved worldfile as {}".format(worldfile_path))
 
 if __name__ == "__main__":
     main()
