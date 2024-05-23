@@ -564,7 +564,7 @@ def main():
             world_range = range(0, worlds)
         name = os.path.basename(os.path.splitext(image_path)[0])
         for i in world_range:
-            rectangles_path = os.path.join(base_dir, "bitmaps/rectangles{i}.json")
+            rectangles_path = os.path.join(base_dir, f"bitmaps/rectangles{i}.json")
             bitmaps_dir = os.path.join(base_dir, "bitmaps")
             if not os.path.exists(bitmaps_dir) or not os.path.isdir(bitmaps_dir):
                 os.makedirs(bitmaps_dir)
@@ -573,7 +573,7 @@ def main():
             cv2.imwrite(filename, image_modified)
             if not silent:
                     print(f"Saved map as {filename}")
-            worldfile_path = os.path.join(base_dir, "world{i}.world")
+            worldfile_path = os.path.join(base_dir, f"world{i}.world")
             with open(worldfile_path, "w", encoding="utf-8") as worldfile:
                 worldfile.write(get_world_text(i, name, speedup, pose, scale, sizex, sizey))
                 if not silent:
