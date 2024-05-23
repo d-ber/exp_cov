@@ -27,13 +27,13 @@ def translate_obj(obj_img, movement_area, img, dist_tra, dist_rot, show_steps, d
 
     while to_translate:
 
-        # generate random values with given distributions
+        # Generate random values with given distributions
         dx = dist_tra.rvs()
         dy = dist_tra.rvs()
         if not disable_rotation:
             angle = dist_rot.rvs()
 
-        # create the translation matrix using dx and dy, it is a Numpy array 
+        # Create the translation matrix using dx and dy, it is a Numpy array 
         translation_matrix = np.array([
             [1, 0, dx],
             [0, 1, dy]
@@ -42,7 +42,7 @@ def translate_obj(obj_img, movement_area, img, dist_tra, dist_rot, show_steps, d
         translated_image = cv2.cvtColor(translated_image, cv2.COLOR_BGR2RGB)
 
         if not disable_rotation:
-            # create the rotational matrix
+            # Create the rotational matrix
             center = (translated_image.shape[1]//2, translated_image.shape[0]//2)
             scale = 1
             rot_mat = cv2.getRotationMatrix2D(center, angle, scale)
@@ -124,7 +124,7 @@ def extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap
     open_doors = cv2.findContours(open_doors_mask_dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
     closed_doors = cv2.findContours(closed_doors_mask_dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
 
-    # probability for orange/purple doors (0.05 prob to have a close door -> 0.95 of having it open)
+    # Probability for orange/purple doors (0.05 prob to have a close door -> 0.95 of having it open)
     DOOR_PROB = 0.05
     bernoulli_doors = st.bernoulli(DOOR_PROB)
 
@@ -144,7 +144,7 @@ def extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap
     j = 0
     all_image_mask = np.zeros_like(image)
 
-    # for each color, we extract objs and associate each with the correct movement area
+    # For each color, we extract objs and associate each with the correct movement area
     for i in range (0, 3):
         # Create a binary mask for the specified color
         color_masks.insert(i, cv2.inRange(hsv, lower_ranges[i], upper_ranges[i]))
@@ -169,7 +169,7 @@ def extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap
 
             # We look for the right association between objs and movement area
             for contour_movement in contours_movement:
-                # draw object on blank canvas
+                # Draw object on blank canvas
                 mask = np.zeros_like(color_masks[i])
                 cv2.drawContours(mask, [contour], -1, (255,255,255), cv2.FILLED)
                 # Extract the object using the mask
@@ -177,7 +177,7 @@ def extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap
                 object_image = cv2.bitwise_not(object_image)
                 black_pixels_obj = np.count_nonzero(cv2.bitwise_not(object_image))
 
-                # draw areas on blank canvas
+                # Draw areas on blank canvas
                 mask = np.zeros_like(color_mask_movement)
                 cv2.drawContours(mask, [contour_movement], -1, (255,255,255), cv2.FILLED)
                 # Extract the object using the mask
@@ -193,7 +193,7 @@ def extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap
                     break
             
             if not found:
-                # draw object on blank canvas
+                # Draw object on blank canvas
                 mask = np.zeros_like(color_masks[i])
                 cv2.drawContours(mask, [contour], -1, (255,255,255), cv2.FILLED)
                 # Extract the object using the mask
@@ -222,36 +222,25 @@ def extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap
             overlap = np.count_nonzero(overlapped)
             if overlap > 0:
                 mask_eroded = cv2.erode(mask_closed, kernel, iterations=1) if bernoulli_doors.rvs() else cv2.erode(mask_open, kernel, iterations=1)
-                #_ = plt.subplot(111), plt.imshow(cv2.cvtColor(mask_eroded, cv2.COLOR_BGR2RGB)), plt.title('mask')
-                #plt.show()
                 translated_objs_image = cv2.bitwise_and(translated_objs_image, cv2.bitwise_not(mask_eroded))
-                #_ = plt.subplot(111), plt.imshow(cv2.cvtColor(hsv, cv2.COLOR_HSV2RGB)), plt.title('image')
-                #plt.show()
                 break
-            #_ = plt.subplot(311), plt.imshow(cv2.cvtColor(mask_closed, cv2.COLOR_BGR2RGB)), plt.title('closed')
-            #_ = plt.subplot(312), plt.imshow(cv2.cvtColor(mask_open, cv2.COLOR_BGR2RGB)), plt.title('open')
-            #_ = plt.subplot(313), plt.imshow(cv2.cvtColor(overlapped, cv2.COLOR_BGR2RGB)), plt.title('and')
-            #plt.show()
 
-    #_ = plt.subplot(111), plt.imshow(cv2.cvtColor(translated_objs_image, cv2.COLOR_BGR2RGB)), plt.title('image doors closed or open')
-    #plt.show()
-
-    # translational probability red and blue obstacles
+    # Translational probability red and blue obstacles
     MEAN_TRA = 0
     STD_TRA = 10
     norm_tra = st.norm(loc=MEAN_TRA, scale=STD_TRA)
 
-    # translational probability green areas
+    # Translational probability green areas
     MEAN_GREEN = 0
     STD_GREEN = 0.1
     norm_green = st.norm(loc=MEAN_GREEN, scale=STD_GREEN)
 
-    # rotational probability
+    # Rotational probability
     MEAN_ROT = 0
     STD_ROT = 20
     norm_rot = st.norm(loc=MEAN_ROT, scale=STD_ROT)
 
-    # probability for blue objects appearance
+    # Probability for blue objects appearance
     CLUTTER_PROB = 0.5
     bernoulli_clutter = st.bernoulli(CLUTTER_PROB)
 
@@ -304,7 +293,7 @@ def extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap
         elif colors[obj_color_idx] == BLUE and bernoulli_clutter.rvs():
             # If object is clutter and luck commands it, we skip it
             continue
-        else: # else colors[obj_color_idx] == RED
+        else: # Else colors[obj_color_idx] == RED
             translated_objs_image, _, _ = translate_obj(object_image, movement_area, translated_objs_image, dist_tra=norm_tra, dist_rot=norm_rot, show_steps=show_steps, disable_rotation=False)
 
     green_objs_translated = image_objects_removed.copy()
@@ -373,9 +362,9 @@ def check_pose(value):
 
 
 def parse_args():
-    # get an instance of RosPack with the default search paths
+    # Get an instance of RosPack with the default search paths
     rospack = rospkg.RosPack()
-    # get the file path for tirocinio
+    # Get the file path for tirocinio
     package_path = rospack.get_path('tirocinio')
 
     parser = argparse.ArgumentParser(description='Modify rgb maps automatically.')
