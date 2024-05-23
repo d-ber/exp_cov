@@ -4,11 +4,16 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
+'''
+# Deprecated: 
 def update_image(image, fused_image):
+    NEW_IMAGE_WEIGHT = 0.7
+    FUSED_IMAGE_WEIGHT = 0.3
     if fused_image is None:
         return image
     
-    return cv2.addWeighted(image, 0.7, fused_image, 0.3, 0)
+    return cv2.addWeighted(image, NEW_IMAGE_WEIGHT, fused_image, FUSED_IMAGE_WEIGHT, 0)
+'''
 
 def check_positive(value):
     try:
@@ -46,7 +51,7 @@ def cost_update(floorplan, image, costs):
     height, width = floorplan.shape
     for h in range(height):
         for w in range(width):
-            if image[h, w] in [0, 254, 255] and floorplan[h, w] != 0: # black or white on map and not black on floorplan    
+            if image[h, w] in {0, 254, 255} and floorplan[h, w] != 0: # black or white on map and not black on floorplan    
                 costs[h, w] = costs[h, w] * HISTORICAL_WEIGHT + (1 - (image[h, w]/255)) * NEW_WEIGHT
     return costs
 
@@ -117,9 +122,10 @@ def fuse(samples: int, base_dir: str = os.getcwd(), gt_floorplan_path: str ="", 
     os.makedirs(os.path.join(os.getcwd(), sample_dir, IGNORATE_DIRNAME), exist_ok=True)
 
     image_paths = []
+    MAP_EXTENSIONS = {".png", ".pgm"}
     for root, _, files in os.walk(base_dir):
         for f in files:
-            if os.path.splitext(f)[1] in (".png", ".pgm") and len(image_paths) < samples:
+            if os.path.splitext(f)[1] in MAP_EXTENSIONS and len(image_paths) < samples:
                 image_paths.append(os.path.join(root, f))
     
     max_height, max_width = max([cv2.imread(img_path, cv2.IMREAD_GRAYSCALE).shape[0] for img_path in image_paths]), max([cv2.imread(img_path, cv2.IMREAD_GRAYSCALE).shape[1] for img_path in image_paths])
@@ -131,6 +137,7 @@ def fuse(samples: int, base_dir: str = os.getcwd(), gt_floorplan_path: str ="", 
     to_initialize = True
     used = 0
     to_initialize = True
+    image_paths_acceptable = []
     for image_path in image_paths:
         image =  cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
         if abs(image.shape[0]-max_height) >= MAX_HEIGHT_ERROR or abs(image.shape[1]-max_width) >= MAX_WIDTH_ERROR:
@@ -141,6 +148,7 @@ def fuse(samples: int, base_dir: str = os.getcwd(), gt_floorplan_path: str ="", 
             floorplan = init_floorplan(image.astype(np.uint8), max_height, max_width)
             to_initialize = False
         used += 1
+        image_paths_acceptable.append(image_path)
         cv2.imwrite(os.path.join(os.getcwd(), sample_dir, USATE_DIRNAME, os.path.basename(image_path)), image)
         floorplan = update_floorplan(floorplan, image.astype(np.uint8))
 
@@ -155,13 +163,9 @@ def fuse(samples: int, base_dir: str = os.getcwd(), gt_floorplan_path: str ="", 
 
     costs = cost_initialize(floorplan)
 
-    for image_path in image_paths:
+    for image_path in image_paths_acceptable:
         image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE) # 255=white, 205=gray, 0=black
-        if abs(image.shape[0]-floorplan.shape[0]) >= MAX_HEIGHT_ERROR or abs(image.shape[1]-floorplan.shape[1]) >= MAX_WIDTH_ERROR:
-            print(f"Image Merge: skipping image {os.path.basename(image_path)} with dim error h:{image.shape[0]-floorplan.shape[0]}, w:{image.shape[1]-floorplan.shape[1]}")
-            continue
-        else:
-            print(f"Image Merge: acceptable error {os.path.basename(image_path)} with dim error h:{image.shape[0]-floorplan.shape[0]}, w:{image.shape[1]-floorplan.shape[1]}")
+        print(f"Image Merge: acceptable error {os.path.basename(image_path)} with dim error h:{image.shape[0]-floorplan.shape[0]}, w:{image.shape[1]-floorplan.shape[1]}")
         image = cv2.resize(image, points, interpolation= cv2.INTER_NEAREST)
 
         # Fill the holes with black, only if closed (closed black areas)
@@ -177,7 +181,6 @@ def fuse(samples: int, base_dir: str = os.getcwd(), gt_floorplan_path: str ="", 
         #fused_image = update_image(image, fused_image)
         costs = cost_update(floorplan, image, costs)
 
-    #floorplan_with_cost = np.array([[round((1-costs[h, w]) * 255) for w in range(width)] for h in range(height)])
     floorplan_with_cost = floorplan.copy()
     for h in range(max_height):
         for w in range(max_width):
@@ -185,9 +188,11 @@ def fuse(samples: int, base_dir: str = os.getcwd(), gt_floorplan_path: str ="", 
 
     addition = probabilize(addition, used).astype(np.uint8)
     cv2.imwrite(os.path.join(os.getcwd(), sample_dir, "addition.png"), addition)
-    _, addition_thresholded = cv2.threshold(addition, 190, 255, cv2.THRESH_BINARY)
 
-    blur = cv2.GaussianBlur(addition,(5,5),0)
+    MANUAL_THRESHOLD = 190
+    _, addition_thresholded = cv2.threshold(addition, MANUAL_THRESHOLD, 255, cv2.THRESH_BINARY)
+
+    blur = cv2.GaussianBlur(addition, (5,5), 0)
 
     addition = cv2.bitwise_and(addition, floorplan)
     addition_thresholded = cv2.bitwise_and(addition_thresholded, floorplan)
@@ -197,12 +202,10 @@ def fuse(samples: int, base_dir: str = os.getcwd(), gt_floorplan_path: str ="", 
     _, otsu = cv2.threshold(blur,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
     otsu = cv2.bitwise_and(otsu, floorplan)
     otsu = fill_holes(otsu)
-    #print( "Otsu: {} {}".format(thresh,ret) )
     # Triangle algorithm thresholding
     _, tri = cv2.threshold(blur,0,255,cv2.THRESH_BINARY+cv2.THRESH_TRIANGLE)
     tri = cv2.bitwise_and(tri, floorplan)
     tri = fill_holes(tri)
-    #print( "Triangle: {}".format(ret) )
 
     with open(os.path.join(os.getcwd(), sample_dir, "costs.txt"), "w") as costs_file:
         for h in range(max_height):
@@ -215,6 +218,7 @@ def fuse(samples: int, base_dir: str = os.getcwd(), gt_floorplan_path: str ="", 
     cv2.imwrite(os.path.join(os.getcwd(), sample_dir, "floorplan.png"), floorplan)
     cv2.imwrite(os.path.join(os.getcwd(), sample_dir, "added_map.png"), addition)
 
+    # Create summary collage
     col_1 = np.vstack([floorplan, addition_thresholded])
     col_2 = np.vstack([floorplan_with_cost, otsu])
     col_3 = np.vstack([addition, tri])
@@ -249,21 +253,22 @@ def main():
     sample_test = args.sample_test
     step = args.step
 
+    MAP_EXTENSIONS = {".png", ".pgm"}
 
     max_size = 0
-    for root, _, files in os.walk(base_dir):
+    for _, _, files in os.walk(base_dir):
         for f in files:
-            if os.path.splitext(f)[1] in (".png", ".pgm"):
+            if os.path.splitext(f)[1] in MAP_EXTENSIONS:
                 max_size += 1
 
     if not sample_test:
         fuse(base_dir=base_dir, gt_floorplan_path=gt_floorplan_path, samples=max_size, complete=True)
-    else: # naive
+    else:
+        # Note: real sample size <= given sample size because some maps may be discarded
         for sample_size in range(step, max_size+1, step):
             fuse(base_dir=base_dir, gt_floorplan_path=gt_floorplan_path, samples=sample_size)
         if (max_size + 1) % step != 0:
             fuse(base_dir=base_dir, gt_floorplan_path=gt_floorplan_path, samples=max_size)
 
-    
 if __name__ == "__main__":
     main()
