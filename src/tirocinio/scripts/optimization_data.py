@@ -63,18 +63,13 @@ def min_distance_to_holes(poly_with_holes, point):
         return -1 
     return min([hole.distance(point) for hole in poly_with_holes.interiors])
 
-def print_dat(poly, costs_path, pathfinding_matrix):
-    GUARD_MAXIMUM_NUMBER = 50
-    GUARD_COST_MULTIPLIER = 1
-    WITNESS_NUMBER = 300
-    MIN_DISTANCE_TO_POLY = 5
-    MIN_COVERAGE = 0.80
+def print_dat(poly, costs_path, pathfinding_matrix, max_guards, witnesses_num, coverage, obs_dist, guard_cost_mult):
     print("\ndata;")
 
     print_simple_param("coeff_coverage", 1)
     print_simple_param("coeff_distanze", 1)
 
-    witnesses = [poly.exterior.line_interpolate_point(d, normalized=True) for d in np.linspace(0, 1, WITNESS_NUMBER)]
+    witnesses = [poly.exterior.line_interpolate_point(d, normalized=True) for d in np.linspace(0, 1, witnesses_num)]
     nW = len(witnesses)
     guards = []
     GUARD_RESOLUTION = 1
@@ -84,10 +79,10 @@ def print_dat(poly, costs_path, pathfinding_matrix):
         for x in range(round(poly.bounds[0]), round(poly.bounds[2]), GUARD_RESOLUTION):
             for y in range(round(poly.bounds[1]), round(poly.bounds[3]), GUARD_RESOLUTION):
                 guard_candidate = shapely.Point([x, y])
-                if poly.contains(guard_candidate) and poly.exterior.distance(guard_candidate) >= MIN_DISTANCE_TO_POLY and (min_distance_to_holes(poly, guard_candidate) >= MIN_DISTANCE_TO_POLY or min_distance_to_holes(poly, guard_candidate) == -1):
+                if poly.contains(guard_candidate) and poly.exterior.distance(guard_candidate) >= obs_dist and (min_distance_to_holes(poly, guard_candidate) >= obs_dist or min_distance_to_holes(poly, guard_candidate) == -1):
                     guards.append((x,y))
         GUARD_RESOLUTION += 1
-        if len(guards) <= GUARD_MAXIMUM_NUMBER:
+        if len(guards) <= max_guards:
             break
     nG = len(guards)
     print_simple_param("nW", nW)
@@ -102,7 +97,7 @@ def print_dat(poly, costs_path, pathfinding_matrix):
             if any(cop_w):
                 copribili += 1
     
-    min_coverage = min(MIN_COVERAGE, (copribili/nW)-0.1)
+    min_coverage = min(coverage, (copribili/nW)-0.1)
     print_simple_param("min_coverage", min_coverage)
 
     guard_costs = []
@@ -114,7 +109,7 @@ def print_dat(poly, costs_path, pathfinding_matrix):
             costs[(x, y)] =  cost
             line = costs_file.readline()
         for (i, (x,y)) in enumerate(guards):
-            guard_costs.append((i+1, costs[x, y] * GUARD_COST_MULTIPLIER))
+            guard_costs.append((i+1, costs[x, y] * guard_cost_mult))
 
     print_vector_param("costi_guardie", guard_costs)
 
@@ -131,7 +126,43 @@ def print_dat(poly, costs_path, pathfinding_matrix):
 
     # Save guard location outside problem data since it's of no use for the optimization (distances are precalculated)
     print_vector_param("posizione_guardie", [(i+1, (f"{x} {y}")) for (i, (x,y)) in enumerate(guards)])
-    print_vector_param("posizione_testimoni", [(i+1, (f"{p.x} {p.y}")) for (i, p) in enumerate(witnesses)])ù
+    print_vector_param("posizione_testimoni", [(i+1, (f"{p.x} {p.y}")) for (i, p) in enumerate(witnesses)])
+
+def check_fraction(value):
+    try:
+        value = float(value)
+        if value <= 0 or value > 1:
+            raise argparse.ArgumentTypeError("{} is not > 0 and <= 1.".format(value))
+    except ValueError:
+        raise Exception(f"{value} is not a float.")
+    return value
+
+def check_positive(value):
+    try:
+        value = int(value)
+        if value <= 0:
+            raise argparse.ArgumentTypeError("{} is not a positive integer.".format(value))
+    except ValueError:
+        raise Exception(f"{value} is not an integer.")
+    return value
+
+def check_positive_or_zero(value):
+    try:
+        value = int(value)
+        if value < 0:
+            raise argparse.ArgumentTypeError("{} is not a positive integer nor zero.".format(value))
+    except ValueError:
+        raise Exception(f"{value} is not an integer.")
+    return value
+
+def check_positive_float(value):
+    try:
+        value = float(value)
+        if value <= 0:
+            raise argparse.ArgumentTypeError("{} is not a positive float.".format(value))
+    except ValueError:
+        raise Exception(f"{value} is not a float.")
+    return value
 
 def parse_args():
 
@@ -140,6 +171,16 @@ def parse_args():
         help="Path to the map png image file.", metavar="IMG_PATH")
     parser.add_argument('--costs', default=os.path.join(os.getcwd(), "costs.txt"),
         help="Path to the map txt costs file.", metavar="COSTS_PATH")
+    parser.add_argument('--max-guards', default=300, type=check_positive,
+        help="Maximum number of guards.", metavar="GUARDS")
+    parser.add_argument('--witnesses', default=300, type=check_positive,
+        help="Number of witnesses.", metavar="WITNESSES")
+    parser.add_argument('--coverage', default=0.80, type=check_fraction,
+        help="Minimum coverage desired. Must be > 0 and <= 1. Note that it may be lowered due to guard visibility.", metavar="COVERAGE")
+    parser.add_argument('--obs-dist', default=5, type=check_positive_or_zero,
+        help="Minimum distance from guards to obstacles.", metavar="DISTANCE")
+    parser.add_argument('--guard-cost-mult', default=1, type=check_positive_float,
+        help="Multiplier for guard cost.", metavar="MULTIPLIER")
     return parser.parse_args()
 
 def main():
@@ -147,6 +188,11 @@ def main():
     args = parse_args()
     costs_path = args.costs
     img_path = args.img
+    max_guards = args.max_guards
+    witnesses = args.witnesses
+    coverage = args.coverage
+    obs_dist = args.obs_dist
+    guard_cost_mult = args.guard_cost_mult
     MIN_HOLE_AREA = 10
     DEBUG_HOLES = False
     DEBUG_CONTOUR = False 
@@ -196,7 +242,7 @@ def main():
     if poly.geom_type == 'MultiPolygon':
         poly = max(poly.geoms, key=lambda a: a.area)  
     if shapely.validation.explain_validity(poly) == "Valid Geometry":
-        print_dat(poly, costs_path, pathfinding_matrix)
+        print_dat(poly, costs_path, pathfinding_matrix, max_guards, witnesses, coverage, obs_dist, guard_cost_mult)
     else:
         print(shapely.validation.explain_validity(poly))
 
