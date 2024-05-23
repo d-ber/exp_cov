@@ -1,9 +1,10 @@
 import cv2
+import os
+import argparse
 import shapely
 import shapely.validation
 import matplotlib.pyplot as plt
 import concurrent.futures
-#import pyomo.environ as pyo
 import numpy as np
 from pathfinding.core.diagonal_movement import DiagonalMovement
 from pathfinding.core.grid import Grid
@@ -19,7 +20,6 @@ def print_vector_param(name, pairs):
     print(";")
 
 def print_bidimensional_param(name, rows, cols, vals):
-    #print(f"DEBUG: name:{name} rows:{rows} cols:{cols} vals[0]:{vals[0]}")
     print(f"param {name} : ", end="")
     for col in range(1, cols+1):
         print(f" {col} ", end="")
@@ -80,7 +80,7 @@ def print_dat(poly, costs_path, pathfinding_matrix):
     GUARD_RESOLUTION = 1
     while True:
         guards.clear()
-        # bounds Returns minimum bounding region (minx, miny, maxx, maxy)
+        # poly.bounds is the minimum bounding region given as (min_x, min_y, max_x, max_y)
         for x in range(round(poly.bounds[0]), round(poly.bounds[2]), GUARD_RESOLUTION):
             for y in range(round(poly.bounds[1]), round(poly.bounds[3]), GUARD_RESOLUTION):
                 guard_candidate = shapely.Point([x, y])
@@ -95,7 +95,7 @@ def print_dat(poly, costs_path, pathfinding_matrix):
     
     copertura = []
     copribili = 0
-    with concurrent.futures.ProcessPoolExecutor(max_workers=20) as executor:
+    with concurrent.futures.ProcessPoolExecutor() as executor:
         copertura_w_data = [(i, poly, w, guards) for i, w in enumerate(witnesses)]
         for i, cop_w in executor.map(copertura_w, copertura_w_data):
             copertura.insert(i, cop_w)
@@ -129,14 +129,24 @@ def print_dat(poly, costs_path, pathfinding_matrix):
 
     print("\nend;")
 
-    # Save guard location outside problem data since it's of no use (distances are precalculated)
+    # Save guard location outside problem data since it's of no use for the optimization (distances are precalculated)
     print_vector_param("posizione_guardie", [(i+1, (f"{x} {y}")) for (i, (x,y)) in enumerate(guards)])
-    print_vector_param("posizione_testimoni", [(i+1, (f"{p.x} {p.y}")) for (i, p) in enumerate(witnesses)])
+    print_vector_param("posizione_testimoni", [(i+1, (f"{p.x} {p.y}")) for (i, p) in enumerate(witnesses)])ù
+
+def parse_args():
+
+    parser = argparse.ArgumentParser(description='Compute data to run optimization.')
+    parser.add_argument('--img', default=os.path.join(os.getcwd(), "image.png"),
+        help="Path to the map png image file.", metavar="IMG_PATH")
+    parser.add_argument('--costs', default=os.path.join(os.getcwd(), "costs.txt"),
+        help="Path to the map txt costs file.", metavar="COSTS_PATH")
+    return parser.parse_args()
 
 def main():
 
-    costs_path = "/home/d-ber/catkin_ws/src/tirocinio/scripts/costs.txt"
-    img_path = "/home/d-ber/catkin_ws/src/tirocinio/scripts/tri.png"
+    args = parse_args()
+    costs_path = args.costs
+    img_path = args.img
     MIN_HOLE_AREA = 10
     DEBUG_HOLES = False
     DEBUG_CONTOUR = False 
@@ -171,24 +181,24 @@ def main():
                 plt.show()
     poly_no_holes = shapely.Polygon([[p[0][0], p[0][1]] for p in max_contour])
     poly_no_holes = poly_no_holes.buffer(0)
-    if poly_no_holes.geom_type == 'MultiPolygon': # se poly non è un poligono ben definito provo a renderlo tale
+    # If poly isn't a well defined polygon, we try to fix it
+    if poly_no_holes.geom_type == 'MultiPolygon': 
         poly = max(poly_no_holes.geoms, key=lambda a: a.area)  
     holes_fixed = []
     for h in holes:
         hole = shapely.Polygon([[p[0][0], p[0][1]] for p in h])
-        if hole.geom_type == 'MultiPolygon': # se poly non è un poligono ben definito provo a renderlo tale
+        if hole.geom_type == 'MultiPolygon':
             hole = max(hole.geoms, key=lambda a: a.area) 
         if poly_no_holes.contains(hole):
             holes_fixed.append(hole.buffer(0).exterior)
     poly = shapely.Polygon([[p[0][0], p[0][1]] for p in max_contour], holes=holes_fixed)
     poly = poly.buffer(0)
-    if poly.geom_type == 'MultiPolygon': # se poly non è un poligono ben definito provo a renderlo tale
+    if poly.geom_type == 'MultiPolygon':
         poly = max(poly.geoms, key=lambda a: a.area)  
     if shapely.validation.explain_validity(poly) == "Valid Geometry":
         print_dat(poly, costs_path, pathfinding_matrix)
     else:
         print(shapely.validation.explain_validity(poly))
-
 
 
 if __name__ == '__main__':
