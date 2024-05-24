@@ -126,6 +126,7 @@ void StepBackRecovery::runBehavior()
       double sim_step = 0.0;
       while (sim_step < dist_left)
       {
+        sim_step += sim_granularity_;
         double sim_theta = current_theta;
         double sim_x;
         double sim_y;
@@ -141,19 +142,26 @@ void StepBackRecovery::runBehavior()
         }
 
         // make sure that the point is legal, if it isn't... we'll abort
-        double footprint_cost = world_model_->footprintCost(sim_x, sim_y, sim_theta, local_costmap_->getRobotFootprint(), 0.0, 0.0);
-        if (footprint_cost < 0.0)
+        double footprint_cost_sim = world_model_->footprintCost(sim_x, sim_y, sim_theta, local_costmap_->getRobotFootprint(), 0.0, 0.0);
+        double footprint_cost_curr = world_model_->footprintCost(current_x, current_y, current_theta, local_costmap_->getRobotFootprint(), 0.0, 0.0);
+        if (footprint_cost_sim > footprint_cost_curr)
         {
-          ROS_ERROR("Stepback Recovery can't stepback because there is a potential collision. Cost: %.2f", footprint_cost);
-          ROS_ERROR("Stepback Recovery can't stepback because there is a potential collision. Step considered: %.2f of %.2f left", sim_step, dist_left);
-          return;
+          sim_step = sim_step - sim_granularity_;
+          if (sim_step == 0.0){
+            ROS_ERROR("Stepback Recovery can't stepback because it would increase the footprint cost. Cost: %.2f", footprint_cost_sim);
+            return;
+          }else{
+            ROS_DEBUG("Stepback Recovery will stepback less than wanted. Ok step is %.2f of %.2f wanted left", sim_step, dist_left);
+          }
+          break;
         }
-
-        sim_step += sim_granularity_;
+      }
+      if (std::abs(sim_step - dist_left) <= sim_granularity_ + 0.001 ){
+        ROS_DEBUG("Stepback Recovery will stepback as wanted. Step is %.2f of %.2f wanted left", sim_step, dist_left);
       }
 
       // compute the velocity that will let us stop by the time we reach the goal
-      double vel = sqrt(2 * acc_lim_x_ * dist_left);
+      double vel = sqrt(2 * acc_lim_x_ * sim_step);
 
       //ROS_ERROR("VEL: %.2f, start_x: %.2f, start_y: %.2f, start_theta: %.2f, current_x: %.2f, current_y: %.2f, current_theta: %.2f, target_x: %.2f, target_y: %.2f, target_theta: %.2f", vel, start_x, start_y, start_theta, current_x, current_y, current_theta, target_x, target_y, target_theta);
 
