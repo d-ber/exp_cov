@@ -1,20 +1,45 @@
 import numpy as np
 import cv2
+import argparse
+import os
 #from python_tsp.exact import solve_tsp_dynamic_programming
 from python_tsp.heuristics import solve_tsp_local_search, solve_tsp_simulated_annealing
 
+def check_positive_float(value):
+    try:
+        value = float(value)
+        if value <= 0:
+            raise argparse.ArgumentTypeError("{} is not a positive float".format(value))
+    except ValueError:
+        raise Exception(f"{value} is not a float")
+    return value
+
+def parse_args():
+
+    parser = argparse.ArgumentParser(description='Compute data to run optimization.')
+    parser.add_argument('--data', default=os.path.join(os.getcwd(), "data.dat"),
+        help="Path to the text data file.", metavar="DATA_PATH")
+    parser.add_argument('--guards', default=os.path.join(os.getcwd(), "guards.txt"),
+        help="Path to the text guards file.", metavar="GUARDS_PATH")
+    parser.add_argument('--img', default=os.path.join(os.getcwd(), "image.png"),
+        help="Path to the png image file.", metavar="IMG_PATH")
+    parser.add_argument('--scale', default=1, type=check_positive_float,
+        help="Image scale.", metavar="SCALE")
+    return parser.parse_args()
 
 def main():
-    dat_path = "/home/d-ber/catkin_ws/src/tirocinio/optimization/test4/data.dat"
-    chosen_guards_path = "/home/d-ber/catkin_ws/src/tirocinio/optimization/test4/guardie_scelte.txt"
+
+    args = parse_args()
+    dat_path = args.data
+    chosen_guards_path = args.guards
     distanze = []
     with open(dat_path, "r") as data_file:
         line = data_file.readline()
         while not line.strip().startswith("param nG :="):
             line = data_file.readline()
-        nG = int(line.split(":=")[1].strip().split(";")[0])
+        # nG = int(line.split(":=")[1].strip().split(";")[0])
         line = data_file.readline()
-        while not line.strip().startswith("param distanza :"):
+        while not line.strip().startswith("param distance :"):
             line = data_file.readline()
         line = data_file.readline()
         while line.strip() != ";":
@@ -25,7 +50,7 @@ def main():
     guardie_scelte = []
     with open(chosen_guards_path, "r") as choice_file:
         line = choice_file.readline()
-        while line.strip() != "scelta_guardie [*] :=":
+        while line.strip() != "guard_choice [*] :=":
             line = choice_file.readline()
         line = choice_file.readline()
         while line.strip() != ";":
@@ -50,19 +75,16 @@ def main():
                 if g2 in guardie_scelte:
                     distanze_g1.append(distanze[g1][g2])
             distanze_scelte.append(distanze_g1)
-    
-    #print(f"Solving TSP with {len(distanze_scelte)} nodes")
-    
+        
     distance_matrix = np.array(distanze_scelte, dtype=float)
     #permutation, distance = solve_tsp_dynamic_programming(distance_matrix)
-    permutation, distance = solve_tsp_simulated_annealing(distance_matrix)
-    permutation2, distance2 = solve_tsp_local_search(
+    permutation, _ = solve_tsp_simulated_annealing(distance_matrix)
+    permutation2, _ = solve_tsp_local_search(
         distance_matrix, x0=permutation, perturbation_scheme="ps3"
         )
-    #print(permutation2, distance2)
 
-    scale = 0.035888 # scale for map_rgb1
-    img = cv2.imread("/home/d-ber/catkin_ws/src/tirocinio/optimization/test4/map_grey_to_black.png")
+    scale = args.scale
+    img = cv2.imread(args.img)
     image_width = img.shape[1]
     image_height = img.shape[0]
     sizex = img.shape[0]

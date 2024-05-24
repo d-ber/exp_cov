@@ -4,17 +4,6 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
-'''
-# Deprecated: 
-def update_image(image, fused_image):
-    NEW_IMAGE_WEIGHT = 0.7
-    FUSED_IMAGE_WEIGHT = 0.3
-    if fused_image is None:
-        return image
-    
-    return cv2.addWeighted(image, NEW_IMAGE_WEIGHT, fused_image, FUSED_IMAGE_WEIGHT, 0)
-'''
-
 def check_positive(value):
     try:
         value = int(value)
@@ -67,8 +56,6 @@ def cost_initialize(floorplan):
             else:
                 print(f"ERROR, unexpected value in floorplan: {floorplan[h, w]}")
                 exit()
-    #with np.printoptions(threshold=np.inf):
-    #    print(costs)
 
     return costs
 
@@ -79,9 +66,6 @@ def fill_holes(image):
         for c in contours:
             if cv2.contourArea(c) != cv2.contourArea(max_contour):
                 image = cv2.drawContours(image, [c], -1, (0), thickness=-1)
-        #_ = plt.subplot(111), plt.imshow(cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)), plt.title('filled')
-        #plt.show()
-        #exit()        
     return image
 
 def init_floorplan(image, max_height, max_width):
@@ -110,16 +94,16 @@ def fuse(samples: int, base_dir: str = os.getcwd(), gt_floorplan_path: str ="", 
     floorplan = None
     addition = None
 
-    IGNORATE_DIRNAME = "ignorate"
-    USATE_DIRNAME = "usate"
+    IGNORED_DIRNAME = "ignored"
+    USED_DIRNAME = "used"
     sample_dir = ""
     if complete:
         print("Sample size complete.")
     else:
         sample_dir = f"{samples}_sample_size"
         print(f"Sample size equal to {samples}.")
-    os.makedirs(os.path.join(os.getcwd(), sample_dir, USATE_DIRNAME), exist_ok=True)
-    os.makedirs(os.path.join(os.getcwd(), sample_dir, IGNORATE_DIRNAME), exist_ok=True)
+    os.makedirs(os.path.join(os.getcwd(), sample_dir, USED_DIRNAME), exist_ok=True)
+    os.makedirs(os.path.join(os.getcwd(), sample_dir, IGNORED_DIRNAME), exist_ok=True)
 
     image_paths = []
     MAP_EXTENSIONS = {".png", ".pgm"}
@@ -142,14 +126,14 @@ def fuse(samples: int, base_dir: str = os.getcwd(), gt_floorplan_path: str ="", 
         image =  cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
         if abs(image.shape[0]-max_height) >= MAX_HEIGHT_ERROR or abs(image.shape[1]-max_width) >= MAX_WIDTH_ERROR:
             print(f"Floorplan creation: skipping image {os.path.basename(image_path)} with dim error {image.shape[0]-max_height}, {image.shape[1]-max_width}")
-            cv2.imwrite(os.path.join(os.getcwd(), sample_dir, IGNORATE_DIRNAME, os.path.basename(image_path)), image)
+            cv2.imwrite(os.path.join(os.getcwd(), sample_dir, IGNORED_DIRNAME, os.path.basename(image_path)), image)
             continue
         elif to_initialize:
             floorplan = init_floorplan(image.astype(np.uint8), max_height, max_width)
             to_initialize = False
         used += 1
         image_paths_acceptable.append(image_path)
-        cv2.imwrite(os.path.join(os.getcwd(), sample_dir, USATE_DIRNAME, os.path.basename(image_path)), image)
+        cv2.imwrite(os.path.join(os.getcwd(), sample_dir, USED_DIRNAME, os.path.basename(image_path)), image)
         floorplan = update_floorplan(floorplan, image.astype(np.uint8))
 
     print(f"Floorplan creation: used {used} out of {len(image_paths)} images.")
@@ -172,13 +156,8 @@ def fuse(samples: int, base_dir: str = os.getcwd(), gt_floorplan_path: str ="", 
         image = cv2.resize(image, points, interpolation= cv2.INTER_NEAREST)
         image = fill_holes(image)
 
-        #_ = plt.subplot(121), plt.imshow(cv2.cvtColor(floorplan, cv2.COLOR_GRAY2RGB)), plt.title('floorplan')
-        #_ = plt.subplot(122), plt.imshow(cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)), plt.title(f"image {os.path.basename(image_path)}")
-        #plt.show()
-
         addition = addimage(image.astype(np.int32), addition)
-        #print(f"Reading image {os.path.join(root, f)}")
-        #fused_image = update_image(image, fused_image)
+
         costs = cost_update(floorplan, image, costs)
 
     floorplan_with_cost = floorplan.copy()
@@ -238,7 +217,6 @@ def fuse(samples: int, base_dir: str = os.getcwd(), gt_floorplan_path: str ="", 
         else:
             _ = plt.subplot(231), plt.imshow(cv2.cvtColor(floorplan, cv2.COLOR_GRAY2RGB)), plt.title('Floorplan')
             _ = plt.subplot(232), plt.imshow(cv2.cvtColor(floorplan_with_cost, cv2.COLOR_GRAY2RGB)), plt.title('Floorplan with cost')
-            #_ = plt.subplot(232), plt.imshow(cv2.cvtColor(fused_image, cv2.COLOR_BGR2RGB)), plt.title(f'Fused Map ({m} maps)')
             _ = plt.subplot(233), plt.imshow(cv2.cvtColor(addition, cv2.COLOR_BGR2RGB)), plt.title('Added Map')
             _ = plt.subplot(234), plt.imshow(cv2.cvtColor(addition_thresholded, cv2.COLOR_BGR2RGB)), plt.title('Added Map Thresholded')
             _ = plt.subplot(235), plt.imshow(cv2.cvtColor(otsu, cv2.COLOR_GRAY2RGB)), plt.title('Added Map Otsu\'s Binarization')
