@@ -1,24 +1,38 @@
 import cv2
 import matplotlib.pyplot as plt
+import argparse
+import os
+
+def parse_args():
+
+    parser = argparse.ArgumentParser(description='Compute data to run optimization.')
+    parser.add_argument('--img', default=os.path.join(os.getcwd(), "image.png"),
+        help="Path to the png image file.", metavar="IMG_PATH")
+    parser.add_argument('--data', default=os.path.join(os.getcwd(), "data.dat"),
+        help="Path to the text data file.", metavar="DATA_PATH")
+    parser.add_argument('--guards', default=os.path.join(os.getcwd(), "guards.txt"),
+        help="Path to the text guards file.", metavar="GUARDS_PATH")
+    return parser.parse_args()
 
 def main():
 
-    img_path = "/home/d-ber/catkin_ws/src/tirocinio/scripts/maps_agp/map_grey_to_black.png"
+    args = parse_args()
+    img_path = args.img
     img = cv2.imread(img_path)
-    data_file_path = "/home/d-ber/catkin_ws/src/tirocinio/optimization/test5/data.dat"
-    chosen_guards_file_path = "/home/d-ber/catkin_ws/src/tirocinio/optimization/test5/guardie_scelte.txt"
+    data_file_path = args.data
+    chosen_guards_file_path = args.guards
     posizioni_guardie = []
     with open(chosen_guards_file_path, "r") as choice_file:
         guardie_scelte = []
         line = choice_file.readline()
-        while line.strip() != "scelta_guardie [*] :=":
+        while line.strip() != "guard_choice [*] :=":
             line = choice_file.readline()
         line = choice_file.readline()
         while line.strip() != ";":
             guardie_scelte.append(line.strip().split()[0])
             line = choice_file.readline()
     with open(data_file_path, "r") as data_file:
-        while line.strip() != "param posizione_guardie :=":
+        while line.strip() != "param guard_position :=":
             line = choice_file.readline()
         line = choice_file.readline()
         while line.strip() != ";":

@@ -1,15 +1,28 @@
 import cv2
 import matplotlib.pyplot as plt
+import argparse
+import os
+
+def parse_args():
+
+    parser = argparse.ArgumentParser(description='Compute data to run optimization.')
+    parser.add_argument('--img', default=os.path.join(os.getcwd(), "image.png"),
+        help="Path to the png image file.", metavar="IMG_PATH")
+    parser.add_argument('--data', default=os.path.join(os.getcwd(), "data.dat"),
+        help="Path to the text data file.", metavar="DATA_PATH")
+    return parser.parse_args()
 
 def main():
 
-    img_path = "/home/d-ber/catkin_ws/src/tirocinio/scripts/maps_agp/map_grey_to_black.png"
+    args = parse_args()
+
+    img_path = args.img
     img = cv2.imread(img_path)
-    data_file_path = "/home/d-ber/catkin_ws/src/tirocinio/scripts/data.dat"
+    data_file_path = args.data
     posizioni_guardie = []
     with open(data_file_path, "r") as data_file:
         line = data_file.readline()
-        while line.strip() != "param posizione_guardie :=":
+        while line.strip() != "param guard_position :=":
             line = data_file.readline()
         line = data_file.readline()
         while line.strip() != ";":
@@ -18,7 +31,7 @@ def main():
     costi_guardie = []
     with open(data_file_path, "r") as data_file:
         line = data_file.readline()
-        while line.strip() != "param costi_guardie :=":
+        while line.strip() != "param guard_cost :=":
             line = data_file.readline()
         line = data_file.readline()
         while line.strip() != ";":
@@ -27,7 +40,7 @@ def main():
     posizioni_testimoni = []
     with open(data_file_path, "r") as data_file:
         line = data_file.readline()
-        while line.strip() != "param posizione_testimoni :=":
+        while line.strip() != "param witness_position :=":
             line = data_file.readline()
         line = data_file.readline()
         while line.strip() != ";":

@@ -1,6 +1,5 @@
 import rospy
 import argparse
-import actionlib
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from actionlib_msgs.msg import GoalStatus
 from geometry_msgs.msg import Pose, Point, PoseStamped, Quaternion

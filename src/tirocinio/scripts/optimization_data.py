@@ -67,7 +67,7 @@ def print_dat(poly, costs_path, pathfinding_matrix, max_guards, witnesses_num, c
     print("\ndata;")
 
     print_simple_param("coeff_coverage", 1)
-    print_simple_param("coeff_distanze", 1)
+    print_simple_param("coeff_distance", 1)
 
     witnesses = [poly.exterior.line_interpolate_point(d, normalized=True) for d in np.linspace(0, 1, witnesses_num)]
     nW = len(witnesses)
@@ -111,22 +111,22 @@ def print_dat(poly, costs_path, pathfinding_matrix, max_guards, witnesses_num, c
         for (i, (x,y)) in enumerate(guards):
             guard_costs.append((i+1, costs[x, y] * guard_cost_mult))
 
-    print_vector_param("costi_guardie", guard_costs)
+    print_vector_param("guard_cost", guard_costs)
 
-    print_bidimensional_param("copertura", nW, nG, copertura)
+    print_bidimensional_param("coverage", nW, nG, copertura)
     
     distanze = []
     with concurrent.futures.ProcessPoolExecutor() as executor:
         distanze_gg_data = [(i, g1, guards, pathfinding_matrix) for i, g1 in enumerate(guards)]
         for i, dis_gg in executor.map(distanza_gg, distanze_gg_data):
             distanze.insert(i, dis_gg)
-    print_bidimensional_param("distanza", nG, nG, distanze)
+    print_bidimensional_param("distance", nG, nG, distanze)
 
     print("\nend;")
 
     # Save guard location outside problem data since it's of no use for the optimization (distances are precalculated)
-    print_vector_param("posizione_guardie", [(i+1, (f"{x} {y}")) for (i, (x,y)) in enumerate(guards)])
-    print_vector_param("posizione_testimoni", [(i+1, (f"{p.x} {p.y}")) for (i, p) in enumerate(witnesses)])
+    print_vector_param("guard_position", [(i+1, (f"{x} {y}")) for (i, (x,y)) in enumerate(guards)])
+    print_vector_param("witness_position", [(i+1, (f"{p.x} {p.y}")) for (i, p) in enumerate(witnesses)])
 
 def check_fraction(value):
     try:
