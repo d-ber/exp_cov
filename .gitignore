@@ -3,3 +3,9 @@ devel/
 .vscode/c_cpp_properties.json
 .vscode/settings.json
 .catkin_workspace
+src/tirocinio/world/bitmaps/image.png
+.gitignore
+src/tirocinio/world/bitmaps/rectangles.json
+src/tirocinio/world/world0.world
+src/tirocinio/world/bitmaps/image0.png
+src/tirocinio/world/bitmaps/rectangles0.json
