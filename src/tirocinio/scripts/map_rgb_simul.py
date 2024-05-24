@@ -394,12 +394,17 @@ def parse_args():
     parser.add_argument('--scale', type=check_positive_float, default=0.035888, metavar="PIXELS",
         help="Number of meters per pixel in png map.")
     parser.add_argument("--world-num", type=check_positive_or_zero, default=None, metavar="N",
-        help="Use this to produce a maps that ends in N and save it. Setting this argument overrides --worlds.")    
+        help="Use this to produce a maps that ends in N and save it. Setting this argument overrides --worlds.") 
     parser.add_argument('--silent', action='store_true',
         help="Use this to avoid printing info.")   
+    parser.add_argument("--short-laser", action='store_true',
+        help="Use this to set 5m for laserscan range instead of 15m.")     
     return parser.parse_args()
 
-def get_world_text(image, name, speedup, pose, scale, sizex, sizey):
+def get_world_text(image, name, speedup, pose, scale, sizex, sizey, short_laser):
+    laser_range = "15"
+    if short_laser:
+        laser_range = "5"
     return f"""
     # World {name}
     define turtlebot3 position
@@ -425,7 +430,7 @@ def get_world_text(image, name, speedup, pose, scale, sizex, sizey):
     (
         sensor(
             # ranger-specific properties
-            range [ 0.06 15 ]
+            range [ 0.06 {laser_range} ]
             fov 359
             samples 1022
 
@@ -527,6 +532,7 @@ def main():
     scale = args.scale
     world_num = args.world_num
     silent = args.silent
+    short_laser = args.short_laser
 
 
     movement_mask_image = cv2.imread(movement_mask_image_path, cv2.IMREAD_COLOR)
@@ -575,9 +581,8 @@ def main():
                     print(f"Saved map as {filename}")
             worldfile_path = os.path.join(base_dir, f"world{i}.world")
             with open(worldfile_path, "w", encoding="utf-8") as worldfile:
-                worldfile.write(get_world_text(i, name, speedup, pose, scale, sizex, sizey))
-                if not silent:
-                    print(f"Saved worldfile as {worldfile_path}")
+                worldfile.write(get_world_text(i, name, speedup, pose, scale, sizex, sizey, short_laser))
+                print("Saved worldfile as {}".format(worldfile_path))
 
 if __name__ == "__main__":
     main()
