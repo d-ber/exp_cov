@@ -1,7 +1,0 @@
-image: run0/Map_coverage.pgm
-resolution: 0.050000
-origin: [-5.873488, -4.069982, 0.000000]
-negate: 0
-occupied_thresh: 0.65
-free_thresh: 0.196
-

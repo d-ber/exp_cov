@@ -1,6 +1,0 @@
-map_update_interval : 0.1
-maxUrange : 3.5
-maxRange : 3.6
-particles: 5
-linearUpdate: 0.2
-resampleThreshold: 0.3

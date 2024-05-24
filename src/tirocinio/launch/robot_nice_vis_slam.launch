@@ -1,0 +1,33 @@
+<launch>
+  <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
+  <arg name="rviz_conf" default="$(find tirocinio)/config/rviz_nice_vis.rviz"/>
+
+  <include file="$(find turtlebot3_bringup)/launch/includes/description.launch.xml">
+    <arg name="model" value="$(arg model)" />
+  </include>
+  
+  <node pkg="slam_toolbox" type="sync_slam_toolbox_node" name="slam_toolbox" output="screen">
+    <rosparam command="load" file="$(find tirocinio)/param/mapper_params_online_sync.yaml" />
+  </node>
+  <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(arg rviz_conf)"/>
+  <node name="move_base" pkg="move_base" type="move_base" output="screen" args="--diagnostics">
+    <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
+    <param name="base_global_planner" value="global_planner/GlobalPlanner" />
+    <rosparam file="$(find tirocinio)/param/costmap_common_params_gazebo.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find tirocinio)/param/costmap_common_params_gazebo.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find tirocinio)/param/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find tirocinio)/param/global_costmap_params.yaml" command="load" />
+    <rosparam file="$(find tirocinio)/param/move_base_params_gazebo.yaml" command="load" />
+    <rosparam file="$(find tirocinio)/param/base_local_planner_params.yaml" command="load" />
+    <rosparam file="$(find tirocinio)/param/global_planner_params.yaml" command="load" />
+    <rosparam file="$(find tirocinio)/param/dwa_local_planner_params.yaml" command="load" />
+  </node>
+
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
+    <param name="publish_frequency" type="double" value="50.0" />
+  </node>
+
+  <node pkg="tf" type="static_transform_publisher" name="left_wheel_fix" args="0.0 0.08 0.023 -0.7068249856444697 -0.0005256551422599486 -0.0005260739022916516 0.7073880735505907 base_link wheel_left_link 100" />
+
+  <node pkg="tf" type="static_transform_publisher" name="right_weel_fix" args="0.0 -0.08 0.023 -0.7068249944782112 0.0005136394748434847 0.0005140486626654562 0.7073880823913695 base_link wheel_right_link 100" />
+</launch>
