@@ -1,0 +1,33 @@
+<launch>
+    <arg name="multi_robot_name" default=""/>
+    <arg name="set_lidar_frame_id" default="base_scan"/>
+  
+    <node pkg="rosserial_python" type="serial_node.py" name="turtlebot3_core" output="screen">
+        <param name="port" value="/dev/ttyACM1"/>
+        <param name="baud" value="15200"/>
+        <param name="tf_prefix" value="$(arg multi_robot_name)"/>
+    </node>
+
+    <node name="hokuyo_node" pkg="hokuyo_node" type="hokuyo_node" output="screen">
+        <param name="use_rep_117" value="true"/>
+        <param name="min_ang" value="-2.0"/>
+        <param name="max_ang" value="2.0"/>
+        <param name="port" value="/dev/ttyACM0"/>
+        <param name="frame_id" value="$(arg set_lidar_frame_id)"/>
+    </node>
+    
+    <!--<node pkg="urg_node" type="urg_node" name="urg_node" output="screen">
+        <param name="port" value="/dev/ttyACM0"/>
+        <param name="frame_id" value="$(arg set_lidar_frame_id)"/>
+        <param name="angle_max" value="2.094395"/>
+        <param name="angle_min" value="-2.094395"/>
+    </node>-->
+  
+    <node pkg="turtlebot3_bringup" type="turtlebot3_diagnostics" name="turtlebot3_diagnostics" output="screen">
+        <remap from="scan" to="scan_hokuyo"/>
+    </node>
+
+    <include file="$(find exp_cov)/launch/robot_camera.launch"/>
+
+</launch>
+  

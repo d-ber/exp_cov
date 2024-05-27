@@ -1,0 +1,31 @@
+<launch>
+
+    <arg name="rviz_conf" default="$(find exp_cov)/config/rviz_naviga_camera.rviz"/>
+    <arg name="mapfile" default="$(find exp_cov)/maps/lab_completo_manuale_raw.yaml"/>
+
+    <!-- TurtleBot3 -->
+    <include file="$(find exp_cov)/launch/robot_remote.launch"/>
+  
+    <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(arg rviz_conf)"/>
+    <node name="amcl" pkg="amcl" type="amcl" output="screen">
+      <remap from="scan" to="scan_hokuyo"/>
+    </node>
+    <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(arg mapfile)"/>
+    <node name="move_base" pkg="move_base" type="move_base" output="screen" args="--diagnostics">
+      <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
+      <param name="base_global_planner" value="global_planner/GlobalPlanner" />
+      <rosparam file="$(find exp_cov)/param/costmap_common_params_robot.yaml" command="load" ns="global_costmap" />
+      <rosparam file="$(find exp_cov)/param/costmap_common_params_robot.yaml" command="load" ns="local_costmap" />
+      <rosparam file="$(find exp_cov)/param/local_costmap_params.yaml" command="load" />
+      <rosparam file="$(find exp_cov)/param/global_costmap_params.yaml" command="load" />
+      <rosparam file="$(find exp_cov)/param/move_base_params.yaml" command="load" />
+      <rosparam file="$(find exp_cov)/param/global_planner_params.yaml" command="load" />
+      <rosparam file="$(find exp_cov)/param/dwa_local_planner_params.yaml" command="load" />
+    </node>
+    <node pkg="laser_filters" type="scan_to_scan_filter_chain" name="laser_filter">
+      <rosparam command="load" file="$(find exp_cov)/config/lidar_config.yaml"/>
+      <remap from="scan" to="scan_maxrange_filtered"/>
+    </node>
+    <node name="lidar_nan_filter" pkg="exp_cov" type="lidar_maxrange_filter.py" output="screen"/>
+
+  </launch>

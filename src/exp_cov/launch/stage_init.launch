@@ -1,0 +1,10 @@
+<launch>
+
+  <arg name="worldfile" default="$(find exp_cov)/world/world0.world"/>
+  <arg name="scan" default="/scan"/>
+
+  <node name="stage" pkg="stage_ros" type="stageros" required="true" output="screen" args="$(arg worldfile)">
+      <remap from="base_scan" to="$(arg scan)"/>
+    </node>
+
+</launch>
