@@ -25,7 +25,7 @@ minimize Total_Cost:
 
 # Define total cost as coverage_coeff*coverage + distance_coeff*distance
 s.t. Choice_Cost:
-    z = coverage_coeff * (sum {g in Guards} costi_Guards[g] * guard_choice[g]) + distance_coeff * (sum {g1 in Guards, g2 in Guards} guard_choice[g1] * guard_choice[g2] * distance[g1, g2]);
+    z = coverage_coeff * (sum {g in Guards} guard_cost[g] * guard_choice[g]) + distance_coeff * (sum {g1 in Guards, g2 in Guards} guard_choice[g1] * guard_choice[g2] * distance[g1, g2]);
 
 # Each witness must be covered by at least one guard, unless it is disabled
 s.t. Coverage_Witnesses {w in Witnesses}:

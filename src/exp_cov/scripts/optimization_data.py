@@ -66,8 +66,8 @@ def min_distance_to_holes(poly_with_holes, point):
 def print_dat(poly, costs_path, pathfinding_matrix, max_guards, witnesses_num, coverage, obs_dist, guard_cost_mult):
     print("\ndata;")
 
-    print_simple_param("coeff_coverage", 1)
-    print_simple_param("coeff_distance", 1)
+    print_simple_param("coverage_coeff", 1)
+    print_simple_param("distance_coeff", 1)
 
     witnesses = [poly.exterior.line_interpolate_point(d, normalized=True) for d in np.linspace(0, 1, witnesses_num)]
     nW = len(witnesses)
