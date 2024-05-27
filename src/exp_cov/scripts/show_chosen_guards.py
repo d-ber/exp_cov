@@ -33,16 +33,16 @@ def main():
             line = choice_file.readline()
     with open(data_file_path, "r") as data_file:
         while line.strip() != "param guard_position :=":
-            line = choice_file.readline()
-        line = choice_file.readline()
+            line = data_file.readline()
+        line = data_file.readline()
         while line.strip() != ";":
             if line.split()[0] in guardie_scelte:
                 posizioni_guardie.append((line.strip().split()[1], line.strip().split()[2]))
-            line = choice_file.readline()
+            line = data_file.readline()
     posizioni_testimoni = []
     with open(data_file_path, "r") as data_file:
         line = data_file.readline()
-        while line.strip() != "param posizione_testimoni :=":
+        while line.strip() != "param witness_position :=":
             line = data_file.readline()
         line = data_file.readline()
         while line.strip() != ";":
