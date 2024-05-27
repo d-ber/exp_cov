@@ -14,10 +14,9 @@ param distance {Guards, Guards}; # distance[g1, g2] = distance between g1 and g2
 #### VARIABLES
 
 var z; # objective var, total cost
-# Binary variables relaxed between 0 and 1
-var guard_choice {Guards}  >= 0, <= 1; # guard_choice[g] near 1 if g is chosen, else near 0
-var covered {Witnesses}  >= 0, <= 1; # covered[w] near 1 if w is covered, else near 0
-var guard_couple_choice {Guards, Guards}  >= 0, <= 1; # auxiliary var to linearize guard_choice[g1]*guard_choice[g2]
+var guard_choice {Guards} binary; # guard_choice[g] = 1 if g is chosen, else 0
+var covered {Witnesses} binary; # covered[w] = 1 if w is covered, else 0
+var guard_couple_choice {Guards, Guards} binary; # auxiliary var to linearize guard_choice[g1]*guard_choice[g2]
 
 # Minimize total cost
 minimize Total_Cost: 
@@ -27,7 +26,7 @@ minimize Total_Cost:
 
 # Define total cost as coverage_coeff*coverage + distance_coeff*distance
 s.t. Choice_Cost:
-    z = coverage_coeff * (sum {g in Guards} costi_Guards[g] * guard_choice[g]) + distance_coeff * (sum {g1 in Guards, g2 in Guards} guard_choice[g1] * guard_choice[g2] * distance[g1, g2]);
+    z = coverage_coeff * (sum {g in Guards} guard_cost[g] * guard_choice[g]) + distance_coeff * (sum {g1 in Guards, g2 in Guards} guard_choice[g1] * guard_choice[g2] * distance[g1, g2]);
 
 # Each witness must be covered by at least one guard, unless it is disabled
 s.t. Coverage_Witnesses {w in Witnesses}:
@@ -38,7 +37,6 @@ s.t. Minimum_Coverage:
     (sum {w in Witnesses} covered[w]) / nW >= min_coverage;
 
 # To linearize guard_choice[g1]*guard_choice[g2]
-# Note that using fractional instead of binary vars, we have an error >= 0 and <= 0.5
 s.t. Linearization1 {g1 in Guards, g2 in Guards}:
     guard_couple_choice[g1, g2] >= guard_choice[g1] + guard_choice[g2] - 1;
 

@@ -364,8 +364,8 @@ def check_pose(value):
 def parse_args():
     # Get an instance of RosPack with the default search paths
     rospack = rospkg.RosPack()
-    # Get the file path for tirocinio
-    package_path = rospack.get_path('tirocinio')
+    # Get the file path for exp_cov
+    package_path = rospack.get_path('exp_cov')
 
     parser = argparse.ArgumentParser(description='Modify rgb maps automatically.')
     parser.add_argument('--map', default=os.path.join(package_path, "maps_rgb_lab/map1/map1_rgb.png"),
