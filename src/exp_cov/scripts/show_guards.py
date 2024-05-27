@@ -7,7 +7,7 @@ def str_to_float(str):
 
 def main():
 
-    img_path = "/home/d-ber/catkin_ws/src/tirocinio/scripts/maps_agp/gt_smoothed_clean.png"
+    img_path = "/home/d-ber/catkin_ws/src/exp_cov/scripts/maps_agp/gt_smoothed_clean.png"
     img = cv2.imread(img_path)
     posizioni = [(44, 114), (128, 192), (140, 222), (158 ,132), (176, 180), (206, 228), (248, 168), (272 ,240), (296 ,144), (338 ,138)]
     for (x, y) in posizioni:

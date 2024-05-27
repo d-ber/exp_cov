@@ -1,5 +1,5 @@
-ampl: model /home/d-ber/catkin_ws/src/tirocinio/optimization/test12/coverage.mod
-ampl: data /home/d-ber/catkin_ws/src/tirocinio/optimization/test12/data.dat
+ampl: model /home/d-ber/catkin_ws/src/exp_cov/optimization/test12/coverage.mod
+ampl: data /home/d-ber/catkin_ws/src/exp_cov/optimization/test12/data.dat
 ampl: ;
 ampl: option solver knitro;
 ampl: solve;

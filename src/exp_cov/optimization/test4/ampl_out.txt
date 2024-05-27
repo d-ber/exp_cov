@@ -1,5 +1,5 @@
-ampl: model '/home/d-ber/catkin_ws/src/tirocinio/optimization/test4/coverage_linear.mod';
-ampl: data '/home/d-ber/catkin_ws/src/tirocinio/optimization/test4/data.dat';
+ampl: model '/home/d-ber/catkin_ws/src/exp_cov/optimization/test4/coverage_linear.mod';
+ampl: data '/home/d-ber/catkin_ws/src/exp_cov/optimization/test4/data.dat';
 ampl: option solver copt;
 ampl: solve;
 COPT 6.5.2:   User interrupted, stopping...

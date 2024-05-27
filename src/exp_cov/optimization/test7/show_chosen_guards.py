@@ -3,9 +3,9 @@ import matplotlib.pyplot as plt
 
 def main():
 
-    img_path = "/home/aislab/catkin_ws/src/tirocinio/optimization/test7/tri.png"
+    img_path = "/home/aislab/catkin_ws/src/exp_cov/optimization/test7/tri.png"
     img = cv2.imread(img_path)
-    chosen_guards_file_path = "/home/aislab/catkin_ws/src/tirocinio/optimization/test7/guardie_scelte.txt"
+    chosen_guards_file_path = "/home/aislab/catkin_ws/src/exp_cov/optimization/test7/guardie_scelte.txt"
     posizioni_guardie = []
     with open(chosen_guards_file_path, "r") as data_file:
         guardie_scelte = []

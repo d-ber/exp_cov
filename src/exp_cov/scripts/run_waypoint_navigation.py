@@ -16,7 +16,7 @@ def now():
 
 def run(waypoints, logfile_path="./coverage.log"):    
     start = None
-    args = ["rosrun", "tirocinio", "waypoint_navigation.py", "-p", waypoints]
+    args = ["rosrun", "exp_cov", "waypoint_navigation.py", "-p", waypoints]
     with sp.Popen(args, stdout=sp.PIPE, stderr=sp.STDOUT) as process:
         with open(logfile_path, mode="+a", encoding="utf-8") as logfile:
             try:

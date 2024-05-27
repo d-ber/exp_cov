@@ -1,5 +1,5 @@
-ampl: model '/home/d-ber/catkin_ws/src/tirocinio/tesi/binarization/coverage.mod';
-ampl: data '/home/d-ber/catkin_ws/src/tirocinio/tesi/binarization/tesi.dat';
+ampl: model '/home/d-ber/catkin_ws/src/exp_cov/tesi/binarization/coverage.mod';
+ampl: data '/home/d-ber/catkin_ws/src/exp_cov/tesi/binarization/tesi.dat';
 ampl: option solver knitro;
 ampl: solve;
 Artelys Knitro 13.2.1:                        Knitro 13.2.1: Locally optimal or satisfactory solution.

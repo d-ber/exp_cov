@@ -1,7 +1,7 @@
 <launch>
     <arg name="multi_robot_name" default=""/>
   
-    <arg name="urdf_file" default="$(find xacro)/xacro --inorder '$(find tirocinio)/urdf/turtlebot3_burger_camera.urdf.xacro'" />
+    <arg name="urdf_file" default="$(find xacro)/xacro --inorder '$(find exp_cov)/urdf/turtlebot3_burger_camera.urdf.xacro'" />
 
     <param name="robot_description" command="$(arg urdf_file)" />
   
@@ -10,6 +10,6 @@
       <param name="tf_prefix" value="$(arg multi_robot_name)"/>
     </node>
 
-    <include file="$(find tirocinio)/launch/robot_camera_remote.launch"/>
+    <include file="$(find exp_cov)/launch/robot_camera_remote.launch"/>
 </launch>
   

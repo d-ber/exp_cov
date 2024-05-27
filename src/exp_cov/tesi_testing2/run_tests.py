@@ -14,8 +14,8 @@ for directory in directories:
     logfile = os.path.join(directory, "output.txt")
     # Run prog.py using subprocess with cwd parameter and output redirection
     with open(logfile, "w") as log:
-        subprocess.run(['python3', '/home/d-ber/catkin_ws/src/tirocinio/scripts/run_explore_and_waypoint.py', 
-        "--world", f"/home/d-ber/catkin_ws/src/tirocinio/tesi_testing2/{directory}/world0.world", "--waypoints", 
-        "/home/d-ber/catkin_ws/src/tirocinio/tesi_testing2/poses.txt", "-r", "10"], 
+        subprocess.run(['python3', '/home/d-ber/catkin_ws/src/exp_cov/scripts/run_explore_and_waypoint.py', 
+        "--world", f"/home/d-ber/catkin_ws/src/exp_cov/tesi_testing2/{directory}/world0.world", "--waypoints", 
+        "/home/d-ber/catkin_ws/src/exp_cov/tesi_testing2/poses.txt", "-r", "10"], 
         cwd=os.path.join(current_dir, directory), stdout=log, stderr=subprocess.STDOUT)
 

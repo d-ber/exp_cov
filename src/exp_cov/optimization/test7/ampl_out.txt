@@ -1,5 +1,5 @@
-ampl: model '/home/aislab/catkin_ws/src/tirocinio/optimization/test7/coverage_linear_relaxed.mod';
-ampl: data '/home/aislab/catkin_ws/src/tirocinio/optimization/test6/data.dat';
+ampl: model '/home/aislab/catkin_ws/src/exp_cov/optimization/test7/coverage_linear_relaxed.mod';
+ampl: data '/home/aislab/catkin_ws/src/exp_cov/optimization/test6/data.dat';
 ampl: option solver gurobi;
 ampl: solve;
 Gurobi 10.0.2:                Gurobi 10.0.2: optimal solution; objective 0.07919890485

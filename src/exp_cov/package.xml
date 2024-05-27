@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>tirocinio</name>
+  <name>exp_cov</name>
   <version>1.0.0</version>
   <description>This package provides utilities for map manipulation and coverage.</description>
 

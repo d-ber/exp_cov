@@ -4,7 +4,7 @@
     <arg name="scan" default="/scan"/>
     <arg name="screen" default="home"/>
 
-    <node name="modify_and_launch" pkg="tirocinio" type="modify_and_run.py" required="true" output="screen" args="--map $(arg map_rgb) --scan $(arg scan) --screen $(arg screen)">
+    <node name="modify_and_launch" pkg="exp_cov" type="modify_and_run.py" required="true" output="screen" args="--map $(arg map_rgb) --scan $(arg scan) --screen $(arg screen)">
         <remap from="base_scan" to="$(arg scan)"/>
     </node>
   

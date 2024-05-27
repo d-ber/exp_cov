@@ -24,7 +24,7 @@ def plot_polygon(ax, poly, **kwargs):
     return collection
 
 def main():
-    img_path = "/home/d-ber/catkin_ws/src/tirocinio/scripts/maps_agp/map_grey_to_black.png"
+    img_path = "/home/d-ber/catkin_ws/src/exp_cov/scripts/maps_agp/map_grey_to_black.png"
     MIN_HOLE_AREA = 10
     DEBUG_HOLES = False
     img = cv2.imread(img_path)

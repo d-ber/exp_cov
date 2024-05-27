@@ -6,7 +6,7 @@
 	<arg name="robot_radius" default="0.11"/>
 	<arg name="coverage_radius" default="0.2"/>
 	<arg name="use_test_maps" default="false"/>
-	<arg name="mapfile" default="$(find tirocinio)/maps/map.yaml"/> <!-- serve un file png della mappa! -->
+	<arg name="mapfile" default="$(find exp_cov)/maps/map.yaml"/> <!-- serve un file png della mappa! -->
 	<arg name="algo_code" default="8"/>
 	<arg name="execute_path" default="true"/>
 
@@ -22,7 +22,7 @@
 		<param name="execute_path" value="$(arg execute_path)"/>
 	</node>
 	<node name="gmapping_slam" pkg="gmapping" type="slam_gmapping" args="map:=newmap" output="screen">
-		<rosparam file="$(find tirocinio)/param/gmapping_params.yaml" command="load"/>
+		<rosparam file="$(find exp_cov)/param/gmapping_params.yaml" command="load"/>
 	</node>
 
 </launch>

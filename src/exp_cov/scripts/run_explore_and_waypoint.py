@@ -19,7 +19,7 @@ def now():
 
 def run_expl(logfile_path, run_subfolder = ""):   
     start = None
-    args = ["roslaunch", "tirocinio", "explore_lite2.launch"]
+    args = ["roslaunch", "exp_cov", "explore_lite2.launch"]
     with sp.Popen(args, stdout=sp.PIPE, stderr=sp.STDOUT) as process:
         with open(logfile_path, mode="+a", encoding="utf-8") as logfile:
             try:
@@ -50,7 +50,7 @@ def run_expl(logfile_path, run_subfolder = ""):
 
 def run_cov(waypoints, logfile_path="./coverage.log", run_subfolder = ""):    
     start = None
-    args = ["rosrun", "tirocinio", "waypoint_navigation.py", "-p", waypoints]
+    args = ["rosrun", "exp_cov", "waypoint_navigation.py", "-p", waypoints]
     with sp.Popen(args, stdout=sp.PIPE, stderr=sp.STDOUT) as process:
         with open(logfile_path, mode="+a", encoding="utf-8") as logfile:
             try:
@@ -80,9 +80,9 @@ def run_cov(waypoints, logfile_path="./coverage.log", run_subfolder = ""):
 
 def run_exploration(cmd_args, logfile_path, run_subfolder):
     print("starting exploration.")
-    stage_args = ["roslaunch", "tirocinio", "stage_init.launch", f"worldfile:={cmd_args.world}"]
-    slam_args = ["roslaunch", "tirocinio", "slam_toolbox_no_rviz.launch"]
-    dist_args = ["rosrun", "tirocinio", "distance_check.py"]
+    stage_args = ["roslaunch", "exp_cov", "stage_init.launch", f"worldfile:={cmd_args.world}"]
+    slam_args = ["roslaunch", "exp_cov", "slam_toolbox_no_rviz.launch"]
+    dist_args = ["rosrun", "exp_cov", "distance_check.py"]
     with sp.Popen(stage_args, stdout=sp.DEVNULL, stderr=sp.DEVNULL) as stage_process:
         sleep(3)
         print("started stage.")
@@ -100,9 +100,9 @@ def run_exploration(cmd_args, logfile_path, run_subfolder):
 
 def run_coverage(cmd_args, logfile_path, run_subfolder):
     print("starting coverage.")
-    stage_args = ["roslaunch", "tirocinio", "stage_init.launch", f"worldfile:={cmd_args.world}"]
-    slam_args = ["roslaunch", "tirocinio", "waypoint_slam.launch"]
-    dist_args = ["rosrun", "tirocinio", "distance_check.py"]
+    stage_args = ["roslaunch", "exp_cov", "stage_init.launch", f"worldfile:={cmd_args.world}"]
+    slam_args = ["roslaunch", "exp_cov", "waypoint_slam.launch"]
+    dist_args = ["rosrun", "exp_cov", "distance_check.py"]
     with sp.Popen(stage_args, stdout=sp.DEVNULL, stderr=sp.DEVNULL) as stage_process:
         sleep(3)
         print("started stage.")

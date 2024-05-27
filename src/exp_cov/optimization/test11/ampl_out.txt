@@ -1,5 +1,5 @@
-ampl: model '/home/d-ber/catkin_ws/src/tirocinio/optimization/test11/coverage.mod';
-ampl: data '/home/d-ber/catkin_ws/src/tirocinio/optimization/test11/data.dat';
+ampl: model '/home/d-ber/catkin_ws/src/exp_cov/optimization/test11/coverage.mod';
+ampl: data '/home/d-ber/catkin_ws/src/exp_cov/optimization/test11/data.dat';
 ampl: option solver knitro;
 ampl: solve;
 Artelys Knitro 14.0.0: 

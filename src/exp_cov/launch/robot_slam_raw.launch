@@ -1,30 +1,30 @@
 <launch>
 
-    <arg name="rviz_conf" default="$(find tirocinio)/config/rviz_slam.rviz"/>
+    <arg name="rviz_conf" default="$(find exp_cov)/config/rviz_slam.rviz"/>
     <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
     <arg name="scan" default="scan"/>
 
     <param name="model" value="$(arg model)"/>
 
       <!-- TurtleBot3 -->
-    <include file="$(find tirocinio)/launch/robot_remote.launch"/>
+    <include file="$(find exp_cov)/launch/robot_remote.launch"/>
 
     <node name="gmapping_slam" pkg="gmapping" type="slam_gmapping" output="screen">
-      <rosparam file="$(find tirocinio)/param/gmapping_params.yaml" command="load"/>
+      <rosparam file="$(find exp_cov)/param/gmapping_params.yaml" command="load"/>
     </node>
     <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(arg rviz_conf)">
     </node>
     <node name="move_base" pkg="move_base" type="move_base" output="screen" args="--diagnostics">
       <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
       <param name="base_global_planner" value="global_planner/GlobalPlanner" />
-      <rosparam file="$(find tirocinio)/param/costmap_common_params_robot.yaml" command="load" ns="global_costmap" />
-      <rosparam file="$(find tirocinio)/param/costmap_common_params_robot.yaml" command="load" ns="local_costmap" />
-      <rosparam file="$(find tirocinio)/param/local_costmap_params.yaml" command="load" />
-      <rosparam file="$(find tirocinio)/param/global_costmap_params.yaml" command="load" />
-      <rosparam file="$(find tirocinio)/param/move_base_params.yaml" command="load" />
-      <rosparam file="$(find tirocinio)/param/base_local_planner_params.yaml" command="load" />
-      <rosparam file="$(find tirocinio)/param/global_planner_params.yaml" command="load" />
-      <rosparam file="$(find tirocinio)/param/dwa_local_planner_params.yaml" command="load" />
+      <rosparam file="$(find exp_cov)/param/costmap_common_params_robot.yaml" command="load" ns="global_costmap" />
+      <rosparam file="$(find exp_cov)/param/costmap_common_params_robot.yaml" command="load" ns="local_costmap" />
+      <rosparam file="$(find exp_cov)/param/local_costmap_params.yaml" command="load" />
+      <rosparam file="$(find exp_cov)/param/global_costmap_params.yaml" command="load" />
+      <rosparam file="$(find exp_cov)/param/move_base_params.yaml" command="load" />
+      <rosparam file="$(find exp_cov)/param/base_local_planner_params.yaml" command="load" />
+      <rosparam file="$(find exp_cov)/param/global_planner_params.yaml" command="load" />
+      <rosparam file="$(find exp_cov)/param/dwa_local_planner_params.yaml" command="load" />
     </node>
   
   </launch>

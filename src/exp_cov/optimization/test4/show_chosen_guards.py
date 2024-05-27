@@ -3,10 +3,10 @@ import matplotlib.pyplot as plt
 
 def main():
 
-    img_path = "/home/d-ber/catkin_ws/src/tirocinio/scripts/maps_agp/map_grey_to_black.png"
+    img_path = "/home/d-ber/catkin_ws/src/exp_cov/scripts/maps_agp/map_grey_to_black.png"
     img = cv2.imread(img_path)
-    data_file_path = "/home/d-ber/catkin_ws/src/tirocinio/optimization/test4/data.dat"
-    chosen_guards_file_path = "/home/d-ber/catkin_ws/src/tirocinio/optimization/test4/guardie_scelte.txt"
+    data_file_path = "/home/d-ber/catkin_ws/src/exp_cov/optimization/test4/data.dat"
+    chosen_guards_file_path = "/home/d-ber/catkin_ws/src/exp_cov/optimization/test4/guardie_scelte.txt"
     posizioni_guardie = []
     with open(chosen_guards_file_path, "r") as data_file:
         guardie_scelte = []

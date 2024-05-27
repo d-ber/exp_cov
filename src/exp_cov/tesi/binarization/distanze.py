@@ -99,7 +99,7 @@ def print_dat(poly, pathfinding_matrix):
 
 def main():
 
-    img_path = "/home/d-ber/catkin_ws/src/tirocinio/tesi/binarization/tri.png"
+    img_path = "/home/d-ber/catkin_ws/src/exp_cov/tesi/binarization/tri.png"
     MIN_HOLE_AREA = 10
     DEBUG_HOLES = False
     DEBUG_CONTOUR = False 

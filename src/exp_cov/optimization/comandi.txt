@@ -1,5 +1,5 @@
-ampl: model '/home/d-ber/catkin_ws/src/tirocinio/optimization/coverage.mod';
-ampl: data '/home/d-ber/catkin_ws/src/tirocinio/scripts/text.dat';
+ampl: model '/home/d-ber/catkin_ws/src/exp_cov/optimization/coverage.mod';
+ampl: data '/home/d-ber/catkin_ws/src/exp_cov/scripts/text.dat';
 ampl: option solver knitro;
 ampl: solve;
 ampl: display scelta_guardie;

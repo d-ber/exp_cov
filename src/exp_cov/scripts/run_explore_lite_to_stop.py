@@ -15,7 +15,7 @@ def now():
 
 def run(logfile_path):    
     start = None
-    args = ["roslaunch", "tirocinio", "explore_lite2.launch"]
+    args = ["roslaunch", "exp_cov", "explore_lite2.launch"]
     with sp.Popen(args, stdout=sp.PIPE, stderr=sp.STDOUT) as process:
         with open(logfile_path, mode="+a", encoding="utf-8") as logfile:
             try:

@@ -3,10 +3,10 @@ import matplotlib.pyplot as plt
 
 def main():
 
-    map_path = "/home/d-ber/catkin_ws/src/tirocinio/scripts/maps_agp/map.png"
+    map_path = "/home/d-ber/catkin_ws/src/exp_cov/scripts/maps_agp/map.png"
     img_map = cv2.imread(map_path, cv2.IMREAD_GRAYSCALE)
     #img_map = cv2.threshold(img_map, 254, 255, cv2.THRESH_BINARY)[1]
-    floorplan_path = "/home/d-ber/catkin_ws/src/tirocinio/scripts/maps_agp/gt_floorplan.png"
+    floorplan_path = "/home/d-ber/catkin_ws/src/exp_cov/scripts/maps_agp/gt_floorplan.png"
     img_floorplan = cv2.imread(floorplan_path, cv2.IMREAD_GRAYSCALE)
     height, width = img_floorplan.shape
     points = (width, height)

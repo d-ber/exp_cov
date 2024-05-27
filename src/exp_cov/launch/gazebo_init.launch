@@ -1,12 +1,12 @@
 <launch>
 
-    <arg name="worldfile" default="$(find tirocinio)/world/turtlebot3_house_gazebo.world"/>
+    <arg name="worldfile" default="$(find exp_cov)/world/turtlebot3_house_gazebo.world"/>
     <arg name="x_pos" default="-2.0"/>
     <arg name="y_pos" default="-0.5"/>
     <arg name="z_pos" default="0.0"/>
     <arg name="scan" default="scan"/>
 
-    <include file="$(find tirocinio)/launch/empty_world.launch">
+    <include file="$(find exp_cov)/launch/empty_world.launch">
         <arg name="world_name" value="$(arg worldfile)"/>
         <arg name="paused" value="false"/>
         <arg name="use_sim_time" value="true"/>
@@ -16,14 +16,14 @@
         <arg name="scan_topic" value="scan_to_filter"/>
     </include>
 
-    <param name="robot_description" command="$(find xacro)/xacro --inorder $(find tirocinio)/urdf/turtlebot3_burger.urdf.xacro" />
+    <param name="robot_description" command="$(find xacro)/xacro --inorder $(find exp_cov)/urdf/turtlebot3_burger.urdf.xacro" />
 
     <node pkg="gazebo_ros" type="spawn_model" name="spawn_urdf"  args="-urdf -model turtlebot3_burger -param robot_description -x $(arg x_pos) -y $(arg y_pos) -z $(arg z_pos)"/>
     <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
         <param name="publish_frequency" type="double" value="50.0" />
     </node>
     <node pkg="laser_filters" type="scan_to_scan_filter_chain" name="laser_filter">
-        <rosparam command="load" file="$(find tirocinio)/config/lidar_config.yaml"/>
+        <rosparam command="load" file="$(find exp_cov)/config/lidar_config.yaml"/>
         <remap from="scan" to="scan_to_filter"/>
         <remap from="scan_filtered" to="$(arg scan)"/>
     </node>

@@ -3,14 +3,14 @@ import matplotlib.pyplot as plt
 
 def main():
 
-    img_path = "/home/d-ber/catkin_ws/src/tirocinio/tesi/binarization/tri.png"
+    img_path = "/home/d-ber/catkin_ws/src/exp_cov/tesi/binarization/tri.png"
     img = cv2.imread(img_path)
 
     image_width_small = img.shape[1]
     image_height_small = img.shape[0]
 
-    data_file_path = "/home/d-ber/catkin_ws/src/tirocinio/tesi/binarization/tesi.dat"
-    chosen_guards_file_path = "/home/d-ber/catkin_ws/src/tirocinio/tesi/binarization/guardie_scelte.txt"
+    data_file_path = "/home/d-ber/catkin_ws/src/exp_cov/tesi/binarization/tesi.dat"
+    chosen_guards_file_path = "/home/d-ber/catkin_ws/src/exp_cov/tesi/binarization/guardie_scelte.txt"
     posizioni_guardie = []
     with open(chosen_guards_file_path, "r") as choice_file:
         guardie_scelte = []
@@ -59,7 +59,7 @@ def main():
     _ = plt.subplot(111), plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB)), plt.title('Chosen Guards')
     plt.show()
 
-    stage_image = "/home/d-ber/catkin_ws/src/tirocinio/maps_rgb_lab/map1/map1_rgb.png"
+    stage_image = "/home/d-ber/catkin_ws/src/exp_cov/maps_rgb_lab/map1/map1_rgb.png"
     image = cv2.imread(stage_image, cv2.IMREAD_GRAYSCALE)
     scale = 0.035888
     sizex = image.shape[0]

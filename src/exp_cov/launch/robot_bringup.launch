@@ -27,7 +27,7 @@
         <remap from="scan" to="scan_hokuyo"/>
     </node>
 
-    <include file="$(find tirocinio)/launch/robot_camera.launch"/>
+    <include file="$(find exp_cov)/launch/robot_camera.launch"/>
 
 </launch>
   
