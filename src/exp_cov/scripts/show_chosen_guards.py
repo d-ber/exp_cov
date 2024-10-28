@@ -21,36 +21,53 @@ def main():
     img = cv2.imread(img_path)
     data_file_path = args.data
     chosen_guards_file_path = args.guards
-    posizioni_guardie = []
+    guard_position = []
+    param_end = ";"
+    guard_choice = []
+    witness_position = []
     with open(chosen_guards_file_path, "r") as choice_file:
-        guardie_scelte = []
         line = choice_file.readline()
-        while line.strip() != "guard_choice [*] :=":
+        guard_choice_param_start = "guard_choice [*] :="
+        while line.strip() != guard_choice_param_start and line != "":
             line = choice_file.readline()
+        if line == "":
+            raise Exception(f"Start of param guard_choice \"{guard_choice_param_start}\" not found in file {chosen_guards_file_path}.")
         line = choice_file.readline()
-        while line.strip() != ";":
-            guardie_scelte.append(line.strip().split()[0])
+        while line.strip() != param_end and line != "":
+            guard_choice.append(line.strip().split()[0])
             line = choice_file.readline()
+        if line == "":
+            print(f"Warning: End of param guard_choice \"{param_end}\" not found in file {chosen_guards_file_path}.")
     with open(data_file_path, "r") as data_file:
-        while line.strip() != "param guard_position :=":
-            line = data_file.readline()
+        guard_position_param_start = "param guard_position :="
         line = data_file.readline()
-        while line.strip() != ";":
-            if line.split()[0] in guardie_scelte:
-                posizioni_guardie.append((line.strip().split()[1], line.strip().split()[2]))
+        while line.strip() != guard_position_param_start and line != "":
             line = data_file.readline()
-    posizioni_testimoni = []
+        if line == "":
+            raise Exception(f"Start of param guard_position \"{guard_position_param_start}\" not found in file {data_file_path}.")
+        line = data_file.readline()
+        while line.strip() != param_end and line != "":
+            if line.split()[0] in guard_choice:
+                guard_position.append((line.strip().split()[1], line.strip().split()[2]))
+            line = data_file.readline()
+        if line == "":
+            print(f"Warning: End of param guard_position \"{param_end}\" not found in file {data_file_path}.")
     with open(data_file_path, "r") as data_file:
+        witness_position_param_start = "param witness_position :="
         line = data_file.readline()
-        while line.strip() != "param witness_position :=":
+        while line.strip() != witness_position_param_start and line != "":
             line = data_file.readline()
+        if line == "":
+            raise Exception(f"Start of param witness_position \"{witness_position_param_start}\" not found in file {data_file_path}.")
         line = data_file.readline()
-        while line.strip() != ";":
-            posizioni_testimoni.append((line.strip().split()[1], line.strip().split()[2]))
+        while line.strip() != param_end and line != "":
+            witness_position.append((line.strip().split()[1], line.strip().split()[2]))
             line = data_file.readline()
-    for (x, y) in posizioni_guardie:
+        if line == "":
+            print(f"Warning: End of param witness_position \"{param_end}\" not found in file {data_file_path}.")
+    for (x, y) in guard_position:
         img = cv2.circle(img, (int(x), int(y)), radius=1, color=(0, 0, 255), thickness=-1)
-    for (x, y) in posizioni_testimoni:
+    for (x, y) in witness_position:
         img = cv2.circle(img, (round(float(x)), round(float(y))), radius=1, color=(255, 0, 0), thickness=-1)
     _ = plt.subplot(111), plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB)), plt.title('Chosen Guards')
     plt.show()
