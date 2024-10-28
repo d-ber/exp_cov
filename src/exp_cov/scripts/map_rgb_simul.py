@@ -5,12 +5,13 @@ import scipy.stats as st
 import os
 import time
 import json
+import secrets
 import rospkg
 import argparse
 
 # obj_img is a b&w image, in which the object is black and the background white
 # img is the b&w image in which we translate obj_img
-def translate_obj(obj_img, movement_area, img, dist_tra, dist_rot, show_steps, disable_rotation):
+def translate_obj(obj_img, movement_area, img, dist_tra, dist_rot, show_steps, disable_rotation, rng):
     obj_img = cv2.bitwise_not(obj_img)
     movement_area = cv2.cvtColor(movement_area, cv2.COLOR_BGR2RGB)
     height, width = obj_img.shape[:2]
@@ -28,10 +29,10 @@ def translate_obj(obj_img, movement_area, img, dist_tra, dist_rot, show_steps, d
     while to_translate:
 
         # Generate random values with given distributions
-        dx = dist_tra.rvs()
-        dy = dist_tra.rvs()
+        dx = dist_tra.rvs(random_state=rng)
+        dy = dist_tra.rvs(random_state=rng)
         if not disable_rotation:
-            angle = dist_rot.rvs()
+            angle = dist_rot.rvs(random_state=rng)
 
         # Create the translation matrix using dx and dy, it is a Numpy array 
         translation_matrix = np.array([
@@ -83,7 +84,7 @@ def translate_obj(obj_img, movement_area, img, dist_tra, dist_rot, show_steps, d
     return (dst, dx, dy)
 
 
-def extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=False, show_steps=False, save_map=False, sizex=20, sizey=20, silent=False):
+def extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=False, show_steps=False, save_map=False, sizex=20, sizey=20, silent=False, seed=None):
     image_objects_removed = image.copy()
     
     # Convert RGB image to HSV (Hue, Saturation, Value) color space
@@ -127,6 +128,11 @@ def extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap
     # Probability for orange/purple doors (0.05 prob to have a close door -> 0.95 of having it open)
     DOOR_PROB = 0.05
     bernoulli_doors = st.bernoulli(DOOR_PROB)
+
+    # Manage the rng seeding
+    seed = secrets.randbits(128) if not seed else seed 
+    print(seed) # TODO: remove this print and save this value some other way
+    rng = np.random.default_rng(seed)
 
     hsv = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
     image_objects_removed[np.where(closed_doors_mask > np.array(0))] = [255, 255, 255]
@@ -221,7 +227,7 @@ def extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap
             overlapped = cv2.bitwise_and(mask_open, mask_closed)
             overlap = np.count_nonzero(overlapped)
             if overlap > 0:
-                mask_eroded = cv2.erode(mask_closed, kernel, iterations=1) if bernoulli_doors.rvs() else cv2.erode(mask_open, kernel, iterations=1)
+                mask_eroded = cv2.erode(mask_closed, kernel, iterations=1) if bernoulli_doors.rvs(random_state=rng) else cv2.erode(mask_open, kernel, iterations=1)
                 translated_objs_image = cv2.bitwise_and(translated_objs_image, cv2.bitwise_not(mask_eroded))
                 break
 
@@ -255,7 +261,7 @@ def extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap
     for j, (contour, obj_color_idx, object_image, movement_area) in enumerate(contour_obj_image_movement_area):
         if colors[obj_color_idx] == GREEN:
             # Get dx and dy translation so that at least 80% does not overlap
-            _, dx, dy = translate_obj(object_image, movement_area, translated_objs_image, dist_tra=norm_green, dist_rot=norm_rot, show_steps=show_steps, disable_rotation=True)
+            _, dx, dy = translate_obj(object_image, movement_area, translated_objs_image, dist_tra=norm_green, dist_rot=norm_rot, show_steps=show_steps, disable_rotation=True, rng=rng)
 
             for r in range(4):
                 contours_green_translated[green_idx][r][0][0] += dx
@@ -290,11 +296,11 @@ def extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap
                 "height": h
             })
             green_idx += 1
-        elif colors[obj_color_idx] == BLUE and bernoulli_clutter.rvs():
+        elif colors[obj_color_idx] == BLUE and bernoulli_clutter.rvs(random_state=rng):
             # If object is clutter and luck commands it, we skip it
             continue
         else: # Else colors[obj_color_idx] == RED
-            translated_objs_image, _, _ = translate_obj(object_image, movement_area, translated_objs_image, dist_tra=norm_tra, dist_rot=norm_rot, show_steps=show_steps, disable_rotation=False)
+            translated_objs_image, _, _ = translate_obj(object_image, movement_area, translated_objs_image, dist_tra=norm_tra, dist_rot=norm_rot, show_steps=show_steps, disable_rotation=False, rng=rng)
 
     green_objs_translated = image_objects_removed.copy()
     green_objs_translated = cv2.drawContours(green_objs_translated, contours_green_translated, -1, (0, 255, 0), cv2.FILLED)
@@ -397,6 +403,8 @@ def parse_args():
         help="Use this to produce a maps that ends in N and save it. Setting this argument overrides --worlds.")    
     parser.add_argument('--silent', action='store_true',
         help="Use this to avoid printing info.")   
+    parser.add_argument('--seed', type=check_positive, default=None,
+        help="Use this to set the rng seed.")   
     return parser.parse_args()
 
 def get_world_text(image, name, speedup, pose, scale, sizex, sizey):
@@ -527,6 +535,7 @@ def main():
     scale = args.scale
     world_num = args.world_num
     silent = args.silent
+    seed = args.seed
 
 
     movement_mask_image = cv2.imread(movement_mask_image_path, cv2.IMREAD_COLOR)
@@ -541,7 +550,7 @@ def main():
     if worlds == 0 and world_num is None:
         if batch == 1:
             rectangles_path = os.path.join(base_dir, "rectangles.json") if no_timestamp else os.path.join(base_dir, f"rectangles_{time.time_ns()}.json")
-            image_modified = extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=show_recap, show_steps=show_steps, save_map=save_map, sizex=sizex, sizey=sizey, silent=silent)
+            image_modified = extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=show_recap, show_steps=show_steps, save_map=save_map, sizex=sizex, sizey=sizey, silent=silent, seed=seed)
 
             if save_map:
                 filename = get_non_existent_filename(base_dir, no_timestamp)                
@@ -551,7 +560,7 @@ def main():
         else:
             for i in range(batch):
                 rectangles_path = os.path.join(base_dir, f"rectangles_{i}.json")
-                image_modified = extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=show_recap, show_steps=show_steps, save_map=True, sizex=sizex, sizey=sizey, silent=silent)
+                image_modified = extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=show_recap, show_steps=show_steps, save_map=True, sizex=sizex, sizey=sizey, silent=silent, seed=seed)
                 filename = os.path.join(base_dir, f"image_{i}.png")
                 cv2.imwrite(filename, image_modified)
                 if not silent:
@@ -568,7 +577,7 @@ def main():
             bitmaps_dir = os.path.join(base_dir, "bitmaps")
             if not os.path.exists(bitmaps_dir) or not os.path.isdir(bitmaps_dir):
                 os.makedirs(bitmaps_dir)
-            image_modified = extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=show_recap, show_steps=show_steps, save_map=True, sizex=sizex, sizey=sizey, silent=silent)
+            image_modified = extract_color_pixels(image, movement_mask_image, rectangles_path, show_recap=show_recap, show_steps=show_steps, save_map=True, sizex=sizex, sizey=sizey, silent=silent, seed=seed)
             filename = os.path.join(base_dir, f"bitmaps/image{i}.png")
             cv2.imwrite(filename, image_modified)
             if not silent:
