@@ -22,13 +22,9 @@ This script computes the data for the optimization phase of the method. As of v1
 
 After this, you can run a solver on the data using one of the models found in the optimization folder.
 
-#### show_guard_candidates.py
+#### opt_viz.py
 
-This script allows you to view the positions of guards and witnesses produced by optimization_data.py.
-
-#### show_chosen_guards.py
-
-This script allows you to view the optimization result.
+This script allows you to view the positions of guards and witnesses produced by optimization_data.py and to view the optimization result.
 
 #### tsp.py
 
