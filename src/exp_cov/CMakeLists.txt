@@ -160,8 +160,7 @@ catkin_install_python(PROGRAMS
   scripts/map_rgb_simul.py
   scripts/optimization_data.py
   scripts/run_explore_and_waypoint.py
-  scripts/show_chosen_guards.py
-  scripts/show_guard_candidates.py
+  scripts/opt_viz.py
   scripts/tsp.py
   scripts/waypoint_navigation.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
